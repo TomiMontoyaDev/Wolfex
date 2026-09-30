@@ -3,6 +3,7 @@
 import { motion, useMotionValue, useScroll, useSpring, useTransform } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { useIntro } from "@/components/providers/IntroProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { Media } from "@/components/ui/Media";
 import { SplitReveal } from "@/components/ui/SplitReveal";
@@ -14,6 +15,7 @@ import { SITE } from "@/data/site";
 const ease = [0.16, 1, 0.3, 1] as const;
 
 export function Hero() {
+  const { t } = useLanguage();
   const ref = useRef<HTMLElement>(null);
   const { ready } = useIntro();
 
@@ -49,7 +51,7 @@ export function Hero() {
   const contentOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
 
   return (
-    <section ref={ref} id="top" className="relative h-[100svh] min-h-[640px] overflow-hidden bg-void" aria-label="WOLFEX — Hunt your apex">
+    <section ref={ref} id="top" className="relative h-[100svh] min-h-[640px] overflow-hidden bg-void" aria-label={`WOLFEX — ${t("Hunt your apex.")}`}>
       {/* ── Atmosphere (far layer) ── */}
       <motion.div className="absolute inset-[-6%]" style={{ x: farX, y: farY }}>
         <motion.div
@@ -128,7 +130,7 @@ export function Hero() {
                 animate={ready ? { opacity: 1 } : {}}
                 transition={{ duration: 1, delay: 1.4 }}
               >
-                Performance apparel for those who refuse to stay at the same level.
+                {t("Performance apparel for those who refuse to stay at the same level.")}
               </motion.p>
             </div>
 
@@ -138,9 +140,9 @@ export function Hero() {
               animate={ready ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 1, delay: 1.3, ease }}
             >
-              <MagneticButton href="#drop" className="w-full sm:w-auto [&>a]:w-full">Shop the drop</MagneticButton>
+              <MagneticButton href="#drop" className="w-full sm:w-auto [&>a]:w-full">{t("Shop the drop")}</MagneticButton>
               <MagneticButton href="#code" variant="ghost" arrow={false} className="w-full sm:w-auto [&>a]:w-full">
-                Explore WOLFEX
+                {t("Explore WOLFEX")}
               </MagneticButton>
             </motion.div>
           </div>

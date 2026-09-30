@@ -4,11 +4,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect } from "react";
 import { useCart } from "@/components/providers/CartProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Media } from "@/components/ui/Media";
 import { formatPrice } from "@/lib/utils";
 
 /** Slide-in bag. Checkout is wired through /src/lib/commerce.ts later. */
 export function CartDrawer() {
+  const { t } = useLanguage();
   const { isOpen, close, lines, subtotal, remove, count } = useCart();
 
   useEffect(() => {
@@ -29,18 +31,18 @@ export function CartDrawer() {
             exit={{ x: "100%" }}
             transition={{ duration: 0.6, ease: [0.76, 0, 0.24, 1] }}
             role="dialog"
-            aria-label="Shopping bag"
+            aria-label={t("Bag")}
           >
             <div className="flex h-[var(--nav-h)] items-center justify-between border-b border-line px-6">
-              <p className="type-title text-sm">Bag <span className="text-steel">({count})</span></p>
-              <button onClick={close} aria-label="Close bag" className="-mr-2 flex h-11 w-11 items-center justify-center"><X className="h-5 w-5" strokeWidth={1.5} /></button>
+              <p className="type-title text-sm">{t("Bag")} <span className="text-steel">({count})</span></p>
+              <button onClick={close} aria-label={t("Close bag")} className="-mr-2 flex h-11 w-11 items-center justify-center"><X className="h-5 w-5" strokeWidth={1.5} /></button>
             </div>
 
             <div className="flex-1 overflow-y-auto px-6">
               {lines.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center text-center">
-                  <p className="type-headline text-3xl">No comfort.<br />No items.</p>
-                  <p className="mt-4 type-label text-steel">Your bag is empty</p>
+                  <p className="type-headline text-3xl">{t("No comfort.")}<br />{t("No items.")}</p>
+                  <p className="mt-4 type-label text-steel">{t("Your bag is empty")}</p>
                 </div>
               ) : (
                 <ul className="divide-y divide-line">
@@ -55,7 +57,7 @@ export function CartDrawer() {
                         <p className="mt-1 text-xs text-steel">{l.color} · Qty {l.quantity}</p>
                         <div className="mt-auto flex items-center justify-between">
                           <span className="font-mono text-sm">{formatPrice(l.product.price * l.quantity)}</span>
-                          <button onClick={() => remove(l.key)} className="type-label text-steel hover:text-arc">Remove</button>
+                          <button onClick={() => remove(l.key)} className="type-label text-steel hover:text-arc">{t("Remove")}</button>
                         </div>
                       </div>
                     </li>
@@ -66,13 +68,13 @@ export function CartDrawer() {
 
             <div className="border-t border-line p-6">
               <div className="flex justify-between type-title text-sm">
-                <span>Subtotal</span>
+                <span>{t("Subtotal")}</span>
                 <span className="font-mono">{formatPrice(subtotal)}</span>
               </div>
               <button disabled={!lines.length} className="mt-5 h-14 w-full bg-volt type-title text-[0.8125rem] transition-opacity disabled:opacity-40">
-                Checkout
+                {t("Checkout")}
               </button>
-              <p className="mt-3 text-center type-label text-steel/70">Secure checkout · Launching with the first drop</p>
+              <p className="mt-3 text-center type-label text-steel/70">{t("Secure checkout · Launching with the first drop")}</p>
             </div>
           </motion.aside>
         </>

@@ -6,6 +6,7 @@ import { SectionLabel } from "@/components/ui/SectionLabel";
 import { SplitReveal } from "@/components/ui/SplitReveal";
 import { CATEGORIES } from "@/data/site";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 /**
  * Editorial asymmetric layout (desktop):
@@ -25,12 +26,13 @@ const LAYOUT: Record<string, string> = {
 };
 
 export function Categories() {
+  const { t } = useLanguage();
   return (
     <section id="categories" className="relative bg-void py-28 md:py-40" aria-labelledby="cat-title">
       <div className="container-wfx">
-        <SectionLabel index="03" label="Collections" meta="04 categories" />
+        <SectionLabel index="03" label={t("Collections")} meta={`04 ${t("categories")}`} />
         <div className="mt-12 flex flex-col justify-between gap-6 md:mt-16 md:flex-row md:items-end">
-          <SplitReveal as="h2" text="Find your wolf" className="type-display text-[clamp(3rem,9vw,8.5rem)]" />
+          <SplitReveal as="h2" text={t("Find your wolf")} className="type-display text-[clamp(3rem,9vw,8.5rem)]" />
           <p className="max-w-xs type-label text-steel md:pb-4 md:text-right">Men / Women / Performance / Accessories</p>
         </div>
 
@@ -62,11 +64,11 @@ export function Categories() {
                 </div>
                 <div className="flex items-end justify-between gap-4">
                   <div className="transition-transform duration-700 ease-[var(--ease-apex)] group-hover:-translate-y-2">
-                    <p className="type-label text-steel">{c.caption}</p>
-                    <h3 className="mt-2 type-display text-[clamp(1.75rem,8.4vw,3rem)] lg:text-[clamp(2.25rem,4.2vw,4.5rem)] leading-[0.85]">{c.title}</h3>
+                    <p className="type-label text-steel">{t(c.caption)}</p>
+                    <h3 className="mt-2 type-display text-[clamp(1.75rem,8.4vw,3rem)] lg:text-[clamp(2.25rem,4.2vw,4.5rem)] leading-[0.85]">{t(c.title)}</h3>
                   </div>
                   <span className="flex items-center gap-2 overflow-hidden type-title text-xs text-arc lg:translate-y-4 lg:opacity-0 lg:transition-[transform,opacity] lg:duration-500 lg:ease-[var(--ease-apex)] lg:group-hover:translate-y-0 lg:group-hover:opacity-100">
-                    Explore <span aria-hidden="true">→</span>
+                    {t("Explore")} <span aria-hidden="true">→</span>
                   </span>
                 </div>
               </div>

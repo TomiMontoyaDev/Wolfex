@@ -6,6 +6,7 @@ import { Media } from "@/components/ui/Media";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { MEDIA } from "@/data/media";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 const SPECS = [
   { k: "Chapter", v: "02 — Motor" },
@@ -16,6 +17,7 @@ const SPECS = [
 
 /** A cultural extension of the brand — not a showroom. */
 export function MotorSection() {
+  const { t } = useLanguage();
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const lineA = useTransform(scrollYProgress, [0, 1], ["5%", "-35%"]);
@@ -26,7 +28,7 @@ export function MotorSection() {
   return (
     <section ref={ref} id="motor" className="relative overflow-hidden bg-void py-28 md:py-40" aria-labelledby="motor-title">
       <div className="container-wfx">
-        <SectionLabel index="05" label="WOLFEX // Motor" meta="Lifestyle extension" />
+        <SectionLabel index="05" label={t("WOLFEX // Motor")} meta={t("Lifestyle extension")} />
       </div>
 
       {/* Scroll-driven kinetic type */}
@@ -56,7 +58,7 @@ export function MotorSection() {
               <h2 id="motor-title" className="type-display text-[clamp(2.5rem,7vw,6.5rem)] leading-[0.85]">
                 WOLFEX <span className="text-arc">//</span> Motor
               </h2>
-              <p className="max-w-xs type-title text-sm leading-relaxed text-bone/80">Built for speed. Designed for movement.</p>
+              <p className="max-w-xs type-title text-sm leading-relaxed text-bone/80">{t("Built for speed. Designed for movement.")}</p>
             </div>
           </div>
         </div>

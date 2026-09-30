@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { MagneticButton } from "@/components/ui/MagneticButton";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Media } from "@/components/ui/Media";
 import { Reveal } from "@/components/ui/Reveal";
 import { SplitReveal } from "@/components/ui/SplitReveal";
@@ -10,6 +11,7 @@ import { gsap } from "@/lib/gsap";
 import { MEDIA } from "@/data/media";
 
 export function CampaignSection() {
+  const { t } = useLanguage();
   const root = useRef<HTMLElement>(null);
 
   useIsomorphicLayoutEffect(() => {
@@ -45,20 +47,20 @@ export function CampaignSection() {
         </div>
 
         <div>
-          <SplitReveal as="h2" text="Built different." className="type-display text-[clamp(2.25rem,9.2vw,9.5rem)]" stagger={0.1} />
+          <SplitReveal as="h2" text={t("Built different.")} className="type-display text-[clamp(2.25rem,9.2vw,9.5rem)]" stagger={0.1} />
           <Reveal delay={0.3} y={40}>
             <p id="campaign-title" className="mt-8 max-w-md type-title text-base leading-snug text-bone/80 md:text-lg">
-              Performance isn&apos;t a destination.
-              <span className="text-arc"> It&apos;s a standard.</span>
+              {t("Performance isn't a destination.")}
+              <span className="text-arc"> {t("It's a standard.")}</span>
             </p>
             <div className="mt-10">
-              <MagneticButton href="#categories" variant="light">Discover WOLFEX</MagneticButton>
+              <MagneticButton href="#categories" variant="light">{t("Discover WOLFEX")}</MagneticButton>
             </div>
           </Reveal>
         </div>
 
         <div className="flex items-end justify-between type-label text-steel">
-          <span>No comfort.</span>
+          <span>{t("No comfort.")}</span>
           <span className="text-bone/60">WFX-CMP-01</span>
         </div>
       </div>

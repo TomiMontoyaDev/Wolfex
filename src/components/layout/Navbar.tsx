@@ -5,6 +5,7 @@ import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCart } from "@/components/providers/CartProvider";
 import { useIntro } from "@/components/providers/IntroProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { SocialIcon } from "@/components/ui/SocialIcon";
 import { WolfMark, Wordmark } from "@/components/visuals/WolfMark";
 import { NAV_LINKS, SITE, SOCIALS } from "@/data/site";
@@ -16,6 +17,7 @@ export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { ready } = useIntro();
   const cart = useCart();
+  const { language, setLanguage, t } = useLanguage();
 
   useMotionValueEvent(scrollY, "change", (v) => setScrolled(v > 40));
 
@@ -61,18 +63,18 @@ export function Navbar() {
               {NAV_LINKS.map((l) => (
                 <li key={l.label}>
                   <a href={l.href} className="group relative block overflow-hidden type-title text-[0.75rem] text-bone/80 transition-colors hover:text-bone">
-                    <span className="block transition-transform duration-500 ease-[var(--ease-apex)] group-hover:-translate-y-full">{l.label}</span>
-                    <span className="absolute inset-0 translate-y-full text-arc transition-transform duration-500 ease-[var(--ease-apex)] group-hover:translate-y-0">{l.label}</span>
+                    <span className="block transition-transform duration-500 ease-[var(--ease-apex)] group-hover:-translate-y-full">{t(l.label)}</span>
+                    <span className="absolute inset-0 translate-y-full text-arc transition-transform duration-500 ease-[var(--ease-apex)] group-hover:translate-y-0">{t(l.label)}</span>
                   </a>
                 </li>
               ))}
             </ul>
 
             <div className="-mr-2 flex items-center">
-              <IconButton label="Search" className="hidden sm:flex">
+              <IconButton label={t("Search")} className="hidden sm:flex">
                 <Search className="h-[18px] w-[18px]" strokeWidth={1.5} />
               </IconButton>
-              <IconButton label="Account" className="hidden sm:flex">
+              <IconButton label={t("Account")} className="hidden sm:flex">
                 <User className="h-[18px] w-[18px]" strokeWidth={1.5} />
               </IconButton>
               <IconButton label={`Cart, ${cart.count} items`} onClick={cart.open}>
@@ -90,6 +92,14 @@ export function Navbar() {
                   )}
                 </AnimatePresence>
               </IconButton>
+              <button
+                type="button"
+                onClick={() => setLanguage(language === "en" ? "es" : "en")}
+                className="ml-1 h-11 min-w-11 border-l border-line px-2 type-label text-[0.65rem] text-bone/80 transition-colors hover:text-arc"
+                aria-label={language === "en" ? "Cambiar a español" : "Switch to English"}
+              >
+                {language === "en" ? "ES" : "EN"}
+              </button>
             </div>
           </nav>
         </div>
@@ -110,6 +120,7 @@ function IconButton({ children, label, onClick, className }: { children: React.R
 
 /** Mobile: full-screen editorial menu — not a shrunken desktop nav. */
 function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useLanguage();
   return (
     <AnimatePresence>
       {open && (
@@ -123,7 +134,7 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
           <div className="pointer-events-none absolute -right-24 top-1/3 h-80 w-80 rounded-full bg-volt/20 blur-[120px]" />
           <div className="container-wfx flex flex-1 flex-col justify-between pb-8 pt-6">
             <div>
-              <p className="type-label text-steel">Menu — 0{NAV_LINKS.length}</p>
+              <p className="type-label text-steel">{t("Menu")} — 0{NAV_LINKS.length}</p>
               <ul className="mt-6 border-t border-line">
                 {NAV_LINKS.map((l, i) => (
                   <li key={l.label} className="overflow-hidden border-b border-line">
@@ -135,15 +146,15 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
                       animate={{ y: 0 }}
                       transition={{ duration: 0.7, delay: 0.25 + i * 0.06, ease: [0.16, 1, 0.3, 1] }}
                     >
-                      <span className="type-headline text-[clamp(2.25rem,11vw,3.5rem)]">{l.label}</span>
+                      <span className="type-headline text-[clamp(2.25rem,11vw,3.5rem)]">{t(l.label)}</span>
                       <span className="type-label text-arc">{pad(i + 1)}</span>
                     </motion.a>
                   </li>
                 ))}
               </ul>
               <div className="mt-6 flex gap-3">
-                <a href="#" className="flex h-12 flex-1 items-center justify-center gap-2 border border-line-strong type-title text-xs"><Search className="h-4 w-4" strokeWidth={1.5} />Search</a>
-                <a href="#" className="flex h-12 flex-1 items-center justify-center gap-2 border border-line-strong type-title text-xs"><User className="h-4 w-4" strokeWidth={1.5} />Account</a>
+                <a href="#" className="flex h-12 flex-1 items-center justify-center gap-2 border border-line-strong type-title text-xs"><Search className="h-4 w-4" strokeWidth={1.5} />{t("Search")}</a>
+                <a href="#" className="flex h-12 flex-1 items-center justify-center gap-2 border border-line-strong type-title text-xs"><User className="h-4 w-4" strokeWidth={1.5} />{t("Account")}</a>
               </div>
             </div>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="flex items-end justify-between">

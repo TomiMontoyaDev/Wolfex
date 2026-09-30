@@ -12,10 +12,12 @@ import { SplitReveal } from "@/components/ui/SplitReveal";
 import { MEDIA } from "@/data/media";
 import { SOCIALS } from "@/data/site";
 import { pad } from "@/lib/utils";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 const CAPTIONS = ["5AM crew", "Night run", "Heavy day", "Motor meet"];
 
 export function Community() {
+  const { t } = useLanguage();
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const colA = useTransform(scrollYProgress, [0, 1], ["8%", "-8%"]);
@@ -25,18 +27,17 @@ export function Community() {
     <section ref={ref} id="community" className="relative overflow-hidden bg-ink py-28 md:py-40" aria-labelledby="pack-title">
       <div className="pointer-events-none absolute -right-40 bottom-0 h-[560px] w-[560px] rounded-full bg-volt/[0.08] blur-[150px]" />
       <div className="container-wfx">
-        <SectionLabel index="06" label="Community" meta="#WOLFEXPACK" />
+        <SectionLabel index="06" label={t("Community")} meta="#WOLFEXPACK" />
 
         <div className="mt-14 grid gap-16 lg:mt-20 lg:grid-cols-12 lg:gap-10">
           <div className="lg:col-span-5 lg:pt-10">
-            <SplitReveal as="h2" text="Run with the pack." className="type-display text-[clamp(3rem,7vw,7rem)]" />
+            <SplitReveal as="h2" text={t("Run with the pack.")} className="type-display text-[clamp(3rem,7vw,7rem)]" />
             <Reveal delay={0.2}>
               <p id="pack-title" className="mt-8 max-w-md type-body text-steel">
-                WOLFEX is bigger than a logo. It&apos;s the 5AM sessions, the night runs, the people who push you past the point you
-                would have stopped alone. Wear it. Tag it. Train with us.
+                {t("WOLFEX is bigger than a logo. It's the 5AM sessions, the night runs, the people who push you past the point you would have stopped alone. Wear it. Tag it. Train with us.")}
               </p>
               <div className="mt-10">
-                <MagneticButton href="#join">Join WOLFEX</MagneticButton>
+                <MagneticButton href="#join">{t("Join WOLFEX")}</MagneticButton>
               </div>
             </Reveal>
           </div>

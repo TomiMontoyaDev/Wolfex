@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { SectionLabel } from "@/components/ui/SectionLabel";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useIsomorphicLayoutEffect } from "@/hooks/useIsomorphicLayoutEffect";
 import { gsap } from "@/lib/gsap";
 
@@ -15,6 +16,7 @@ const CODE = [
 ];
 
 export function BrandStatement() {
+  const { t } = useLanguage();
   const root = useRef<HTMLElement>(null);
 
   useIsomorphicLayoutEffect(() => {
@@ -77,21 +79,21 @@ export function BrandStatement() {
       <div className="pointer-events-none absolute -left-40 top-1/3 h-[520px] w-[520px] rounded-full bg-volt/[0.07] blur-[140px]" />
 
       <div className="container-wfx">
-        <SectionLabel index="01" label="The WOLFEX Code" meta="Manifesto — WFX/M-01" />
+        <SectionLabel index="01" label={t("The WOLFEX Code")} meta={t("Manifesto — WFX/M-01")} />
 
         <div className="mt-16 grid gap-16 md:mt-24 lg:grid-cols-12">
           <div className="lg:col-span-3">
             <h2 id="code-title" className="type-title text-sm text-steel lg:sticky lg:top-32">
-              The <span className="text-bone">WOLFEX</span> Code
+              {t("The")} <span className="text-bone">WOLFEX</span> {t("Code")}
               <span className="mt-4 block max-w-[16rem] type-body text-sm normal-case tracking-normal text-steel">
-                Three rules. No exceptions. Written for the ones who train when nobody is watching.
+                {t("Three rules. No exceptions. Written for the ones who train when nobody is watching.")}
               </span>
             </h2>
           </div>
 
           <div className="lg:col-span-9">
             <p className="code-manifesto type-headline text-[clamp(1.9rem,4.6vw,4.25rem)] leading-[1.02]">
-              {MANIFESTO.split(" ").map((w, i) => (
+              {t(MANIFESTO).split(" ").map((w, i) => (
                 <span key={i} className={`code-word inline-block ${w === "WOLFEX" ? "text-arc" : ""}`}>
                   {w}&nbsp;
                 </span>
@@ -105,9 +107,9 @@ export function BrandStatement() {
                   <div className="grid grid-cols-[auto_1fr] items-baseline gap-x-5 md:grid-cols-[5rem_1fr_auto] md:gap-x-8">
                     <span className="type-label text-arc">0{i + 1}</span>
                     <p className="type-display text-[clamp(1.6rem,5vw,4.75rem)] leading-none">
-                      {c.a}{" "}
-                      <span className="mx-3 align-middle font-mono text-[0.22em] font-normal normal-case tracking-[0.2em] text-steel md:mx-5">over</span>{" "}
-                      <span className="text-outline">{c.b}</span>
+                      {t(c.a)}{" "}
+                      <span className="mx-3 align-middle font-mono text-[0.22em] font-normal normal-case tracking-[0.2em] text-steel md:mx-5">{t("over")}</span>{" "}
+                      <span className="text-outline">{t(c.b)}</span>
                     </p>
                     <span className="hidden type-label text-steel md:block">WFX-C0{i + 1}</span>
                   </div>
@@ -115,7 +117,7 @@ export function BrandStatement() {
               ))}
             </ol>
 
-            <p className="code-apex mt-16 type-display text-[clamp(2.5rem,8vw,7.5rem)] text-volt text-glow md:mt-24">Hunt your apex.</p>
+            <p className="code-apex mt-16 type-display text-[clamp(2.5rem,8vw,7.5rem)] text-volt text-glow md:mt-24">{t("Hunt your apex.")}</p>
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight, Check, Plus } from "lucide-react";
 import { useRef, useState } from "react";
 import { useCart } from "@/components/providers/CartProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Media } from "@/components/ui/Media";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionLabel } from "@/components/ui/SectionLabel";
@@ -12,6 +13,7 @@ import type { Product } from "@/data/products";
 import { cn, formatPrice, pad } from "@/lib/utils";
 
 export function FeaturedProducts({ products }: { products: Product[] }) {
+  const { t } = useLanguage();
   const rail = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
 
@@ -26,16 +28,16 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
   return (
     <section id="drop" className="relative bg-void pb-28 pt-8 md:pb-44" aria-labelledby="drop-title">
       <div className="container-wfx">
-        <SectionLabel index="02" label="Drop 01 — SS26" meta={`${pad(products.length)} pieces · Limited release`} />
+        <SectionLabel index="02" label="Drop 01 — SS26" meta={`${pad(products.length)} ${t("pieces")} · ${t("Limited release")}`} />
 
         <div className="mt-12 flex flex-col gap-8 md:mt-16 md:flex-row md:items-end md:justify-between">
-          <SplitReveal as="h2" text="Latest drop" className="type-display text-[clamp(3.25rem,10vw,9.5rem)]" />
+          <SplitReveal as="h2" text={t("Latest drop")} className="type-display text-[clamp(3.25rem,10vw,9.5rem)]" />
           <Reveal delay={0.2} className="max-w-sm md:pb-3">
             <p className="type-body text-steel">
-              Heavyweight fabrics, engineered fits, zero noise. Built in small runs — when a drop is gone, it&apos;s gone.
+              {t("Heavyweight fabrics, engineered fits, zero noise. Built in small runs — when a drop is gone, it's gone.")}
             </p>
             <a href="#" className="group mt-5 inline-flex items-center gap-2 type-title text-xs text-bone">
-              <span className="border-b border-line-strong pb-1 transition-colors group-hover:border-arc">Shop all</span>
+              <span className="border-b border-line-strong pb-1 transition-colors group-hover:border-arc">{t("Shop all")}</span>
               <ArrowUpRight className="h-4 w-4 transition-transform duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" strokeWidth={1.5} />
             </a>
           </Reveal>
@@ -70,6 +72,7 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
 
 function ProductCard({ product, index }: { product: Product; index: number }) {
   const { add } = useCart();
+  const { t } = useLanguage();
   const [color, setColor] = useState(product.colors[0]);
   const [added, setAdded] = useState(false);
 
@@ -90,7 +93,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
       <div className="mb-3 flex items-center justify-between type-label">
         <span className="text-steel">{product.sku}</span>
         {product.badge && (
-          <span className={cn(product.badge === "LIMITED RELEASE" ? "text-arc" : "text-bone/70")}>{product.badge}</span>
+          <span className={cn(product.badge === "LIMITED RELEASE" ? "text-arc" : "text-bone/70")}>{t(product.badge)}</span>
         )}
       </div>
 
@@ -126,11 +129,11 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
         <div className="flex items-start justify-between gap-4">
           <div className="transition-transform duration-500 ease-[var(--ease-apex)] group-hover:translate-x-1.5">
             <p className="type-label text-steel">WOLFEX</p>
-            <h3 className="mt-1 type-title text-lg leading-tight transition-colors duration-500 group-hover:text-arc">{product.name}</h3>
+            <h3 className="mt-1 type-title text-lg leading-tight transition-colors duration-500 group-hover:text-arc">{t(product.name)}</h3>
           </div>
           <p className="pt-4 font-mono text-sm">{formatPrice(product.price)}</p>
         </div>
-        <p className="mt-2 text-sm text-steel">{product.descriptor}</p>
+        <p className="mt-2 text-sm text-steel">{t(product.descriptor)}</p>
 
         <div className="mt-4 flex items-center justify-between">
           <div className="flex items-center gap-2" role="radiogroup" aria-label="Color">
@@ -162,6 +165,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
 }
 
 function AddButton({ added, onAdd }: { added: boolean; onAdd: () => void }) {
+  const { t } = useLanguage();
   return (
     <button
       onClick={onAdd}
@@ -173,7 +177,7 @@ function AddButton({ added, onAdd }: { added: boolean; onAdd: () => void }) {
     >
       <AnimatePresence mode="wait" initial={false}>
         <motion.span key={added ? "a" : "b"} initial={{ y: 14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -14, opacity: 0 }} transition={{ duration: 0.25 }}>
-          {added ? "Added to bag" : "Add to cart"}
+          {added ? t("Added to bag") : t("Add to cart")}
         </motion.span>
       </AnimatePresence>
       {added ? <Check className="h-4 w-4" strokeWidth={2} /> : <Plus className="h-4 w-4" strokeWidth={1.5} />}

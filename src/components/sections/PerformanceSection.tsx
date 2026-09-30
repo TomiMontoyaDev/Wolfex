@@ -7,6 +7,7 @@ import { SplitReveal } from "@/components/ui/SplitReveal";
 import { useIsomorphicLayoutEffect } from "@/hooks/useIsomorphicLayoutEffect";
 import { gsap } from "@/lib/gsap";
 import { PERFORMANCE_PILLARS, SITE } from "@/data/site";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 /**
  * Desktop: pinned horizontal scroll through TRAIN / MOVE / BUILD / REPEAT,
@@ -14,6 +15,7 @@ import { PERFORMANCE_PILLARS, SITE } from "@/data/site";
  * Mobile & reduced motion: a vertical editorial stack — same content, no pin.
  */
 export function PerformanceSection() {
+  const { t } = useLanguage();
   const root = useRef<HTMLElement>(null);
   const track = useRef<HTMLDivElement>(null);
   const hudIndex = useRef<HTMLSpanElement>(null);
@@ -80,28 +82,28 @@ export function PerformanceSection() {
         <div className="flex items-center justify-between type-label text-steel">
           <span className="text-bone">{SITE.name}</span>
           <span>EST. {SITE.established}</span>
-          <span>Performance system</span>
+          <span>{t("Performance system")}</span>
           <span>
             <span ref={hudIndex} className="text-arc">01</span> / 04
           </span>
         </div>
         <div className="flex items-center gap-6 type-label text-steel">
-          <span>Scroll</span>
+          <span>{t("Scroll")}</span>
           <span className="relative h-px flex-1 bg-line-strong">
             <span ref={hudBar} className="absolute inset-0 origin-left scale-x-0 bg-arc" />
           </span>
-          <span>Designed for motion</span>
+          <span>{t("Designed for motion")}</span>
         </div>
       </div>
 
       <div ref={track} className="relative flex flex-col lg:h-full lg:w-max lg:flex-row lg:items-center">
         {/* Intro panel */}
         <div className="container-wfx flex flex-col justify-center py-28 lg:h-full lg:w-[62vw] lg:max-w-none lg:py-0">
-          <p className="type-label text-arc lg:hidden">04 — Performance system</p>
-          <SplitReveal as="h2" text="Performance without limits." className="mt-6 type-display text-[8.6vw] lg:mt-0 lg:text-[5.2vw]" stagger={0.08} />
+          <p className="type-label text-arc lg:hidden">04 — {t("Performance system")}</p>
+          <SplitReveal as="h2" text={t("Performance without limits.")} className="mt-6 type-display text-[8.6vw] lg:mt-0 lg:text-[5.2vw]" stagger={0.08} />
           <Reveal delay={0.2}>
             <p id="perf-title" className="mt-8 max-w-md type-body text-steel">
-              WOLFEX isn&apos;t just what you wear. It&apos;s how you operate — a system for training, moving and living at a higher standard.
+              {t("WOLFEX isn't just what you wear. It's how you operate — a system for training, moving and living at a higher standard.")}
             </p>
           </Reveal>
         </div>
@@ -127,13 +129,13 @@ export function PerformanceSection() {
               </div>
 
               <div className="perf-meta mt-8 grid max-w-2xl gap-6 sm:grid-cols-[1fr_auto] sm:items-end">
-                <p className="max-w-sm type-body text-bone/80">{p.line}</p>
+                <p className="max-w-sm type-body text-bone/80">{t(p.line)}</p>
                 <div className="sm:text-right">
                   <p className="font-mono text-4xl font-medium tracking-tight text-bone md:text-5xl">
                     <Counter value={p.metric.value} />
                     <span className="ml-1 text-lg text-arc">{p.metric.suffix}</span>
                   </p>
-                  <p className="mt-1 type-label text-steel">{p.metric.label}</p>
+                  <p className="mt-1 type-label text-steel">{t(p.metric.label)}</p>
                 </div>
               </div>
             </div>
