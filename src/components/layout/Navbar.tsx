@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useCart } from "@/components/providers/CartProvider";
 import { useIntro } from "@/components/providers/IntroProvider";
 import { SocialIcon } from "@/components/ui/SocialIcon";
+import { WolfMark, Wordmark } from "@/components/visuals/WolfMark";
 import { NAV_LINKS, SITE, SOCIALS } from "@/data/site";
 import { cn, pad } from "@/lib/utils";
 
@@ -52,8 +53,8 @@ export function Navbar() {
             </button>
 
             <a href="#top" className="group flex items-center gap-3 max-lg:absolute max-lg:left-1/2 max-lg:-translate-x-1/2" aria-label="WOLFEX home">
-              <span className="type-display text-xl tracking-[0.14em] md:text-[1.35rem]">{SITE.name}</span>
-              <span className="hidden h-1.5 w-1.5 rotate-45 bg-volt transition-transform duration-500 group-hover:rotate-[225deg] md:block" />
+              <WolfMark outline className="h-7 w-auto text-bone transition-colors duration-500 group-hover:text-arc md:h-8" />
+              <Wordmark className="h-[15px] w-auto text-bone md:h-[18px]" title="" />
             </a>
 
             <ul className="hidden items-center gap-10 lg:flex">

@@ -1,5 +1,5 @@
 import type { PlaceholderArt as ArtKind } from "@/data/media";
-import { WolfMark } from "./WolfMark";
+import { WolfMark, Wordmark } from "./WolfMark";
 
 /**
  * Designed placeholders — cinematic dark compositions that hold the
@@ -137,8 +137,8 @@ function Garment({ id, kind, back }: { id: string; kind: keyof typeof GARMENTS; 
       </g>
       {back ? (
         <g opacity="0.85">
-          <g transform={`translate(${kind === "shorts" ? 176 : 164},${kind === "shorts" ? 250 : 196})`}>
-            <WolfMark outline size={kind === "shorts" ? 48 : 72} />
+          <g transform={`translate(${kind === "shorts" ? 176 : 158},${kind === "shorts" ? 256 : 206})`} color="#F5F7FA">
+            <WolfMark outline size={kind === "shorts" ? 48 : 84} />
           </g>
           {kind !== "shorts" && (
             <text x="200" y="300" textAnchor="middle" fill="#F5F7FA" fillOpacity="0.55" fontSize="11" letterSpacing="4" fontFamily="var(--font-mono)">
@@ -147,20 +147,13 @@ function Garment({ id, kind, back }: { id: string; kind: keyof typeof GARMENTS; 
           )}
         </g>
       ) : (
-        <text
-          x={kind === "shorts" ? 250 : 200}
-          y={kind === "shorts" ? 320 : kind === "hoodie" ? 262 : 170}
-          textAnchor="middle"
-          fill="#F5F7FA"
-          fillOpacity="0.7"
-          fontSize={kind === "shorts" ? 10 : 15}
-          fontWeight="800"
-          letterSpacing="3"
-          style={{ fontStretch: "125%" }}
-          fontFamily="var(--font-display)"
+        <g
+          transform={`translate(${kind === "shorts" ? 226 : kind === "hoodie" ? 162 : 164},${kind === "shorts" ? 308 : kind === "hoodie" ? 250 : 156})`}
+          color="#F5F7FA"
+          opacity="0.8"
         >
-          WOLFEX
-        </text>
+          <Wordmark size={kind === "shorts" ? 50 : 76} />
+        </g>
       )}
     </>
   );
@@ -260,7 +253,7 @@ export function PlaceholderArt({ art, label }: { art: ArtKind; label?: string })
           <circle cx="800" cy="420" r="520" fill={`url(#${id}-spot)`} />
           <Smoke id={id} cx={500} cy={700} r={420} />
           <Smoke id={id} cx={1150} cy={640} r={380} />
-          <g transform="translate(620,180)"><WolfMark size={360} /></g>
+          <g transform="translate(580,230)"><WolfMark size={440} /></g>
         </Frame>
       );
 
@@ -293,7 +286,7 @@ export function PlaceholderArt({ art, label }: { art: ArtKind; label?: string })
         <Frame id={id} w={600} h={800} label={label}>
           <Beam id={id} x={300} w={600} h={800} />
           <circle cx="300" cy="330" r="300" fill={`url(#${id}-spot)`} />
-          <g transform="translate(120,190)" opacity="0.9"><WolfMark size={360} /></g>
+          <g transform="translate(90,250)" opacity="0.9"><WolfMark size={420} /></g>
           <Smoke id={id} cx={300} cy={700} r={300} />
         </Frame>
       );

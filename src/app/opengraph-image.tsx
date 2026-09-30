@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { MARK_PATH, MARK_VIEWBOX, WORDMARK_PATH, WORDMARK_VIEWBOX } from "@/components/visuals/logo-paths";
 
 export const alt = "WOLFEX — Hunt Your Apex";
 export const size = { width: 1200, height: 630 };
@@ -19,7 +20,12 @@ export default function OpengraphImage() {
           color: "#F5F7FA",
         }}
       >
-        <div style={{ fontSize: 180, fontWeight: 900, letterSpacing: 12 }}>WOLFEX</div>
+        <svg viewBox={MARK_VIEWBOX} width={220} height={185}>
+          <path d={MARK_PATH} fill="#F5F7FA" fillRule="evenodd" />
+        </svg>
+        <svg viewBox={WORDMARK_VIEWBOX} width={680} height={103} style={{ marginTop: 28 }}>
+          <path d={WORDMARK_PATH} fill="#F5F7FA" fillRule="evenodd" />
+        </svg>
         <div style={{ marginTop: 12, fontSize: 40, color: "#00A8FF", letterSpacing: 10 }}>HUNT YOUR APEX.</div>
         <div style={{ position: "absolute", bottom: 40, fontSize: 20, color: "#70757D", letterSpacing: 6 }}>EST. 2026 · PERFORMANCE SYSTEM</div>
       </div>

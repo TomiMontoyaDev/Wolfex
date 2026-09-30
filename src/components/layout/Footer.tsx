@@ -1,6 +1,6 @@
 import { ArrowUp } from "lucide-react";
 import { SocialIcon } from "@/components/ui/SocialIcon";
-import { WolfMark } from "@/components/visuals/WolfMark";
+import { WolfMark, Wordmark } from "@/components/visuals/WolfMark";
 import { FOOTER_LINKS, SITE, SOCIALS } from "@/data/site";
 
 export function Footer() {
@@ -10,7 +10,7 @@ export function Footer() {
         <div className="grid gap-14 md:grid-cols-12">
           <div className="md:col-span-5">
             <div className="flex items-center gap-4">
-              <WolfMark outline className="h-12 w-11" />
+              <WolfMark outline className="h-11 w-auto text-bone" />
               <div>
                 <p className="type-title text-sm">{SITE.tagline}</p>
                 <p className="mt-1 type-label text-steel">EST. {SITE.established} · Performance system</p>
@@ -48,10 +48,12 @@ export function Footer() {
 
       {/* Monumental wordmark */}
       <div className="relative mt-20 select-none md:mt-28" aria-hidden="true">
-        <p className="text-center type-display text-[16.8vw] leading-[0.78] tracking-[0.01em] text-outline">{SITE.name}</p>
-        <p className="pointer-events-none absolute inset-0 text-center type-display text-[16.8vw] leading-[0.78] tracking-[0.01em] text-transparent bg-gradient-to-b from-volt/40 to-transparent bg-clip-text [mask-image:linear-gradient(to_bottom,black_10%,transparent_75%)]">
-          {SITE.name}
-        </p>
+        <div className="container-wfx relative">
+          <Wordmark variant="outline" className="h-auto w-full text-bone/25" title="" />
+          <div className="pointer-events-none absolute inset-0 px-[var(--gutter)] text-volt/50 [mask-image:linear-gradient(to_bottom,black_5%,transparent_80%)]">
+            <Wordmark className="h-auto w-full" title="" />
+          </div>
+        </div>
       </div>
 
       <div className="container-wfx flex flex-col-reverse items-start justify-between gap-6 border-t border-line py-6 sm:flex-row sm:items-center">

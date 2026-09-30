@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useIntro } from "@/components/providers/IntroProvider";
 import { SITE } from "@/data/site";
+import { WolfMark, Wordmark } from "@/components/visuals/WolfMark";
 import { pad } from "@/lib/utils";
 
 const COUNT_MS = 1500;
@@ -69,14 +70,22 @@ export function Loader() {
           <div className="absolute inset-0 bg-tech-grid opacity-40 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
 
           <div className="relative flex flex-col items-center">
-            <motion.span
-              className="type-display text-[clamp(2.75rem,11vw,8rem)] tracking-[0.06em]"
-              initial={{ opacity: 0, letterSpacing: "0.3em", filter: "blur(8px)" }}
-              animate={{ opacity: 1, letterSpacing: "0.06em", filter: "blur(0px)" }}
-              transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="mb-6 text-bone"
             >
-              {SITE.name}
-            </motion.span>
+              <WolfMark outline className="h-14 w-auto md:h-16" />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, clipPath: "inset(0 100% 0 0)", filter: "blur(8px)" }}
+              animate={{ opacity: 1, clipPath: "inset(0 0% 0 0)", filter: "blur(0px)" }}
+              transition={{ duration: 1.1, delay: 0.15, ease: [0.76, 0, 0.24, 1] }}
+              className="text-bone"
+            >
+              <Wordmark className="h-auto w-[min(72vw,520px)]" />
+            </motion.div>
 
             <div className="mt-6 h-6 overflow-hidden">
               <AnimatePresence mode="wait">

@@ -7,7 +7,7 @@ import { MagneticButton } from "@/components/ui/MagneticButton";
 import { Media } from "@/components/ui/Media";
 import { SplitReveal } from "@/components/ui/SplitReveal";
 import { Particles } from "@/components/visuals/Particles";
-import { WolfMark } from "@/components/visuals/WolfMark";
+import { WolfMark, Wordmark } from "@/components/visuals/WolfMark";
 import { MEDIA } from "@/data/media";
 import { SITE } from "@/data/site";
 
@@ -74,8 +74,8 @@ export function Hero() {
             <div className="absolute inset-0 bg-gradient-to-b from-void/40 via-void/10 to-void" />
           </motion.div>
         ) : (
-          <div className="absolute left-1/2 top-[38%] w-[min(74vw,420px)] -translate-x-1/2 -translate-y-1/2 md:top-[42%] md:w-[min(32vw,500px)]">
-            <motion.div className="relative aspect-[400/440]" style={{ x: wolfX, y: wolfY, rotate: wolfRot }}>
+          <div className="absolute left-1/2 top-[38%] w-[min(72vw,400px)] -translate-x-1/2 -translate-y-1/2 md:top-[36%] md:w-[min(33vw,500px)]">
+            <motion.div className="relative aspect-[420/353]" style={{ x: wolfX, y: wolfY, rotate: wolfRot }}>
               <div className="absolute inset-[12%] animate-pulse-glow rounded-full bg-volt/25 blur-[80px]" />
               {ready && <WolfMark animate className="relative h-full w-full drop-shadow-[0_0_30px_rgba(0,102,255,0.35)]" />}
             </motion.div>
@@ -92,15 +92,18 @@ export function Hero() {
       <motion.div className="relative z-10 flex h-full flex-col justify-end pb-10 md:pb-14" style={{ y: contentY, opacity: contentOpacity }}>
         <div className="container-wfx">
           <motion.div style={{ x: typeX }}>
-            <SplitReveal
-              as="h1"
-              text={SITE.name}
-              by="char"
-              stagger={0.07}
-              delay={0.25}
-              play={ready}
-              className="type-display justify-center text-[16.2vw] leading-[0.8] tracking-[0.01em] text-bone 3xl:text-[16rem]"
-            />
+            <h1 className="relative">
+              <span className="sr-only">WOLFEX — Hunt your apex</span>
+              <motion.span
+                className="block text-bone"
+                initial={{ clipPath: "inset(-30% 106% -30% -6%)", opacity: 0, filter: "blur(12px)" }}
+                animate={ready ? { clipPath: "inset(-30% -6% -30% -6%)", opacity: 1, filter: "blur(0px)" } : {}}
+                transition={{ duration: 1.4, delay: 0.3, ease: [0.76, 0, 0.24, 1] }}
+                aria-hidden="true"
+              >
+                <Wordmark className="mx-auto block h-auto w-full max-w-[1500px] drop-shadow-[0_0_40px_rgba(0,102,255,0.28)]" title="" />
+              </motion.span>
+            </h1>
           </motion.div>
 
           <div className="mt-6 flex flex-col items-center gap-8 md:mt-8 md:flex-row md:items-end md:justify-between">
