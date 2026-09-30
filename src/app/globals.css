@@ -1,0 +1,223 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────
+   WOLFEX DESIGN TOKENS
+   Dark-first. Electric blue is an accent, never a background.
+   ───────────────────────────────────────────────────────────── */
+@theme {
+  --color-void: #050505;
+  --color-ink: #0a0a0d;
+  --color-graphite: #111116;
+  --color-volt: #0066ff;
+  --color-arc: #00a8ff;
+  --color-abyss: #06152f;
+  --color-bone: #f5f7fa;
+  --color-steel: #70757d;
+  --color-line: rgb(245 247 250 / 0.08);
+  --color-line-strong: rgb(245 247 250 / 0.16);
+
+  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
+
+  --ease-apex: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-hunt: cubic-bezier(0.76, 0, 0.24, 1);
+
+  --breakpoint-xs: 420px;
+  --breakpoint-3xl: 1920px;
+
+  --animate-sweep: sweep 7s var(--ease-hunt) infinite;
+  --animate-marquee: marquee 38s linear infinite;
+  --animate-drift: drift 18s ease-in-out infinite alternate;
+  --animate-pulse-glow: pulse-glow 4s ease-in-out infinite;
+
+  @keyframes sweep {
+    0% { transform: translateX(-120%) skewX(-18deg); }
+    55%, 100% { transform: translateX(260%) skewX(-18deg); }
+  }
+  @keyframes marquee {
+    from { transform: translate3d(0, 0, 0); }
+    to { transform: translate3d(-50%, 0, 0); }
+  }
+  @keyframes drift {
+    0% { transform: translate3d(-4%, 2%, 0) scale(1); }
+    100% { transform: translate3d(5%, -3%, 0) scale(1.12); }
+  }
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
+  }
+}
+
+/* ───────────── Base ───────────── */
+@layer base {
+  :root {
+    color-scheme: dark;
+    --nav-h: 72px;
+    --gutter: clamp(1rem, 4vw, 3rem);
+  }
+
+  html {
+    background: var(--color-void);
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--color-void);
+    color: var(--color-bone);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--color-volt);
+    color: var(--color-bone);
+  }
+
+  :focus-visible {
+    outline: 1px solid var(--color-arc);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+
+  /* Hide native cursor only when the custom cursor is mounted (fine pointers). */
+  html.has-custom-cursor,
+  html.has-custom-cursor a,
+  html.has-custom-cursor button {
+    cursor: none;
+  }
+  html.has-custom-cursor input { cursor: text; }
+}
+
+/* ───────────── Type system ───────────── */
+@layer components {
+  /* Expanded, heavy, uppercase — the WOLFEX voice. */
+  .type-display {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-stretch: 125%;
+    text-transform: uppercase;
+    line-height: 0.88;
+    letter-spacing: -0.01em;
+  }
+  .type-headline {
+    font-family: var(--font-display);
+    font-weight: 750;
+    font-stretch: 118%;
+    text-transform: uppercase;
+    line-height: 0.95;
+    letter-spacing: 0.005em;
+  }
+  .type-title {
+    font-family: var(--font-display);
+    font-weight: 650;
+    font-stretch: 112%;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  /* Technical micro-labels: WFX-001, 01 / 04, EST. 2026 */
+  .type-label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    line-height: 1.4;
+  }
+  .type-body {
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-stretch: 100%;
+    line-height: 1.6;
+  }
+
+
+
+  /* Hairline grid used as a quiet technical backdrop. */
+  .bg-tech-grid {
+    background-image:
+      linear-gradient(to right, rgb(245 247 250 / 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(245 247 250 / 0.035) 1px, transparent 1px);
+    background-size: 80px 80px;
+  }
+
+  /* Subtle electric glow — never neon. */
+  .glow-volt {
+    box-shadow:
+      0 0 0 1px rgb(0 102 255 / 0.35),
+      0 10px 40px -10px rgb(0 102 255 / 0.55);
+  }
+  .text-glow {
+    text-shadow: 0 0 24px rgb(0 102 255 / 0.45), 0 0 2px rgb(0 168 255 / 0.4);
+  }
+
+  /* Diagonal light sweep — attach to a relatively-positioned, overflow-hidden parent. */
+  .light-sweep::after {
+    content: "";
+    position: absolute;
+    inset: -20% auto -20% 0;
+    width: 35%;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgb(0 168 255 / 0.10), rgb(245 247 250 / 0.06), transparent);
+    animation: var(--animate-sweep);
+    mix-blend-mode: screen;
+  }
+}
+
+@utility text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(245 247 250 / 0.22);
+}
+@utility text-outline-volt {
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(0 168 255 / 0.55);
+}
+
+@utility container-wfx {
+  width: 100%;
+  max-width: 1680px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* ───────────── Film grain ───────────── */
+.grain {
+  position: fixed;
+  inset: -50%;
+  z-index: 90;
+  pointer-events: none;
+  opacity: 0.055;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain 1.2s steps(6) infinite;
+  will-change: transform;
+}
+@keyframes grain {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-3%, 2%); }
+  40% { transform: translate(2%, -3%); }
+  60% { transform: translate(-2%, -1%); }
+  80% { transform: translate(3%, 3%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* Hide scrollbars on horizontal mobile rails but keep them scrollable. */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Custom thin scrollbar for the page. */
+@media (pointer: fine) {
+  html { scrollbar-width: thin; scrollbar-color: #1d1f25 var(--color-void); }
+}

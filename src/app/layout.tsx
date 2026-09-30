@@ -1,0 +1,95 @@
+import type { Metadata, Viewport } from "next";
+import localFont from "next/font/local";
+import type { ReactNode } from "react";
+import { CartDrawer } from "@/components/layout/CartDrawer";
+import { Footer } from "@/components/layout/Footer";
+import { Loader } from "@/components/layout/Loader";
+import { Navbar } from "@/components/layout/Navbar";
+import { Providers } from "@/components/providers/Providers";
+import { CustomCursor } from "@/components/visuals/CustomCursor";
+import { SITE, SOCIALS } from "@/data/site";
+import "./globals.css";
+
+// Self-hosted variable fonts via next/font — zero layout shift, no external requests.
+const archivo = localFont({
+  src: "../fonts/Archivo-Variable.woff2",
+  variable: "--font-archivo",
+  weight: "100 900",
+  style: "normal",
+  display: "swap",
+  declarations: [{ prop: "font-stretch", value: "62% 125%" }],
+});
+
+const jetbrains = localFont({
+  src: "../fonts/JetBrainsMono-Variable.woff2",
+  variable: "--font-jetbrains",
+  weight: "100 800",
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE.url),
+  title: {
+    default: `${SITE.name} — Hunt Your Apex`,
+    template: `%s · ${SITE.name}`,
+  },
+  description: SITE.description,
+  keywords: ["WOLFEX", "performance apparel", "streetwear", "gym wear", "athleisure", "heavyweight tee", "hoodie", "Hunt Your Apex"],
+  applicationName: SITE.name,
+  authors: [{ name: SITE.name }],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: SITE.url,
+    siteName: SITE.name,
+    title: `${SITE.name} — Hunt Your Apex`,
+    description: SITE.description,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE.name} — Hunt Your Apex`,
+    description: SITE.description,
+  },
+  robots: { index: true, follow: true },
+  category: "fashion",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#050505",
+  colorScheme: "dark",
+  width: "device-width",
+  initialScale: 1,
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: SITE.name,
+  url: SITE.url,
+  slogan: "Hunt Your Apex.",
+  foundingDate: String(SITE.established),
+  sameAs: SOCIALS.map((s) => s.href),
+};
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <html lang="en" className={`${archivo.variable} ${jetbrains.variable}`} suppressHydrationWarning>
+      <body>
+        <noscript>
+          <style>{`#wfx-loader{display:none!important}`}</style>
+        </noscript>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        <Providers>
+          <Loader />
+          <Navbar />
+          <CartDrawer />
+          {children}
+          <Footer />
+          <CustomCursor />
+        </Providers>
+        <div className="grain" aria-hidden="true" />
+      </body>
+    </html>
+  );
+}
