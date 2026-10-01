@@ -9,13 +9,16 @@ import { Media } from "@/components/ui/Media";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { SplitReveal } from "@/components/ui/SplitReveal";
-import type { Product } from "@/data/products";
+import type { Product, ProductCategory } from "@/data/products";
 import { cn, formatPrice, pad } from "@/lib/utils";
 
 export function FeaturedProducts({ products }: { products: Product[] }) {
   const { t } = useLanguage();
   const rail = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  const [category, setCategory] = useState<"TODAS" | ProductCategory>("TODAS");
+  const visibleProducts = category === "TODAS" ? products : products.filter((product) => product.category === category);
+  const categories: Array<"TODAS" | ProductCategory> = ["TODAS", ...Array.from(new Set(products.map((product) => product.category)))];
 
   const onRailScroll = () => {
     const el = rail.current;
@@ -28,19 +31,40 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
   return (
     <section id="drop" className="relative bg-void pb-28 pt-8 md:pb-44" aria-labelledby="drop-title">
       <div className="container-wfx">
-        <SectionLabel index="02" label="Drop 01 — SS26" meta={`${pad(products.length)} ${t("pieces")} · ${t("Limited release")}`} />
+        <SectionLabel index="02" label="Catálogo · Power Nutrition" meta={`${pad(visibleProducts.length)} productos · COP`} />
 
         <div className="mt-12 flex flex-col gap-8 md:mt-16 md:flex-row md:items-end md:justify-between">
-          <SplitReveal as="h2" text={t("Latest drop")} className="type-display text-[clamp(3.25rem,10vw,9.5rem)]" />
+          <SplitReveal as="h2" text="Catálogo" className="type-display text-[clamp(3.25rem,10vw,9.5rem)]" />
           <Reveal delay={0.2} className="max-w-sm md:pb-3">
             <p className="type-body text-steel">
-              {t("Heavyweight fabrics, engineered fits, zero noise. Built in small runs — when a drop is gone, it's gone.")}
+              Productos seleccionados para entrenar más fuerte. Elige una categoría para explorar el catálogo.
             </p>
             <a href="#" className="group mt-5 inline-flex items-center gap-2 type-title text-xs text-bone">
               <span className="border-b border-line-strong pb-1 transition-colors group-hover:border-arc">{t("Shop all")}</span>
               <ArrowUpRight className="h-4 w-4 transition-transform duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" strokeWidth={1.5} />
             </a>
           </Reveal>
+        </div>
+
+        <div className="mt-10 flex flex-wrap gap-2" role="tablist" aria-label="Categorías del catálogo">
+          {categories.map((item) => (
+            <button
+              key={item}
+              type="button"
+              role="tab"
+              aria-selected={category === item}
+              onClick={() => {
+                setCategory(item);
+                setActive(0);
+              }}
+              className={cn(
+                "border px-4 py-3 type-label transition-colors",
+                category === item ? "border-arc bg-arc text-void" : "border-line-strong text-steel hover:border-arc hover:text-bone",
+              )}
+            >
+              {item}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -50,7 +74,7 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
         onScroll={onRailScroll}
         className="no-scrollbar mt-12 flex snap-x snap-mandatory gap-4 overflow-x-auto px-[var(--gutter)] md:mt-20 lg:container-wfx lg:grid lg:grid-cols-4 lg:gap-6 lg:overflow-visible"
       >
-        {products.map((p, i) => (
+        {visibleProducts.map((p, i) => (
           <ProductCard key={p.id} product={p} index={i} />
         ))}
       </div>
@@ -60,11 +84,11 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
         <span className="relative h-px flex-1 bg-line-strong">
           <motion.span
             className="absolute inset-y-0 left-0 bg-arc"
-            animate={{ width: `${((active + 1) / products.length) * 100}%` }}
+            animate={{ width: `${((active + 1) / visibleProducts.length) * 100}%` }}
             transition={{ duration: 0.5 }}
           />
         </span>
-        <span className="type-label text-steel">{pad(products.length)}</span>
+        <span className="type-label text-steel">{pad(visibleProducts.length)}</span>
       </div>
     </section>
   );
@@ -93,7 +117,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
       <div className="mb-3 flex items-center justify-between type-label">
         <span className="text-steel">{product.sku}</span>
         {product.badge && (
-          <span className={cn(product.badge === "LIMITED RELEASE" ? "text-arc" : "text-bone/70")}>{t(product.badge)}</span>
+          <span className={cn(product.badge === "AGOTADO" ? "text-red-400" : "text-bone/70")}>{t(product.badge)}</span>
         )}
       </div>
 
@@ -120,7 +144,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
 
         {/* Desktop add-to-cart: rises in on hover */}
         <div className="absolute inset-x-3 bottom-3 hidden translate-y-[calc(100%+1rem)] transition-transform duration-500 ease-[var(--ease-apex)] group-hover:translate-y-0 lg:block">
-          <AddButton added={added} onAdd={onAdd} />
+          <AddButton added={added} onAdd={onAdd} disabled={!product.available} />
         </div>
       </div>
 
@@ -157,21 +181,26 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
         </div>
 
         <div className="mt-5 lg:hidden">
-          <AddButton added={added} onAdd={onAdd} />
+          <AddButton added={added} onAdd={onAdd} disabled={!product.available} />
         </div>
       </div>
     </motion.article>
   );
 }
 
-function AddButton({ added, onAdd }: { added: boolean; onAdd: () => void }) {
+function AddButton({ added, onAdd, disabled = false }: { added: boolean; onAdd: () => void; disabled?: boolean }) {
   const { t } = useLanguage();
   return (
     <button
       onClick={onAdd}
+      disabled={disabled}
       className={cn(
-        "relative flex h-12 w-full items-center justify-between overflow-hidden px-5 type-title text-xs transition-colors duration-300",
-        added ? "bg-bone text-void" : "bg-void/80 text-bone backdrop-blur-md ring-1 ring-inset ring-line-strong hover:bg-volt hover:ring-volt",
+        "relative flex h-12 w-full items-center justify-between overflow-hidden border border-line-strong px-4 type-label transition-colors",
+        disabled
+          ? "cursor-not-allowed text-steel"
+          : added
+            ? "bg-bone text-void"
+            : "bg-void/80 text-bone backdrop-blur-md hover:border-arc hover:bg-volt",
       )}
       data-cursor="hover"
     >

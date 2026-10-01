@@ -7,8 +7,8 @@ export const SITE = {
     "WOLFEX is a performance, streetwear and lifestyle brand built for those who refuse to stay at the same level. Discipline over comfort. Hunt your apex.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://wolfex.com",
   established: 2026,
-  locale: "en-US",
-  currency: "USD",
+  locale: "es-CO",
+  currency: "COP",
   mantras: [
     "BUILT TO HUNT.",
     "NO COMFORT.",
@@ -25,8 +25,7 @@ export interface NavLink {
 
 export const NAV_LINKS: NavLink[] = [
   { label: "Shop", href: "#drop" },
-  { label: "Men", href: "#categories" },
-  { label: "Women", href: "#categories" },
+  { label: "Supplements", href: "#categories" },
   { label: "Accessories", href: "#categories" },
   { label: "About", href: "#code" },
 ];
@@ -78,32 +77,16 @@ export const SOCIALS: Social[] = [
 
 export const CATEGORIES = [
   {
-    id: "men",
+    id: "supplements",
     index: "01",
-    title: "Men",
-    caption: "Built to hunt",
-    href: "#",
-    media: MEDIA.categories.men,
-  },
-  {
-    id: "women",
-    index: "02",
-    title: "Women",
-    caption: "Beyond your limits",
-    href: "#",
-    media: MEDIA.categories.women,
-  },
-  {
-    id: "performance",
-    index: "03",
-    title: "Performance",
-    caption: "Designed for motion",
+    title: "Supplements",
+    caption: "Fuel your hunt",
     href: "#",
     media: MEDIA.categories.performance,
   },
   {
     id: "accessories",
-    index: "04",
+    index: "02",
     title: "Accessories",
     caption: "Details of the pack",
     href: "#",

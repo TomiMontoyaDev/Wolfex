@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Media } from "@/components/ui/Media";
@@ -10,6 +11,7 @@ import { formatPrice } from "@/lib/utils";
 
 /** Slide-in bag. Checkout is wired through /src/lib/commerce.ts later. */
 export function CartDrawer() {
+  const router = useRouter();
   const { t } = useLanguage();
   const { isOpen, close, lines, subtotal, remove, count } = useCart();
 
@@ -71,10 +73,17 @@ export function CartDrawer() {
                 <span>{t("Subtotal")}</span>
                 <span className="font-mono">{formatPrice(subtotal)}</span>
               </div>
-              <button disabled={!lines.length} className="mt-5 h-14 w-full bg-volt type-title text-[0.8125rem] transition-opacity disabled:opacity-40">
+              <button
+                disabled={!lines.length}
+                onClick={() => {
+                  close();
+                  router.push("/checkout");
+                }}
+                className="mt-5 h-14 w-full bg-volt type-title text-[0.8125rem] transition-opacity disabled:opacity-40"
+              >
                 {t("Checkout")}
               </button>
-              <p className="mt-3 text-center type-label text-steel/70">{t("Secure checkout · Launching with the first drop")}</p>
+              <p className="mt-3 text-center type-label text-steel/70">Pago seguro con ePayco</p>
             </div>
           </motion.aside>
         </>

@@ -10,19 +10,15 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 
 /**
  * Editorial asymmetric layout (desktop):
- *   ┌──────────┬───────┐
- *   │   MEN    │ WOMEN │
- *   │  (tall)  ├───────┴────┐
- *   │          │ PERFORMANCE│
- *   ├──────────┴──┬────────┤
- *   │ ACCESSORIES (wide)   │
+ *   ┌───────────────┬───────────────┐
+ *   │  SUPPLEMENTS  │  ACCESSORIES  │
+ *   │               │               │
+ *   └───────────────┴───────────────┘
  * Mobile: full-bleed stacked panels with persistent labels.
  */
 const LAYOUT: Record<string, string> = {
-  men: "lg:col-span-5 lg:row-span-2 aspect-[4/5] lg:aspect-auto",
-  women: "lg:col-span-7 aspect-[4/5] sm:aspect-[16/11] lg:aspect-auto",
-  performance: "lg:col-span-7 aspect-[4/5] sm:aspect-[16/11] lg:aspect-auto",
-  accessories: "lg:col-span-12 aspect-[4/5] sm:aspect-[16/9] lg:aspect-[21/8]",
+  supplements: "lg:col-span-6 aspect-[4/5] sm:aspect-[16/11] lg:aspect-auto",
+  accessories: "lg:col-span-6 aspect-[4/5] sm:aspect-[16/11] lg:aspect-auto",
 };
 
 export function Categories() {
@@ -30,13 +26,13 @@ export function Categories() {
   return (
     <section id="categories" className="relative bg-void py-28 md:py-40" aria-labelledby="cat-title">
       <div className="container-wfx">
-        <SectionLabel index="03" label={t("Collections")} meta={`04 ${t("categories")}`} />
+        <SectionLabel index="03" label={t("Collections")} meta={`02 ${t("categories")}`} />
         <div className="mt-12 flex flex-col justify-between gap-6 md:mt-16 md:flex-row md:items-end">
           <SplitReveal as="h2" text={t("Find your wolf")} className="type-display text-[clamp(3rem,9vw,8.5rem)]" />
-          <p className="max-w-xs type-label text-steel md:pb-4 md:text-right">Men / Women / Performance / Accessories</p>
+          <p className="max-w-xs type-label text-steel md:pb-4 md:text-right">Supplements / Accessories</p>
         </div>
 
-        <div className="mt-12 grid gap-3 md:mt-16 lg:grid-cols-12 lg:grid-rows-[minmax(0,34vw)_minmax(0,24vw)] lg:gap-4" id="cat-title">
+        <div className="mt-12 grid gap-3 md:mt-16 lg:grid-cols-12 lg:gap-4" id="cat-title">
           {CATEGORIES.map((c, i) => (
             <motion.a
               key={c.id}
