@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ORDER_STATUS, PAYMENT_STATUS, formatDate, formatDateTime, money } from "@/components/admin/format";
 import { DefinitionList, EmptyState, KpiCard, PageHeader, Panel, StatusBadge, Table, Td, Th } from "@/components/admin/ui";
 import { DangerAction } from "@/components/admin/DeleteControls";
-import { deleteCustomerAction } from "@/server/admin/actions";
+import { deleteCustomersAction } from "@/server/admin/actions";
 import { getCustomer } from "@/server/admin/queries";
 import { requireAdmin } from "@/server/auth";
 
@@ -48,8 +48,8 @@ export default async function AdminCustomerDetailPage({ params }: { params: Prom
             <p className="type-label text-red-300">Zona de peligro</p>
             <div className="mt-3">
               <DangerAction
-                action={deleteCustomerAction}
-                fields={{ customerId: customer.id }}
+                action={deleteCustomersAction}
+                fields={{ ids: customer.id, redirectTo: "list" }}
                 label="Eliminar cliente…"
                 title={`¿Eliminar a ${customer.fullName}${stats.orders ? ` y sus ${stats.orders} ${stats.orders === 1 ? "pedido" : "pedidos"}` : ""}? No se puede deshacer.`}
                 description={stats.paidOrders ? "Tiene pedidos pagados: también se borrarán del historial de ventas." : undefined}

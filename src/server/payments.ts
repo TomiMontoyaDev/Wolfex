@@ -54,7 +54,7 @@ export type ProcessResult =
  * - Idempotente: bloquea la fila de la orden (SELECT … FOR UPDATE) y no repite efectos
  *   si el estado del pago ya estaba registrado.
  */
-export async function processMercadoPagoPayment(paymentId: string): Promise<ProcessResult> {
+export async function processMercadoPagoPayment(paymentId: string, actor: "webhook" | "retorno" = "webhook"): Promise<ProcessResult> {
   const mp = await mpPayments().get({ id: paymentId });
   const providerPaymentId = String(mp.id ?? paymentId);
   const order = mp.external_reference ? await db.order.findUnique({ where: { externalReference: mp.external_reference } }) : null;
@@ -101,7 +101,7 @@ export async function processMercadoPagoPayment(paymentId: string): Promise<Proc
     const current = await tx.order.findUniqueOrThrow({ where: { id: order.id } });
     const event = (type: OrderEventType, message?: string) =>
       tx.orderEvent.create({
-        data: { orderId: order.id, type, actor: "webhook", message, metadata: { paymentId: providerPaymentId, status: mp.status, statusDetail: mp.status_detail, amount, currency } },
+        data: { orderId: order.id, type, actor, message, metadata: { paymentId: providerPaymentId, status: mp.status, statusDetail: mp.status_detail, amount, currency } },
       });
 
     // Un pago cuyo monto o moneda no coincide jamás confirma la orden.

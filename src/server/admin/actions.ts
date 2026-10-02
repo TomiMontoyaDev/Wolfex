@@ -147,7 +147,7 @@ export async function updateShippingAction(_prev: ActionState, formData: FormDat
 
 // ───────────── Eliminar ─────────────
 
-const idsSchema = z.array(z.string().min(1).max(40)).min(1, "Selecciona al menos un pedido.").max(200);
+const idsSchema = z.array(z.string().min(1).max(40)).min(1, "Selecciona al menos un registro.").max(200);
 
 /**
  * Borra pedidos definitivamente (con sus ítems, pagos y eventos).
@@ -163,15 +163,20 @@ export async function deleteOrdersAction(_prev: ActionState, formData: FormData)
   return { ok: true, message: `${count} ${count === 1 ? "pedido eliminado" : "pedidos eliminados"}.` };
 }
 
-/** Borra un cliente con todos sus pedidos y direcciones. */
-export async function deleteCustomerAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+/**
+ * Borra uno o varios clientes de la base con todos sus pedidos (ítems, pagos, eventos) y direcciones.
+ * Una sola transacción: o se borra todo o nada.
+ */
+export async function deleteCustomersAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   await requireAdmin();
-  const customerId = String(formData.get("customerId") ?? "");
-  if (!customerId) return { error: "Cliente inválido." };
-  await db.$transaction([
-    db.order.deleteMany({ where: { customerId } }),
-    db.customer.deleteMany({ where: { id: customerId } }),
+  const parsed = idsSchema.safeParse(formData.getAll("ids").map(String));
+  if (!parsed.success) return { error: "Selecciona al menos un cliente." };
+  const ids = parsed.data;
+  const [, customers] = await db.$transaction([
+    db.order.deleteMany({ where: { customerId: { in: ids } } }),
+    db.customer.deleteMany({ where: { id: { in: ids } } }), // las direcciones se borran en cascada
   ]);
   revalidatePath("/admin", "layout");
-  redirect("/admin/customers?eliminado=1");
+  if (formData.get("redirectTo") === "list") redirect(`/admin/customers?eliminados=${customers.count}`);
+  return { ok: true, message: `${customers.count} ${customers.count === 1 ? "cliente eliminado" : "clientes eliminados"}.` };
 }

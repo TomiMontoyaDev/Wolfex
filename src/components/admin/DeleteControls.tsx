@@ -57,21 +57,19 @@ export function DangerAction({
   );
 }
 
-const BULK_FORM = "bulk-delete-orders";
-
-/** Casilla de cada fila; se asocia al formulario de borrado masivo por el atributo `form`. */
-export function RowCheckbox({ id, label }: { id: string; label: string }) {
-  return <input type="checkbox" name="ids" value={id} form={BULK_FORM} aria-label={label} className="h-4 w-4 cursor-pointer accent-[#0066ff]" />;
+/** Casilla de cada fila; se asocia al formulario de borrado masivo (`formId`) por el atributo `form`. */
+export function RowCheckbox({ id, label, formId }: { id: string; label: string; formId: string }) {
+  return <input type="checkbox" name="ids" value={id} form={formId} aria-label={label} className="h-4 w-4 cursor-pointer accent-[#0066ff]" />;
 }
 
-export function SelectAllCheckbox() {
+export function SelectAllCheckbox({ formId, label }: { formId: string; label: string }) {
   return (
     <input
       type="checkbox"
-      aria-label="Seleccionar todos los pedidos de esta página"
+      aria-label={label}
       className="h-4 w-4 cursor-pointer accent-[#0066ff]"
       onChange={(event) => {
-        document.querySelectorAll<HTMLInputElement>(`input[form="${BULK_FORM}"][name="ids"]`).forEach((box) => {
+        document.querySelectorAll<HTMLInputElement>(`input[form="${formId}"][name="ids"]`).forEach((box) => {
           box.checked = event.target.checked;
           box.dispatchEvent(new Event("change", { bubbles: true }));
         });
@@ -80,18 +78,32 @@ export function SelectAllCheckbox() {
   );
 }
 
-/** Barra de borrado masivo: aparece cuando hay pedidos seleccionados. */
-export function BulkDeleteOrders({ action }: { action: Action }) {
+/** Barra de borrado masivo: aparece cuando hay filas seleccionadas en la tabla asociada a `formId`. */
+export function BulkDelete({
+  action,
+  formId,
+  singular,
+  plural,
+  warning,
+}: {
+  action: Action;
+  formId: string;
+  /** p. ej. "pedido seleccionado" */
+  singular: string;
+  /** p. ej. "pedidos seleccionados" */
+  plural: string;
+  warning: string;
+}) {
   const [state, formAction, pending] = useActionState<ActionState, FormData>(action, {});
   const [selected, setSelected] = useState(0);
   const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
-    const count = () => setSelected(document.querySelectorAll(`input[form="${BULK_FORM}"][name="ids"]:checked`).length);
+    const count = () => setSelected(document.querySelectorAll(`input[form="${formId}"][name="ids"]:checked`).length);
     document.addEventListener("change", count);
     count();
     return () => document.removeEventListener("change", count);
-  }, []);
+  }, [formId]);
 
   // Tras borrar, la lista se recarga y la selección se reinicia.
   useEffect(() => {
@@ -102,11 +114,11 @@ export function BulkDeleteOrders({ action }: { action: Action }) {
   }, [state]);
 
   return (
-    <form id={BULK_FORM} action={formAction} className="min-h-6">
+    <form id={formId} action={formAction} className="min-h-6">
       {selected > 0 && (
         <div className="flex flex-wrap items-center gap-3 rounded-sm border border-red-400/30 bg-red-400/5 px-4 py-3">
           <span className="type-label text-bone">
-            {selected} {selected === 1 ? "pedido seleccionado" : "pedidos seleccionados"}
+            {selected} {selected === 1 ? singular : plural}
           </span>
           {!confirming ? (
             <button type="button" onClick={() => setConfirming(true)} className="inline-flex items-center gap-2 type-label text-red-300 hover:text-red-200">
@@ -114,7 +126,7 @@ export function BulkDeleteOrders({ action }: { action: Action }) {
             </button>
           ) : (
             <>
-              <span className="text-sm text-steel">Se borran con sus pagos e historial. No se puede deshacer.</span>
+              <span className="text-sm text-steel">{warning}</span>
               <button disabled={pending} className={`${dangerButton} h-9`}>
                 {pending ? "Eliminando…" : `Sí, eliminar ${selected}`}
               </button>

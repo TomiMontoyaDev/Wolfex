@@ -163,21 +163,29 @@ export async function createMercadoPagoCheckout(order: OrderForCheckout, baseUrl
   const isPublic = baseUrl.startsWith("https://");
   const resultUrl = `${baseUrl}/payment/result`;
 
+  // Datos del comprador completos ayudan al antifraude de Mercado Pago a aprobar el pago.
+  const { firstName, lastName } = splitName(order.customerName);
+  const phoneDigits = order.customerPhone?.replace(/\D/g, "").replace(/^57(?=\d{10}$)/, "");
+
   try {
     const preference = await mpPreferences().create({
       body: {
         items: items.map((item) => ({
           id: item.sku,
           title: item.variant ? `${item.productName} · ${item.variant}` : item.productName,
+          description: item.productName,
+          // Mercado Pago no tiene categoría de suplementos: "others" es la que corresponde (GET /item_categories).
+          category_id: "others",
           quantity: item.quantity,
           unit_price: item.unitPrice,
           currency_id: order.currency,
         })),
         ...(order.shippingCost > 0 && { shipments: { cost: order.shippingCost, mode: "not_specified" } }),
         payer: {
-          name: order.customerName,
+          name: firstName,
+          ...(lastName && { surname: lastName }),
           email: order.customerEmail,
-          ...(order.customerPhone && { phone: { number: order.customerPhone } }),
+          ...(phoneDigits && { phone: { area_code: "57", number: phoneDigits } }),
           address: { street_name: order.shippingAddress },
         },
         external_reference: order.externalReference,

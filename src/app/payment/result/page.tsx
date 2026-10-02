@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { db } from "@/server/db";
+import { processMercadoPagoPayment } from "@/server/payments";
 
 const COPY: Record<string, { title: string; message: string }> = {
   approved: {
@@ -20,6 +21,8 @@ const COPY: Record<string, { title: string; message: string }> = {
   },
 };
 
+const one = (value: string | string[] | undefined) => (typeof value === "string" ? value : undefined);
+
 async function findOrder(reference: string | undefined) {
   if (!reference || !/^[0-9a-f-]{36}$/i.test(reference)) return null;
   try {
@@ -29,13 +32,29 @@ async function findOrder(reference: string | undefined) {
   }
 }
 
-/** Solo informa: el estado real del pedido lo cambia únicamente el webhook validado. */
+/**
+ * Respaldo del webhook: si Mercado Pago devuelve un payment_id, se verifica ESE pago contra la API de Mercado Pago
+ * (monto, moneda y external_reference, igual que el webhook). La URL nunca se toma como prueba de pago: solo aporta
+ * el id que se consulta. Cubre el desarrollo local (sin webhook) y avisos que lleguen tarde o fallen.
+ */
+async function verifyReturnedPayment(paymentId: string | undefined) {
+  if (!paymentId || !/^\d{6,20}$/.test(paymentId)) return;
+  try {
+    // (La caché de la tienda la invalida el webhook; el checkout valida el stock real en la base igualmente.)
+    await processMercadoPagoPayment(paymentId, "retorno");
+  } catch (error) {
+    // Si la verificación falla, el webhook sigue siendo la vía principal; la página solo informa.
+    console.error("[payment/result] no se pudo verificar el pago", { paymentId, error });
+  }
+}
+
 export default async function PaymentResultPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
-  const reference = typeof params.external_reference === "string" ? params.external_reference : undefined;
-  const order = await findOrder(reference);
+  await verifyReturnedPayment(one(params.payment_id) ?? one(params.collection_id));
+
+  const order = await findOrder(one(params.external_reference));
   const returned = String(params.collection_status ?? params.status ?? "pending");
-  const key = order?.paymentStatus === "APPROVED" ? "confirmed" : returned;
+  const key = order?.paymentStatus === "APPROVED" ? "confirmed" : order?.paymentStatus === "REJECTED" ? "rejected" : returned;
   const { title, message } = COPY[key] ?? COPY.pending;
   return <main className="container-wfx flex min-h-screen flex-col items-center justify-center text-center"><p className="type-label text-arc">WOLFEX · HUNT YOUR APEX</p><h1 className="mt-6 type-display text-[clamp(3rem,8vw,7rem)]">{title}</h1><p className="mt-6 max-w-lg text-steel">{message}</p>{order && <p className="mt-4 type-label text-steel/70">Pedido {order.orderNumber}</p>}<Link href="/" className="mt-10 border border-arc px-6 py-4 type-label text-bone hover:bg-arc hover:text-void">Volver a WOLFEX</Link></main>;
 }

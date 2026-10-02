@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ORDER_STATUS, PAYMENT_STATUS, formatDateTime, money, paymentMethodLabel } from "@/components/admin/format";
 import { EmptyState, PageHeader, Pagination, StatusBadge, Table, Td, Th, buildQuery, ghostButtonClass, inputClass } from "@/components/admin/ui";
-import { BulkDeleteOrders, RowCheckbox, SelectAllCheckbox } from "@/components/admin/DeleteControls";
+import { BulkDelete, RowCheckbox, SelectAllCheckbox } from "@/components/admin/DeleteControls";
 import { cn } from "@/lib/utils";
 import { deleteOrdersAction } from "@/server/admin/actions";
 import { ORDER_VIEWS, listOrders, orderViewCounts, type OrderFilters, type OrderView } from "@/server/admin/queries";
@@ -11,6 +11,7 @@ import { requireAdmin } from "@/server/auth";
 export const metadata: Metadata = { title: "Pedidos" };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+const BULK_FORM = "bulk-delete-orders";
 const one = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
 export default async function AdminOrdersPage({ searchParams }: { searchParams: SearchParams }) {
@@ -104,12 +105,18 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
         ) : (
           <>
           <div className="mb-3">
-            <BulkDeleteOrders action={deleteOrdersAction} />
+            <BulkDelete
+              action={deleteOrdersAction}
+              formId={BULK_FORM}
+              singular="pedido seleccionado"
+              plural="pedidos seleccionados"
+              warning="Se borran con sus pagos e historial. No se puede deshacer."
+            />
           </div>
           <Table minWidth={1140}>
             <thead>
               <tr>
-                <Th className="w-10"><SelectAllCheckbox /></Th>
+                <Th className="w-10"><SelectAllCheckbox formId={BULK_FORM} label="Seleccionar todos los pedidos de esta página" /></Th>
                 <Th>Pedido</Th>
                 <Th>Fecha</Th>
                 <Th>Cliente</Th>
@@ -125,7 +132,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
             <tbody>
               {orders.map((order) => (
                 <tr key={order.id} className="transition-colors hover:bg-graphite/60">
-                  <Td><RowCheckbox id={order.id} label={`Seleccionar pedido ${order.orderNumber}`} /></Td>
+                  <Td><RowCheckbox formId={BULK_FORM} id={order.id} label={`Seleccionar pedido ${order.orderNumber}`} /></Td>
                   <Td><Link href={`/admin/orders/${order.id}`} className="font-mono text-xs text-arc hover:underline">{order.orderNumber}</Link></Td>
                   <Td className="whitespace-nowrap text-steel">{formatDateTime(order.createdAt)}</Td>
                   <Td className="max-w-48 truncate">{order.customerName}</Td>
