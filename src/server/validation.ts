@@ -1,34 +1,38 @@
 import { z } from "zod";
+import { COLOMBIA } from "@/data/colombia";
 
 /** Quita caracteres de control y colapsa espacios. */
-const clean = (max: number) =>
+const clean = (max: number, message = "Dato inválido.") =>
   z
-    .string()
+    .string({ error: message })
     .transform((value) => value.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim())
     .pipe(z.string().max(max));
 
-const required = (max: number, message: string) => clean(max).pipe(z.string().min(1, message));
+const required = (max: number, message: string) => clean(max, message).pipe(z.string().min(1, message));
 const optional = (max: number) =>
   clean(max)
     .optional()
     .transform((value) => value || undefined);
 
 export const checkoutSchema = z.object({
-  customer: z.object({
-    name: required(120, "Ingresa tu nombre completo.").pipe(z.string().min(3, "Ingresa tu nombre completo.")),
-    email: clean(160).pipe(z.email("Correo electrónico inválido.")).transform((email) => email.toLowerCase()),
-    phone: required(40, "Ingresa tu teléfono.").pipe(z.string().regex(/^[+\d\s()-]{7,20}$/, "Teléfono inválido.")),
-    address: required(240, "Ingresa la dirección de entrega."),
-    // Campos preparados para el checkout futuro; hoy el formulario no los envía.
-    department: optional(80),
-    city: optional(80),
-    neighborhood: optional(80),
-    addressComplement: optional(160),
-    postalCode: optional(20),
-    recipientName: optional(120),
-    recipientPhone: optional(40),
-    notes: optional(500),
-  }),
+  customer: z.object(
+    {
+      name: required(120, "Ingresa tu nombre completo.").pipe(z.string().min(3, "Ingresa tu nombre completo.")),
+      email: clean(160, "Ingresa tu correo electrónico.").pipe(z.email("Correo electrónico inválido.")).transform((email) => email.toLowerCase()),
+      phone: required(40, "Ingresa tu teléfono.").pipe(z.string().regex(/^[+\d\s()-]{7,20}$/, "Teléfono inválido.")),
+      address: required(240, "Ingresa la dirección de entrega."),
+      department: required(80, "Selecciona el departamento.").refine((value) => Object.hasOwn(COLOMBIA, value), "Departamento inválido."),
+      city: required(80, "Selecciona la ciudad o municipio.").pipe(z.string().min(2, "Selecciona la ciudad o municipio.")),
+      // Campos preparados para crecer; hoy el formulario no los envía.
+      neighborhood: optional(80),
+      addressComplement: optional(160),
+      postalCode: optional(20),
+      recipientName: optional(120),
+      recipientPhone: optional(40),
+      notes: optional(500),
+    },
+    { error: "Faltan los datos de entrega." },
+  ),
   lines: z
     .array(
       z.object({

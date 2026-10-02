@@ -1,29 +1,37 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useMemo, useState } from "react";
 import { useCart } from "@/components/providers/CartProvider";
 import { Media } from "@/components/ui/Media";
+import { COLOMBIA, DEPARTMENTS, OTHER_CITY } from "@/data/colombia";
 import { formatPrice } from "@/lib/utils";
 
 const fields = [
   { key: "name", label: "Nombre completo", type: "text" },
   { key: "email", label: "Correo electrónico", type: "email" },
   { key: "phone", label: "Teléfono", type: "tel" },
-  { key: "address", label: "Dirección de entrega", type: "text" },
 ] as const;
+
+const inputClass =
+  "mt-2 h-14 w-full rounded-sm border border-line-strong bg-void px-4 text-sm text-bone outline-none transition-[border-color,box-shadow] placeholder:text-steel/60 focus:border-arc focus:shadow-[0_0_0_3px_rgba(0,168,255,0.12)]";
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { lines, subtotal } = useCart();
-  const [form, setForm] = useState({ name: "", email: "", phone: "", address: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", department: "", city: "", otherCity: "", address: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const payload = useMemo(
-    () => JSON.stringify({ customer: form, lines: lines.map((line) => ({ productId: line.product.id, color: line.color, quantity: line.quantity })) }),
-    [form, lines],
-  );
+  const cities = form.department ? COLOMBIA[form.department] ?? [] : [];
+  const payload = useMemo(() => {
+    const { otherCity, ...customer } = form;
+    return JSON.stringify({
+      customer: { ...customer, city: customer.city === OTHER_CITY ? otherCity : customer.city },
+      lines: lines.map((line) => ({ productId: line.product.id, color: line.color, quantity: line.quantity })),
+    });
+  }, [form, lines]);
   // Misma clave mientras no cambien los datos: un doble clic o reintento no crea un pedido duplicado.
   const idempotencyKey = useMemo(() => (payload ? crypto.randomUUID() : ""), [payload]);
 
@@ -73,11 +81,57 @@ export default function CheckoutPage() {
             </div>
             <div className="mt-7 grid gap-5 sm:grid-cols-2">
               {fields.map((field) => (
-                <label key={field.key} className={field.key === "address" ? "block sm:col-span-2" : "block"}>
+                <label key={field.key} className={field.key === "name" ? "block sm:col-span-2" : "block"}>
                   <span className="type-label text-steel">{field.label}</span>
-                  <input required type={field.type} value={form[field.key]} onChange={(event) => setForm({ ...form, [field.key]: event.target.value })} className="mt-2 h-14 w-full rounded-sm border border-line-strong bg-void px-4 text-sm text-bone outline-none transition-[border-color,box-shadow] placeholder:text-steel/60 focus:border-arc focus:shadow-[0_0_0_3px_rgba(0,168,255,0.12)]" />
+                  <input required type={field.type} value={form[field.key]} onChange={(event) => setForm({ ...form, [field.key]: event.target.value })} className={inputClass} />
                 </label>
               ))}
+              <label className="block">
+                <span className="type-label text-steel">Departamento</span>
+                <span className="relative block">
+                  <select
+                    required
+                    value={form.department}
+                    onChange={(event) => setForm({ ...form, department: event.target.value, city: "", otherCity: "" })}
+                    className={`${inputClass} cursor-pointer appearance-none pr-10 ${form.department ? "" : "text-steel/70"}`}
+                  >
+                    <option value="" disabled>Selecciona…</option>
+                    {DEPARTMENTS.map((department) => (
+                      <option key={department} value={department} className="bg-ink text-bone">{department}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-4 top-1/2 mt-1 h-4 w-4 -translate-y-1/2 text-steel" strokeWidth={1.5} aria-hidden="true" />
+                </span>
+              </label>
+              <label className="block">
+                <span className="type-label text-steel">Ciudad / municipio</span>
+                <span className="relative block">
+                  <select
+                    required
+                    disabled={!form.department}
+                    value={form.city}
+                    onChange={(event) => setForm({ ...form, city: event.target.value, otherCity: "" })}
+                    className={`${inputClass} cursor-pointer appearance-none pr-10 disabled:cursor-not-allowed disabled:opacity-50 ${form.city ? "" : "text-steel/70"}`}
+                  >
+                    <option value="" disabled>{form.department ? "Selecciona…" : "Primero elige el departamento"}</option>
+                    {cities.map((city) => (
+                      <option key={city} value={city} className="bg-ink text-bone">{city}</option>
+                    ))}
+                    {form.department && <option value={OTHER_CITY} className="bg-ink text-bone">{OTHER_CITY}…</option>}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-4 top-1/2 mt-1 h-4 w-4 -translate-y-1/2 text-steel" strokeWidth={1.5} aria-hidden="true" />
+                </span>
+              </label>
+              {form.city === OTHER_CITY && (
+                <label className="block sm:col-span-2">
+                  <span className="type-label text-steel">Escribe tu municipio</span>
+                  <input required minLength={2} maxLength={80} value={form.otherCity} onChange={(event) => setForm({ ...form, otherCity: event.target.value })} className={inputClass} autoFocus />
+                </label>
+              )}
+              <label className="block sm:col-span-2">
+                <span className="type-label text-steel">Dirección de entrega</span>
+                <input required type="text" value={form.address} placeholder="Calle, número, barrio, apto…" onChange={(event) => setForm({ ...form, address: event.target.value })} className={inputClass} />
+              </label>
             </div>
             {error && <p role="alert" className="mt-5 text-sm text-red-400">{error}</p>}
             <button disabled={loading} className="group relative mt-8 flex h-16 w-full items-center justify-between overflow-hidden bg-volt px-5 type-title text-sm text-bone transition-shadow hover:shadow-[0_0_35px_rgba(0,102,255,0.38)] disabled:opacity-50">
