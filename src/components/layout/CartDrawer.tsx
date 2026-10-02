@@ -83,7 +83,7 @@ export function CartDrawer() {
               >
                 {t("Checkout")}
               </button>
-              <p className="mt-3 text-center type-label text-steel/70">Pago seguro con ePayco</p>
+              <p className="mt-3 text-center type-label text-steel/70">Pago seguro con Mercado Pago</p>
             </div>
           </motion.aside>
         </>

@@ -1,4 +1,4 @@
-import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { PRODUCTS, type Product } from "@/data/products";
 
 export type OrderStatus = "PENDING" | "PAID" | "FAILED" | "CANCELLED" | "PROCESSING" | "SHIPPED" | "DELIVERED";
@@ -29,10 +29,10 @@ export interface Order {
   };
   lines: OrderLine[];
   createdAt: string;
-  epayco?: {
-    refPayco?: string;
-    transactionId?: string;
-    state?: string;
+  mercadopago?: {
+    preferenceId?: string;
+    paymentId?: string;
+    status?: string;
   };
 }
 
@@ -89,30 +89,12 @@ export function getOrder(id: string) {
   return orders.get(id);
 }
 
-export function updateOrder(id: string, update: Partial<Pick<Order, "status" | "epayco">>) {
+export function updateOrder(id: string, update: Partial<Pick<Order, "status" | "mercadopago">>) {
   const order = orders.get(id);
   if (!order) return undefined;
-  const updated = { ...order, ...update };
+  const updated = { ...order, ...update, mercadopago: { ...order.mercadopago, ...update.mercadopago } };
   orders.set(id, updated);
   return updated;
-}
-
-export function verifyEpaycoSignature(input: {
-  signature: string;
-  refPayco: string;
-  transactionId: string;
-  amount: string;
-  currency: string;
-}) {
-  const customerId = process.env.EPAYCO_CUSTOMER_ID;
-  const privateKey = process.env.EPAYCO_PRIVATE_KEY;
-  if (!customerId || !privateKey) throw new Error("Faltan las credenciales privadas de ePayco en el servidor.");
-  const expected = createHash("md5")
-    .update(`${customerId}^${privateKey}^${input.refPayco}^${input.transactionId}^${input.amount}^${input.currency}`)
-    .digest("hex");
-  const received = input.signature.trim().toLowerCase();
-  if (!/^[a-f0-9]{32}$/.test(received)) return false;
-  return timingSafeEqual(Buffer.from(expected), Buffer.from(received));
 }
 
 export function findOrderByInvoice(invoice: string) {

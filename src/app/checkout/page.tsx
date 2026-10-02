@@ -1,24 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Script from "next/script";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { useCart } from "@/components/providers/CartProvider";
 import { Media } from "@/components/ui/Media";
 import { formatPrice } from "@/lib/utils";
-
-declare global {
-  interface Window {
-    ePayco?: {
-      checkout: {
-        configure: (config: { key: string; test: boolean }) => {
-          open: (params: Record<string, string | number>) => void;
-        };
-      };
-    };
-  }
-}
 
 const fields = [
   { key: "name", label: "Nombre completo", type: "text" },
@@ -49,30 +36,10 @@ export default function CheckoutPage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "No fue posible preparar el pago.");
-      if (!data.publicKey || !window.ePayco) throw new Error("ePayco no está configurado todavía.");
-
-      window.ePayco.checkout.configure({ key: data.publicKey, test: data.test }).open({
-        name: "WOLFEX",
-        description: data.description,
-        invoice: data.invoice,
-        currency: data.currency,
-        amount: data.amount,
-        tax: 0,
-        tax_base: 0,
-        country: "CO",
-        lang: "es",
-        external: "false",
-        response: data.responseUrl,
-        confirmation: data.confirmationUrl,
-        extra1: data.invoice,
-        name_billing: form.name,
-        email_billing: form.email,
-        mobilephone_billing: form.phone,
-        address_billing: form.address,
-      });
+      if (!data.checkoutUrl) throw new Error("Mercado Pago no está configurado todavía.");
+      window.location.href = data.checkoutUrl;
     } catch (submissionError) {
       setError(submissionError instanceof Error ? submissionError.message : "No fue posible iniciar el pago.");
-    } finally {
       setLoading(false);
     }
   }
@@ -83,7 +50,6 @@ export default function CheckoutPage() {
 
   return (
     <>
-      <Script src="https://checkout.epayco.co/checkout.js" strategy="afterInteractive" />
       <main className="container-wfx min-h-screen py-28 md:py-36">
         <motion.button onClick={() => router.push("/")} className="type-label text-steel transition-colors hover:text-arc" initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
           ← Volver al carrito
@@ -92,7 +58,7 @@ export default function CheckoutPage() {
         <motion.div className="mt-8 max-w-3xl" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.08 }}>
           <p className="type-label text-arc">WOLFEX / CHECKOUT SEGURO</p>
           <h1 className="mt-3 type-display text-[clamp(3.5rem,9vw,8rem)] leading-[0.82]">Finaliza tu compra</h1>
-          <p className="mt-6 max-w-xl text-sm leading-6 text-steel">Completa tus datos y continúa al pago seguro con ePayco. Tus datos de tarjeta nunca pasan por los servidores de WOLFEX.</p>
+          <p className="mt-6 max-w-xl text-sm leading-6 text-steel">Completa tus datos y continúa al pago seguro con Mercado Pago. Tus datos de tarjeta nunca pasan por los servidores de WOLFEX.</p>
         </motion.div>
 
         <div className="mt-12 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.72fr)] lg:gap-16">
@@ -115,7 +81,7 @@ export default function CheckoutPage() {
               <span className="relative">{loading ? "Preparando pago…" : "💳 Continuar al pago"}</span>
               <span className="relative text-xl transition-transform duration-500 group-hover:translate-x-1">→</span>
             </button>
-            <p className="mt-4 text-center type-label text-steel/70">Pago procesado de forma segura por ePayco</p>
+            <p className="mt-4 text-center type-label text-steel/70">Pago procesado de forma segura por Mercado Pago</p>
           </motion.form>
 
           <motion.aside className="relative overflow-hidden rounded-sm border border-volt/30 bg-ink p-5 shadow-[0_25px_90px_-55px_rgba(0,102,255,0.9)] sm:p-7" initial={{ opacity: 0, x: 28 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.28 }}>

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createOrder } from "@/lib/orders";
+import { createOrder, updateOrder } from "@/lib/orders";
+import { preferences, siteUrl } from "@/lib/mercadopago";
 
 function stringField(value: unknown, field: string, maxLength: number) {
   if (typeof value !== "string" || !value.trim() || value.length > maxLength) throw new Error(`Campo inválido: ${field}.`);
@@ -25,18 +26,36 @@ export async function POST(request: Request) {
       customer,
     );
 
-    return NextResponse.json({
-      orderId: order.id,
-      invoice: order.invoice,
-      amount: order.total,
-      currency: order.currency,
-      description: `Compra WOLFEX ${order.invoice}`,
-      publicKey: process.env.NEXT_PUBLIC_EPAYCO_PUBLIC_KEY ?? "",
-      test: process.env.EPAYCO_TEST_MODE !== "false",
-      responseUrl: `${process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin}/payment/result`,
-      confirmationUrl: `${process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin}/api/epayco/confirmation`,
+    const base = siteUrl(request);
+    const isPublic = base.startsWith("https://");
+    const preference = await preferences().create({
+      body: {
+        items: order.lines.map((line) => ({
+          id: line.sku,
+          title: `${line.name} · ${line.color}`,
+          quantity: line.quantity,
+          unit_price: line.unitPrice,
+          currency_id: order.currency,
+        })),
+        payer: { name: customer.name, email: customer.email, phone: { number: customer.phone }, address: { street_name: customer.address } },
+        external_reference: order.invoice,
+        statement_descriptor: "WOLFEX",
+        back_urls: {
+          success: `${base}/payment/result`,
+          pending: `${base}/payment/result`,
+          failure: `${base}/payment/result`,
+        },
+        // Mercado Pago rechaza auto_return y notification_url con URLs locales (http://localhost).
+        ...(isPublic && { auto_return: "approved", notification_url: `${base}/api/mercadopago/webhook` }),
+      },
+      requestOptions: { idempotencyKey: order.id },
     });
+    if (!preference.id || !preference.init_point) throw new Error("Mercado Pago no devolvió el enlace de pago.");
+    updateOrder(order.id, { mercadopago: { preferenceId: preference.id } });
+
+    return NextResponse.json({ orderId: order.id, invoice: order.invoice, checkoutUrl: preference.init_point });
   } catch (error) {
+    console.error("[orders] create failed", error);
     const message = error instanceof Error ? error.message : "No fue posible crear la orden.";
     return NextResponse.json({ error: message }, { status: 400 });
   }
