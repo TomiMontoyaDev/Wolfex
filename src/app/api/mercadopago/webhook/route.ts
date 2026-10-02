@@ -11,8 +11,13 @@ export async function POST(request: Request) {
   // Solo procesamos pagos; el resto (merchant_order, etc.) se acusa con 200 para que no se reintente.
   if (type !== "payment" || !/^\d+$/.test(paymentId)) return NextResponse.json({ ok: true, ignored: true });
 
+  // La firma es una verificación adicional, no la garantía principal: el cuerpo del aviso solo aporta un id
+  // y el pago se consulta SIEMPRE a la API de Mercado Pago con nuestro token privado (monto, moneda y
+  // external_reference se validan contra la orden). Por eso un aviso sin firma o con firma inválida se
+  // registra pero no se descarta: Mercado Pago envía avisos IPN sin firma y, con cuentas de prueba, la
+  // clave puede no coincidir; rechazarlos hacía que pagos reales nunca confirmaran la orden.
   const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
-  if (secret) {
+  if (secret && request.headers.get("x-signature")) {
     try {
       WebhookSignatureValidator.validate({
         xSignature: request.headers.get("x-signature"),
@@ -22,15 +27,11 @@ export async function POST(request: Request) {
         toleranceSeconds: 600,
       });
     } catch (error) {
-      if (error instanceof InvalidWebhookSignatureError) {
-        console.warn("[mercadopago] firma inválida", error.reason, error.requestId);
-        return NextResponse.json({ error: "Firma inválida." }, { status: 401 });
-      }
-      throw error;
+      if (!(error instanceof InvalidWebhookSignatureError)) throw error;
+      console.warn("[mercadopago] firma no válida; se verifica el pago contra la API", { paymentId, reason: error.reason, requestId: error.requestId });
     }
-  } else if (process.env.NODE_ENV === "production") {
-    // Aun sin firma, el pago se consulta a la API de Mercado Pago, así que un aviso falso no puede aprobar nada.
-    console.warn("[mercadopago] MERCADOPAGO_WEBHOOK_SECRET no configurado: no se verifica la firma.");
+  } else {
+    console.info("[mercadopago] aviso sin firma; se verifica el pago contra la API", { paymentId, secretConfigured: Boolean(secret) });
   }
 
   try {
