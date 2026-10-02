@@ -130,7 +130,7 @@ export function Hero() {
                 animate={ready ? { opacity: 1 } : {}}
                 transition={{ duration: 1, delay: 1.4 }}
               >
-                {t("Performance apparel for those who refuse to stay at the same level.")}
+                {t("Performance supplements for those who refuse to stay at the same level.")}
               </motion.p>
             </div>
 
@@ -163,7 +163,7 @@ export function Hero() {
           </span>
         </div>
         <span className="absolute left-[var(--gutter)] top-1/2 -translate-y-1/2 -rotate-90 origin-left translate-x-3 type-label text-steel/80">
-          Designed for motion
+          Built for your progress
         </span>
         <div className="absolute right-[var(--gutter)] top-1/2 flex -translate-y-1/2 flex-col items-end gap-3 type-label text-steel/80">
           <span className="text-bone">01</span>

@@ -56,7 +56,7 @@ export function CartDrawer() {
                       <div className="flex flex-1 flex-col">
                         <p className="type-label text-steel">{l.product.sku}</p>
                         <p className="mt-1 type-title text-sm">WOLFEX {l.product.name}</p>
-                        <p className="mt-1 text-xs text-steel">{l.color} · Qty {l.quantity}</p>
+                        <p className="mt-1 text-xs text-steel">{l.color} · {t("Qty")} {l.quantity}</p>
                         <div className="mt-auto flex items-center justify-between">
                           <span className="font-mono text-sm">{formatPrice(l.product.price * l.quantity)}</span>
                           <button onClick={() => remove(l.key)} className="type-label text-steel hover:text-arc">{t("Remove")}</button>

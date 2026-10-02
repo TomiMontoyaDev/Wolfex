@@ -3,6 +3,7 @@
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useCart } from "@/components/providers/CartProvider";
 import { useIntro } from "@/components/providers/IntroProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -12,6 +13,8 @@ import { NAV_LINKS, SITE, SOCIALS } from "@/data/site";
 import { cn, pad } from "@/lib/utils";
 
 export function Navbar() {
+  const pathname = usePathname();
+  const router = useRouter();
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -54,7 +57,16 @@ export function Navbar() {
               {menuOpen ? <X className="h-5 w-5" strokeWidth={1.5} /> : <Menu className="h-5 w-5" strokeWidth={1.5} />}
             </button>
 
-            <a href="#top" className="group flex items-center gap-3 max-lg:absolute max-lg:left-1/2 max-lg:-translate-x-1/2" aria-label="WOLFEX home">
+            <a
+              href="/"
+              onClick={(event) => {
+                if (pathname === "/") return;
+                event.preventDefault();
+                router.push("/");
+              }}
+              className="group flex items-center gap-3 max-lg:absolute max-lg:left-1/2 max-lg:-translate-x-1/2"
+              aria-label="WOLFEX home"
+            >
               <WolfMark outline className="h-7 w-auto text-bone transition-colors duration-500 group-hover:text-arc md:h-8" />
               <Wordmark className="h-[15px] w-auto text-bone md:h-[18px]" title="" />
             </a>
@@ -62,7 +74,15 @@ export function Navbar() {
             <ul className="hidden items-center gap-10 lg:flex">
               {NAV_LINKS.map((l) => (
                 <li key={l.label}>
-                  <a href={l.href} className="group relative block overflow-hidden type-title text-[0.75rem] text-bone/80 transition-colors hover:text-bone">
+                  <a
+                    href={l.href.startsWith("/") ? l.href : pathname === "/" ? l.href : `/${l.href}`}
+                    onClick={(event) => {
+                      if (pathname === "/") return;
+                      event.preventDefault();
+                      router.push(l.href.startsWith("/") ? l.href : `/${l.href}`);
+                    }}
+                    className="group relative block overflow-hidden type-title text-[0.75rem] text-bone/80 transition-colors hover:text-bone"
+                  >
                     <span className="block transition-transform duration-500 ease-[var(--ease-apex)] group-hover:-translate-y-full">{t(l.label)}</span>
                     <span className="absolute inset-0 translate-y-full text-arc transition-transform duration-500 ease-[var(--ease-apex)] group-hover:translate-y-0">{t(l.label)}</span>
                   </a>
@@ -77,6 +97,15 @@ export function Navbar() {
               <IconButton label={t("Account")} className="hidden sm:flex">
                 <User className="h-[18px] w-[18px]" strokeWidth={1.5} />
               </IconButton>
+              <a
+                href="https://www.instagram.com/wolfexwear/?hl=es-la"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Instagram de WOLFEX"
+                className="flex h-11 w-11 items-center justify-center text-bone/85 transition-colors hover:text-arc"
+              >
+                <SocialIcon platform="instagram" className="h-[18px] w-[18px]" />
+              </a>
               <IconButton label={`Cart, ${cart.count} items`} onClick={cart.open}>
                 <ShoppingBag className="h-[18px] w-[18px]" strokeWidth={1.5} />
                 <AnimatePresence>
@@ -139,8 +168,14 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
                 {NAV_LINKS.map((l, i) => (
                   <li key={l.label} className="overflow-hidden border-b border-line">
                     <motion.a
-                      href={l.href}
-                      onClick={onClose}
+                      href={l.href.startsWith("/") ? l.href : `/${l.href}`}
+                      onClick={(event) => {
+                        onClose();
+                        if (window.location.pathname !== "/") {
+                          event.preventDefault();
+                          window.location.assign(l.href.startsWith("/") ? l.href : `/${l.href}`);
+                        }
+                      }}
                       className="flex items-baseline justify-between py-4"
                       initial={{ y: "100%" }}
                       animate={{ y: 0 }}

@@ -31,7 +31,7 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
   return (
     <section id="drop" className="relative bg-void pb-28 pt-8 md:pb-44" aria-labelledby="drop-title">
       <div className="container-wfx">
-        <SectionLabel index="02" label="Catálogo · Power Nutrition" meta={`${pad(visibleProducts.length)} productos · COP`} />
+        <SectionLabel index="02" label="Catálogo WOLFEX" meta={`${pad(visibleProducts.length)} productos · COP`} />
 
         <div className="mt-12 flex flex-col gap-8 md:mt-16 md:flex-row md:items-end md:justify-between">
           <SplitReveal as="h2" text="Catálogo" className="type-display text-[clamp(3.25rem,10vw,9.5rem)]" />
@@ -39,8 +39,8 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
             <p className="type-body text-steel">
               Productos seleccionados para entrenar más fuerte. Elige una categoría para explorar el catálogo.
             </p>
-            <a href="#" className="group mt-5 inline-flex items-center gap-2 type-title text-xs text-bone">
-              <span className="border-b border-line-strong pb-1 transition-colors group-hover:border-arc">{t("Shop all")}</span>
+            <a href="/catalogo" className="group mt-5 inline-flex items-center gap-2 type-title text-xs text-bone">
+              <span className="border-b border-line-strong pb-1 transition-colors group-hover:border-arc">Ver catálogo completo</span>
               <ArrowUpRight className="h-4 w-4 transition-transform duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" strokeWidth={1.5} />
             </a>
           </Reveal>
@@ -94,7 +94,7 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
   );
 }
 
-function ProductCard({ product, index }: { product: Product; index: number }) {
+export function ProductCard({ product, index }: { product: Product; index: number }) {
   const { add } = useCart();
   const { t } = useLanguage();
   const [color, setColor] = useState(product.colors[0]);
@@ -152,7 +152,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
       <div className="mt-5">
         <div className="flex items-start justify-between gap-4">
           <div className="transition-transform duration-500 ease-[var(--ease-apex)] group-hover:translate-x-1.5">
-            <p className="type-label text-steel">WOLFEX</p>
+            <p className="type-label text-steel">{product.brand}</p>
             <h3 className="mt-1 type-title text-lg leading-tight transition-colors duration-500 group-hover:text-arc">{t(product.name)}</h3>
           </div>
           <p className="pt-4 font-mono text-sm">{formatPrice(product.price)}</p>

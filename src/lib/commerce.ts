@@ -16,6 +16,10 @@
 import { PRODUCTS, type Product } from "@/data/products";
 
 export async function getFeaturedProducts(): Promise<Product[]> {
+  return PRODUCTS.filter((product) => product.available).slice(0, 8);
+}
+
+export async function getCatalogProducts(): Promise<Product[]> {
   return PRODUCTS;
 }
 

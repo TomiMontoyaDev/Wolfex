@@ -24,14 +24,14 @@ export interface NavLink {
 }
 
 export const NAV_LINKS: NavLink[] = [
-  { label: "Shop", href: "#drop" },
+  { label: "Shop", href: "/catalogo" },
   { label: "Supplements", href: "#categories" },
   { label: "Accessories", href: "#categories" },
   { label: "About", href: "#code" },
 ];
 
 export const FOOTER_LINKS: NavLink[] = [
-  { label: "Shop", href: "#drop" },
+  { label: "Shop", href: "/catalogo" },
   { label: "About", href: "#code" },
   { label: "Contact", href: "#" },
   { label: "FAQ", href: "#" },
@@ -96,27 +96,27 @@ export const CATEGORIES = [
 
 export const PERFORMANCE_PILLARS = [
   {
-    word: "Train",
+    word: "Fuel",
     index: "01",
-    line: "Show up when no one is watching. Especially then.",
-    metric: { value: 5, suffix: "AM", label: "Start time" },
-  },
-  {
-    word: "Move",
-    index: "02",
-    line: "Fabrics engineered to follow every rep, sprint and turn.",
-    metric: { value: 4, suffix: "-WAY", label: "Stretch" },
+    line: "La constancia empieza con el combustible correcto para cada sesión.",
+    metric: { value: 100, suffix: "%", label: "Enfoque diario" },
   },
   {
     word: "Build",
+    index: "02",
+    line: "Proteínas y nutrientes para acompañar tu progreso todos los días.",
+    metric: { value: 24, suffix: "H", label: "Ritmo constante" },
+  },
+  {
+    word: "Recover",
     index: "03",
-    line: "Strength is built slowly, then all at once.",
-    metric: { value: 480, suffix: "GSM", label: "Max fabric weight" },
+    line: "Recupera mejor y vuelve más fuerte a tu siguiente entrenamiento.",
+    metric: { value: 7, suffix: "DÍAS", label: "Cada semana" },
   },
   {
     word: "Repeat",
     index: "04",
-    line: "Discipline is a loop. Close it every single day.",
-    metric: { value: 365, suffix: "", label: "Days a year" },
+    line: "Un sistema simple: elige, entrena, recupera y repite.",
+    metric: { value: 365, suffix: "", label: "Días al año" },
   },
 ] as const;

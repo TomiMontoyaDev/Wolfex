@@ -92,7 +92,7 @@ export function PerformanceSection() {
           <span className="relative h-px flex-1 bg-line-strong">
             <span ref={hudBar} className="absolute inset-0 origin-left scale-x-0 bg-arc" />
           </span>
-          <span>{t("Designed for motion")}</span>
+          <span>Diseñado para tu progreso</span>
         </div>
       </div>
 
@@ -100,10 +100,10 @@ export function PerformanceSection() {
         {/* Intro panel */}
         <div className="container-wfx flex flex-col justify-center py-28 lg:h-full lg:w-[62vw] lg:max-w-none lg:py-0">
           <p className="type-label text-arc lg:hidden">04 — {t("Performance system")}</p>
-          <SplitReveal as="h2" text={t("Performance without limits.")} className="mt-6 type-display text-[8.6vw] lg:mt-0 lg:text-[5.2vw]" stagger={0.08} />
+          <SplitReveal as="h2" text="Suplementos sin límites." className="mt-6 type-display text-[8.6vw] lg:mt-0 lg:text-[5.2vw]" stagger={0.08} />
           <Reveal delay={0.2}>
             <p id="perf-title" className="mt-8 max-w-md type-body text-steel">
-              {t("WOLFEX isn't just what you wear. It's how you operate — a system for training, moving and living at a higher standard.")}
+              Un sistema de nutrición para entrenar, recuperarte y vivir a un nivel más alto.
             </p>
           </Reveal>
         </div>

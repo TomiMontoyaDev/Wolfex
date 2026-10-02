@@ -3,10 +3,8 @@
 import { BrandStatement } from "@/components/sections/BrandStatement";
 import { CampaignSection } from "@/components/sections/CampaignSection";
 import { Categories } from "@/components/sections/Categories";
-import { Community } from "@/components/sections/Community";
 import { FeaturedProducts } from "@/components/sections/FeaturedProducts";
 import { Hero } from "@/components/sections/Hero";
-import { MotorSection } from "@/components/sections/MotorSection";
 import { Newsletter } from "@/components/sections/Newsletter";
 import { PerformanceSection } from "@/components/sections/PerformanceSection";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -25,10 +23,8 @@ export function HomeContent({ products }: { products: Product[] }) {
       <FeaturedProducts products={products} />
       <CampaignSection />
       <Categories />
-      <Marquee items={["Train", "Move", "Build", "Repeat"].map(t)} reverse className="bg-ink type-display text-[clamp(1.5rem,3vw,2.5rem)] text-outline-volt" />
+      <Marquee items={["Fuel", "Build", "Recover", "Repeat"].map(t)} reverse className="bg-ink type-display text-[clamp(1.5rem,3vw,2.5rem)] text-outline-volt" />
       <PerformanceSection />
-      <MotorSection />
-      <Community />
       <Newsletter />
     </main>
   );
