@@ -9,7 +9,9 @@ function getClient() {
   if (globalForPrisma.prisma) return globalForPrisma.prisma;
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) throw new Error("Falta DATABASE_URL en el servidor.");
-  const client = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+  // Neon suspende la base tras unos minutos sin tráfico; el primer arranque puede tardar varios segundos.
+  // Un timeout amplio evita que esa primera consulta (p. ej. un checkout) falle con "Can't reach database server".
+  const client = new PrismaClient({ adapter: new PrismaPg({ connectionString, connectionTimeoutMillis: 15_000 }) });
   if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = client;
   else globalForPrisma.prisma ??= client;
   return client;

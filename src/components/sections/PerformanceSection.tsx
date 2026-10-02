@@ -8,10 +8,13 @@ import { useIsomorphicLayoutEffect } from "@/hooks/useIsomorphicLayoutEffect";
 import { gsap } from "@/lib/gsap";
 import { PERFORMANCE_PILLARS, SITE } from "@/data/site";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { pad } from "@/lib/utils";
+
+const TOTAL = PERFORMANCE_PILLARS.length;
 
 /**
- * Desktop: pinned horizontal scroll through TRAIN / MOVE / BUILD / REPEAT,
- * each word filling with light as it reaches centre. A HUD tracks 01 / 04.
+ * Desktop: pinned horizontal scroll through the PERFORMANCE_PILLARS (kept to 3 so the section is short),
+ * each word filling with light as it reaches centre. A HUD tracks 01 / 03.
  * Mobile & reduced motion: a vertical editorial stack — same content, no pin.
  */
 export function PerformanceSection() {
@@ -42,7 +45,7 @@ export function PerformanceSection() {
           invalidateOnRefresh: true,
           anticipatePin: 1,
           onUpdate: (self) => {
-            const n = Math.min(4, Math.max(1, Math.ceil(self.progress * 4.4 - 0.4)));
+            const n = Math.min(TOTAL, Math.max(1, Math.ceil(self.progress * (TOTAL + 0.4) - 0.4)));
             if (hudIndex.current) hudIndex.current.textContent = `0${n}`;
             if (hudBar.current) hudBar.current.style.transform = `scaleX(${self.progress})`;
           },
@@ -84,7 +87,7 @@ export function PerformanceSection() {
           <span>EST. {SITE.established}</span>
           <span>{t("Performance system")}</span>
           <span>
-            <span ref={hudIndex} className="text-arc">01</span> / 04
+            <span ref={hudIndex} className="text-arc">01</span> / {pad(TOTAL)}
           </span>
         </div>
         <div className="flex items-center gap-6 type-label text-steel">
@@ -114,7 +117,7 @@ export function PerformanceSection() {
               <div className="flex items-center gap-4 type-label text-steel">
                 <span className="text-arc">{p.index}</span>
                 <span className="h-px w-10 bg-line-strong" />
-                <span>/ 04</span>
+                <span>/ {pad(TOTAL)}</span>
               </div>
 
               {/* Outline word with a light-fill that sweeps in on scroll */}

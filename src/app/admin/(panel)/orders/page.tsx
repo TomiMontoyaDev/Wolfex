@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ORDER_STATUS, PAYMENT_STATUS, formatDateTime, money, paymentMethodLabel } from "@/components/admin/format";
 import { EmptyState, PageHeader, Pagination, StatusBadge, Table, Td, Th, buildQuery, ghostButtonClass, inputClass } from "@/components/admin/ui";
-import { listOrders, type OrderFilters } from "@/server/admin/queries";
+import { cn } from "@/lib/utils";
+import { ORDER_VIEWS, listOrders, orderViewCounts, type OrderFilters, type OrderView } from "@/server/admin/queries";
 import { requireAdmin } from "@/server/auth";
 
 export const metadata: Metadata = { title: "Pedidos" };
@@ -14,6 +15,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   await requireAdmin();
   const raw = await searchParams;
   const filters: OrderFilters = {
+    view: one(raw.view),
     q: one(raw.q),
     status: one(raw.status),
     payment: one(raw.payment),
@@ -22,36 +24,43 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
     sort: one(raw.sort),
     page: one(raw.page),
   };
-  const { orders, total, page, pages } = await listOrders(filters);
+  const [{ orders, total, page, pages, view }, counts] = await Promise.all([listOrders(filters), orderViewCounts()]);
   const hasFilters = Boolean(filters.q || filters.status || filters.payment || filters.from || filters.to);
   const select = `${inputClass} appearance-none`;
 
   return (
     <>
-      <PageHeader eyebrow="WOLFEX® ADMIN / 01 — PEDIDOS" title="Pedidos" description={`${total} ${total === 1 ? "pedido" : "pedidos"}${hasFilters ? " con los filtros actuales" : ""}.`} />
+      <PageHeader
+        eyebrow="WOLFEX® ADMIN / 01 — PEDIDOS"
+        title="Pedidos"
+        description={`${total} ${total === 1 ? "pedido" : "pedidos"} en “${ORDER_VIEWS[view].label}”${hasFilters ? " con los filtros actuales" : ""}.`}
+      />
 
-      <form className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_repeat(5,minmax(0,1fr))_auto]" role="search">
+      <nav aria-label="Estado de los pedidos" className="no-scrollbar mt-8 flex gap-1 overflow-x-auto border-b border-line">
+        {(Object.keys(ORDER_VIEWS) as OrderView[]).map((key) => {
+          const active = key === view;
+          return (
+            <Link
+              key={key}
+              href={buildQuery("/admin/orders", { view: key === "all" ? undefined : key, q: filters.q })}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "relative -mb-px flex shrink-0 items-center gap-2 border-b-2 px-4 py-3 type-label transition-colors",
+                active ? "border-arc text-bone" : "border-transparent text-steel hover:text-bone",
+              )}
+            >
+              {ORDER_VIEWS[key].label}
+              <span className={cn("rounded-sm px-1.5 py-0.5 font-mono text-[0.625rem]", active ? "bg-volt/25 text-arc" : "bg-graphite text-steel")}>{counts[key]}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      <form className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))_auto]" role="search">
+        {view !== "all" && <input type="hidden" name="view" value={view} />}
         <label className="block">
           <span className="sr-only">Buscar</span>
           <input name="q" defaultValue={filters.q} placeholder="Nº de pedido, nombre o email" className={inputClass} />
-        </label>
-        <label className="block">
-          <span className="sr-only">Estado del pago</span>
-          <select name="payment" defaultValue={filters.payment ?? ""} className={select}>
-            <option value="">Pago: todos</option>
-            {Object.entries(PAYMENT_STATUS).map(([value, { label }]) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
-        </label>
-        <label className="block">
-          <span className="sr-only">Estado del pedido</span>
-          <select name="status" defaultValue={filters.status ?? ""} className={select}>
-            <option value="">Pedido: todos</option>
-            {Object.entries(ORDER_STATUS).map(([value, { label }]) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
         </label>
         <label className="block">
           <span className="sr-only">Desde</span>
@@ -71,7 +80,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
         <div className="flex gap-2">
           <button className={ghostButtonClass}>Filtrar</button>
           {hasFilters && (
-            <Link href="/admin/orders" className="inline-flex h-11 items-center px-2 type-label text-steel hover:text-arc">
+            <Link href={buildQuery("/admin/orders", { view: view === "all" ? undefined : view })} className="inline-flex h-11 items-center px-2 type-label text-steel hover:text-arc">
               Limpiar
             </Link>
           )}

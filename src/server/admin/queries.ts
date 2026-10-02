@@ -60,7 +60,7 @@ export async function getDashboardStats(now = new Date()) {
   // Mes anterior hasta el mismo punto transcurrido, para comparar de forma justa.
   const prevMonthCutoff = new Date(Math.min(prevMonthStart.getTime() + (now.getTime() - monthStart.getTime()), monthStart.getTime()));
 
-  const [todaySales, yesterdaySales, week, prevWeek, month, prevMonth, statusGroups, paymentGroups, customers, newCustomers, prevNewCustomers, profit, recentOrders, recentEvents] =
+  const [todaySales, yesterdaySales, week, prevWeek, month, prevMonth, statusGroups, paymentGroups, customers, newCustomers, prevNewCustomers, profit, recentOrders, recentEvents, toShip] =
     await Promise.all([
       salesBetween(today, tomorrow),
       salesBetween(addDays(today, -1), today),
@@ -83,6 +83,13 @@ export async function getDashboardStats(now = new Date()) {
         orderBy: { createdAt: "desc" },
         take: 8,
         select: { id: true, type: true, message: true, actor: true, createdAt: true, order: { select: { id: true, orderNumber: true } } },
+      }),
+      // Pagados y sin enviar: lo más antiguo primero (lo más urgente).
+      db.order.findMany({
+        where: ORDER_VIEWS["to-ship"].where,
+        orderBy: { paidAt: "asc" },
+        take: 6,
+        select: { id: true, orderNumber: true, customerName: true, shippingCity: true, total: true, fulfillmentStatus: true, paidAt: true },
       }),
     ]);
 
@@ -109,6 +116,7 @@ export async function getDashboardStats(now = new Date()) {
     profit,
     recentOrders,
     recentEvents,
+    toShip,
   };
 }
 
@@ -116,7 +124,28 @@ export async function getDashboardStats(now = new Date()) {
 
 export const ORDERS_PAGE_SIZE = 25;
 
+/** Vistas rápidas de la lista de pedidos (pestañas). */
+export const ORDER_VIEWS = {
+  all: { label: "Todos", where: {} },
+  "to-ship": { label: "Por preparar", where: { paymentStatus: "APPROVED", status: { in: ["CONFIRMED", "PROCESSING"] } } },
+  "to-pay": { label: "Por pagar", where: { paymentStatus: "PENDING", status: "PENDING" } },
+  shipped: { label: "Enviados", where: { status: "SHIPPED" } },
+  delivered: { label: "Entregados", where: { status: "DELIVERED" } },
+  rejected: { label: "Pago rechazado", where: { paymentStatus: { in: ["REJECTED", "CANCELLED"] }, status: "PENDING" } },
+  closed: { label: "Cancelados", where: { status: { in: ["CANCELLED", "REFUNDED"] } } },
+} satisfies Record<string, { label: string; where: Prisma.OrderWhereInput }>;
+
+export type OrderView = keyof typeof ORDER_VIEWS;
+
+export function orderViewCounts() {
+  const views = Object.keys(ORDER_VIEWS) as OrderView[];
+  return Promise.all(views.map((view) => db.order.count({ where: ORDER_VIEWS[view].where }))).then(
+    (counts) => Object.fromEntries(views.map((view, i) => [view, counts[i]])) as Record<OrderView, number>,
+  );
+}
+
 export interface OrderFilters {
+  view?: string;
   q?: string;
   status?: string;
   payment?: string;
@@ -128,7 +157,8 @@ export interface OrderFilters {
 
 export async function listOrders(filters: OrderFilters) {
   const page = Math.max(1, Number(filters.page) || 1);
-  const where: Prisma.OrderWhereInput = {};
+  const view: OrderView = filters.view && filters.view in ORDER_VIEWS ? (filters.view as OrderView) : "all";
+  const where: Prisma.OrderWhereInput = { ...ORDER_VIEWS[view].where };
   const q = filters.q?.trim().slice(0, 120);
   if (q) {
     where.OR = [
@@ -166,7 +196,7 @@ export async function listOrders(filters: OrderFilters) {
       },
     }),
   ]);
-  return { orders, total, page, pages: Math.max(1, Math.ceil(total / ORDERS_PAGE_SIZE)) };
+  return { orders, total, page, view, pages: Math.max(1, Math.ceil(total / ORDERS_PAGE_SIZE)) };
 }
 
 export function getOrder(id: string) {

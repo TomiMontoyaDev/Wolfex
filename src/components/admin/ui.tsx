@@ -79,22 +79,47 @@ export function DeltaBadge({ value, label = "vs período anterior" }: { value: n
   );
 }
 
-export function KpiCard({ label, value, hint, footer, highlight }: { label: string; value: ReactNode; hint?: ReactNode; footer?: ReactNode; highlight?: boolean }) {
-  return (
-    <div
-      className={cn(
-        "relative flex min-h-36 flex-col justify-between overflow-hidden rounded-sm border bg-ink/80 p-5",
-        highlight ? "border-volt/40 shadow-[0_25px_80px_-55px_rgba(0,102,255,0.9)]" : "border-line-strong",
-      )}
-    >
+export function KpiCard({
+  label,
+  value,
+  hint,
+  footer,
+  highlight,
+  href,
+}: {
+  label: string;
+  value: ReactNode;
+  hint?: ReactNode;
+  footer?: ReactNode;
+  highlight?: boolean;
+  /** Si se indica, la tarjeta entera lleva a esa lista. */
+  href?: string;
+}) {
+  const className = cn(
+    "relative flex min-h-36 flex-col justify-between overflow-hidden rounded-sm border bg-ink/80 p-5",
+    highlight ? "border-volt/40 shadow-[0_25px_80px_-55px_rgba(0,102,255,0.9)]" : "border-line-strong",
+    href && "group transition-colors hover:border-arc/60 hover:bg-graphite/60",
+  );
+  const content = (
+    <>
       {highlight && <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-volt/20 blur-[70px]" />}
-      <p className="relative type-label text-steel">{label}</p>
+      <p className="relative flex items-center justify-between gap-2 type-label text-steel">
+        {label}
+        {href && <span className="text-steel/60 transition-colors group-hover:text-arc" aria-hidden="true">→</span>}
+      </p>
       <div className="relative mt-4">
         <p className="font-mono text-[clamp(1.4rem,2.2vw,1.9rem)] font-medium leading-none tracking-tight text-bone">{value}</p>
         {hint && <p className="mt-2 type-label text-steel/80">{hint}</p>}
       </div>
       {footer && <div className="relative mt-4 border-t border-line pt-3">{footer}</div>}
-    </div>
+    </>
+  );
+  return href ? (
+    <Link href={href} className={className}>
+      {content}
+    </Link>
+  ) : (
+    <div className={className}>{content}</div>
   );
 }
 

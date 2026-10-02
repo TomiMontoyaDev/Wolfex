@@ -110,13 +110,7 @@ export const PERFORMANCE_PILLARS = [
   {
     word: "Recover",
     index: "03",
-    line: "Recupera mejor y vuelve más fuerte a tu siguiente entrenamiento.",
+    line: "Recupera mejor, vuelve más fuerte y repite: un sistema simple para cada semana.",
     metric: { value: 7, suffix: "DÍAS", label: "Cada semana" },
-  },
-  {
-    word: "Repeat",
-    index: "04",
-    line: "Un sistema simple: elige, entrena, recupera y repite.",
-    metric: { value: 365, suffix: "", label: "Días al año" },
   },
 ] as const;

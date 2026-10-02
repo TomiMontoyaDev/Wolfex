@@ -1,17 +1,19 @@
 "use client";
 
-import { ArrowUp, SlidersHorizontal, X } from "lucide-react";
+import { ArrowUp, Search, SlidersHorizontal, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ProductCard } from "@/components/sections/FeaturedProducts";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import type { Product, ProductCategory } from "@/data/products";
+import { searchProducts } from "@/lib/search";
 import { cn, formatPrice, pad } from "@/lib/utils";
 
 const ALL = "TODAS";
 
-export function CatalogContent({ products }: { products: Product[] }) {
+export function CatalogContent({ products, initialQuery = "" }: { products: Product[]; initialQuery?: string }) {
   const { t } = useLanguage();
+  const [query, setQuery] = useState(initialQuery);
   const [brand, setBrand] = useState(ALL);
   const [category, setCategory] = useState<"TODAS" | ProductCategory>(ALL);
   const [maxPrice, setMaxPrice] = useState(Math.max(...products.map((product) => product.price)));
@@ -23,18 +25,19 @@ export function CatalogContent({ products }: { products: Product[] }) {
   );
   const brands = useMemo(() => Array.from(new Set(products.map((product) => product.brand))).sort(), [products]);
   const priceCeiling = Math.max(...products.map((product) => product.price));
-  const filteredProducts = useMemo(
-    () =>
-      products.filter(
-        (product) =>
-          (brand === ALL || product.brand === brand) &&
-          (category === ALL || product.category === category) &&
-          product.price <= maxPrice,
-      ),
-    [brand, category, maxPrice, products],
-  );
+  const filteredProducts = useMemo(() => {
+    const filtered = products.filter(
+      (product) =>
+        (brand === ALL || product.brand === brand) &&
+        (category === ALL || product.category === category) &&
+        product.price <= maxPrice,
+    );
+    // Con búsqueda activa, los resultados se ordenan por relevancia.
+    return query.trim() ? searchProducts(filtered, query).results : filtered;
+  }, [brand, category, maxPrice, products, query]);
 
   const resetFilters = () => {
+    setQuery("");
     setBrand(ALL);
     setCategory(ALL);
     setMaxPrice(priceCeiling);
@@ -63,7 +66,20 @@ export function CatalogContent({ products }: { products: Product[] }) {
         </div>
 
         <div className={cn("mt-12 border-y border-line-strong py-5", !filtersOpen && "hidden md:block")}>
-          <div className="grid gap-6 md:grid-cols-[1fr_1fr_1.3fr_auto] md:items-end">
+          <div className="grid gap-6 md:grid-cols-[1.4fr_1fr_1fr_1.3fr_auto] md:items-end">
+            <label className="block">
+              <span className="type-label text-steel">Buscar</span>
+              <span className="mt-3 flex items-center gap-2 border-b border-line-strong py-2 focus-within:border-arc">
+                <Search className="h-4 w-4 shrink-0 text-steel" strokeWidth={1.5} aria-hidden="true" />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Producto, marca…"
+                  className="min-w-0 flex-1 bg-transparent type-label text-bone outline-none placeholder:text-steel/60"
+                />
+              </span>
+            </label>
             <FilterSelect label="Marca" value={brand} onChange={(value) => setBrand(value)} options={[ALL, ...brands]} />
             <FilterSelect label="Categoría / tipo" value={category} onChange={(value) => setCategory(value as "TODAS" | ProductCategory)} options={[ALL, ...categories]} />
             <label className="block">

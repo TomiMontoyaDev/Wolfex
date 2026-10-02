@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { EVENT_LABEL, ORDER_STATUS, PAYMENT_STATUS, delta, formatDateTime, money } from "@/components/admin/format";
+import { EVENT_LABEL, FULFILLMENT_STATUS, ORDER_STATUS, PAYMENT_STATUS, delta, formatDateTime, money } from "@/components/admin/format";
 import { DeltaBadge, EmptyState, KpiCard, PageHeader, Panel, StatusBadge } from "@/components/admin/ui";
 import { getDashboardStats } from "@/server/admin/queries";
 import { requireAdmin } from "@/server/auth";
@@ -49,13 +49,14 @@ export default async function AdminDashboardPage() {
           value={money(s.month.avgTicket)}
           footer={<DeltaBadge value={delta(s.month.avgTicket, s.prevMonth.avgTicket)} label="vs mes anterior" />}
         />
-        <KpiCard label="Pedidos totales" value={s.totalOrders} hint={`${s.paid} con pago aprobado`} />
-        <KpiCard label="Pendientes de pago" value={s.pendingPayment} hint="Esperando confirmación de Mercado Pago" />
-        <KpiCard label="Por preparar" value={s.toFulfil} hint="Pagados, aún sin enviar" />
-        <KpiCard label="Enviados" value={s.shipped} hint="En tránsito" />
-        <KpiCard label="Entregados" value={s.delivered} />
+        <KpiCard label="Pedidos totales" value={s.totalOrders} hint={`${s.paid} con pago aprobado`} href="/admin/orders" />
+        <KpiCard label="Pendientes de pago" value={s.pendingPayment} hint="Esperando confirmación de Mercado Pago" href="/admin/orders?view=to-pay" />
+        <KpiCard highlight={s.toFulfil > 0} label="Por preparar" value={s.toFulfil} hint="Pagados, aún sin enviar" href="/admin/orders?view=to-ship" />
+        <KpiCard label="Enviados" value={s.shipped} hint="En tránsito" href="/admin/orders?view=shipped" />
+        <KpiCard label="Entregados" value={s.delivered} href="/admin/orders?view=delivered" />
         <KpiCard
           label="Clientes registrados"
+          href="/admin/customers"
           value={s.customers}
           hint={`${s.newCustomers} nuevos este mes`}
           footer={<DeltaBadge value={delta(s.newCustomers, s.prevNewCustomers)} label="nuevos vs mes anterior" />}
@@ -73,7 +74,35 @@ export default async function AdminDashboardPage() {
         />
       </section>
 
-      <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+      <Panel
+        className="mt-8"
+        index="PRIORIDAD"
+        title={`Por despachar (${s.toFulfil})`}
+        action={<Link href="/admin/orders?view=to-ship" className="type-label text-steel hover:text-arc">Ver todos →</Link>}
+      >
+        {s.toShip.length === 0 ? (
+          <p className="text-sm text-steel">Todo al día: no hay pedidos pagados esperando envío.</p>
+        ) : (
+          <ul className="divide-y divide-line">
+            {s.toShip.map((order) => (
+              <li key={order.id}>
+                <Link href={`/admin/orders/${order.id}`} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3.5 transition-colors hover:text-arc">
+                  <span className="font-mono text-xs text-arc">{order.orderNumber}</span>
+                  <span className="min-w-0 flex-1 truncate text-sm">
+                    {order.customerName}
+                    {order.shippingCity && <span className="text-steel"> · {order.shippingCity}</span>}
+                  </span>
+                  <StatusBadge map={FULFILLMENT_STATUS} value={order.fulfillmentStatus} />
+                  <span className="type-label text-steel">Pagado {formatDateTime(order.paidAt)}</span>
+                  <span className="w-28 text-right font-mono text-sm">{money(order.total)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Panel>
+
+      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <Panel index="01" title="Pedidos recientes" action={<Link href="/admin/orders" className="type-label text-steel hover:text-arc">Todos →</Link>}>
           {s.recentOrders.length === 0 ? (
             <EmptyState title="Todavía no hay pedidos" description="Cuando un cliente complete el checkout, aparecerá aquí." />

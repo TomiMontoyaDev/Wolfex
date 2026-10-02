@@ -15,6 +15,9 @@ export default async function AdminLoginPage() {
         <h1 className="mt-4 type-display text-5xl">Acceso restringido</h1>
         <p className="mt-4 text-sm leading-6 text-steel">Panel de control de pedidos, clientes y ventas. Solo personal autorizado.</p>
         <LoginForm />
+        <a href="/" className="mt-8 block text-center type-label text-steel transition-colors hover:text-arc">
+          ← Volver a la tienda
+        </a>
       </div>
     </main>
   );

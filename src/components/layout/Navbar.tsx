@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useCart } from "@/components/providers/CartProvider";
 import { useIntro } from "@/components/providers/IntroProvider";
@@ -10,6 +10,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { SocialIcon } from "@/components/ui/SocialIcon";
 import { WolfMark, Wordmark } from "@/components/visuals/WolfMark";
 import { NAV_LINKS, SITE, SOCIALS } from "@/data/site";
+import { SearchOverlay } from "./SearchOverlay";
 import { cn, pad } from "@/lib/utils";
 
 export function Navbar() {
@@ -21,8 +22,26 @@ export function Navbar() {
   const { ready } = useIntro();
   const cart = useCart();
   const { language, setLanguage, t } = useLanguage();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const openSearch = useCallback(() => {
+    setMenuOpen(false);
+    setSearchOpen(true);
+  }, []);
+  const closeSearch = useCallback(() => setSearchOpen(false), []);
 
   useMotionValueEvent(scrollY, "change", (v) => setScrolled(v > 40));
+
+  // Atajo de teclado: Ctrl+K / ⌘K abre el buscador.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        openSearch();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [openSearch]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -91,12 +110,13 @@ export function Navbar() {
             </ul>
 
             <div className="-mr-2 flex items-center">
-              <IconButton label={t("Search")} className="hidden sm:flex">
+              <IconButton label={t("Search")} onClick={openSearch} className="hidden sm:flex">
                 <Search className="h-[18px] w-[18px]" strokeWidth={1.5} />
               </IconButton>
-              <IconButton label={t("Account")} className="hidden sm:flex">
+              {/* Acceso al panel: /admin redirige al login si no hay sesión. */}
+              <a href="/admin" aria-label={t("Account")} className="relative hidden h-11 w-11 items-center justify-center text-bone/85 transition-colors hover:text-arc sm:flex">
                 <User className="h-[18px] w-[18px]" strokeWidth={1.5} />
-              </IconButton>
+              </a>
               <a
                 href="https://www.instagram.com/wolfexwear/?hl=es-la"
                 target="_blank"
@@ -134,7 +154,8 @@ export function Navbar() {
         </div>
       </motion.header>
 
-      <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} onSearch={openSearch} />
+      <SearchOverlay open={searchOpen} onClose={closeSearch} />
     </>
   );
 }
@@ -148,7 +169,7 @@ function IconButton({ children, label, onClick, className }: { children: React.R
 }
 
 /** Mobile: full-screen editorial menu — not a shrunken desktop nav. */
-function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
+function MobileMenu({ open, onClose, onSearch }: { open: boolean; onClose: () => void; onSearch: () => void }) {
   const { t } = useLanguage();
   return (
     <AnimatePresence>
@@ -188,8 +209,8 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
                 ))}
               </ul>
               <div className="mt-6 flex gap-3">
-                <a href="#" className="flex h-12 flex-1 items-center justify-center gap-2 border border-line-strong type-title text-xs"><Search className="h-4 w-4" strokeWidth={1.5} />{t("Search")}</a>
-                <a href="#" className="flex h-12 flex-1 items-center justify-center gap-2 border border-line-strong type-title text-xs"><User className="h-4 w-4" strokeWidth={1.5} />{t("Account")}</a>
+                <button type="button" onClick={onSearch} className="flex h-12 flex-1 items-center justify-center gap-2 border border-line-strong type-title text-xs"><Search className="h-4 w-4" strokeWidth={1.5} />{t("Search")}</button>
+                <a href="/admin" onClick={onClose} className="flex h-12 flex-1 items-center justify-center gap-2 border border-line-strong type-title text-xs"><User className="h-4 w-4" strokeWidth={1.5} />{t("Account")}</a>
               </div>
             </div>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="flex items-end justify-between">
