@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { money, percent } from "@/components/admin/format";
 import { ProductEditor } from "@/components/admin/ProductEditor";
-import { Badge, EmptyState, KpiCard, PageHeader, Pagination, Table, Td, Th, buildQuery, ghostButtonClass, inputClass } from "@/components/admin/ui";
+import { Badge, EmptyState, KpiCard, PageHeader, Pagination, Table, Td, Th, buildQuery, buttonClass, ghostButtonClass, inputClass } from "@/components/admin/ui";
 import { listProducts } from "@/server/admin/queries";
 import { requireAdmin } from "@/server/auth";
 
@@ -22,11 +23,18 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
       <PageHeader
         eyebrow="WOLFEX® ADMIN / 04 — PRODUCTOS"
         title="Productos"
-        description="El nombre y el precio vienen del catálogo (npm run db:sync-catalog). Aquí registras costo y stock para calcular margen e inventario."
+        description="Lo que cambies aquí se ve en la tienda al instante. Precio, costo y stock se editan desde la lista; nombre, imagen y descripción, entrando al producto."
+        actions={
+          <Link href="/admin/products/new" className={buttonClass}>
+            + Nuevo producto
+          </Link>
+        }
       />
 
+      {raw.eliminado && <p role="status" className="mt-6 rounded-sm border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">Producto eliminado.</p>}
+
       <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard label="Activos" value={summary.active} hint={`${summary.inactive} inactivos`} />
+        <KpiCard label="Visibles" value={summary.active} hint={`${summary.inactive} ocultos`} />
         <KpiCard label="Con costo registrado" value={summary.withCost} hint="Necesario para margen y utilidad" />
         <KpiCard label="Con inventario controlado" value={summary.tracked} hint="El resto se vende sin límite de stock" />
         <KpiCard label="Resultados" value={total} />
@@ -60,27 +68,36 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
             description={hasFilters ? "Prueba con otros filtros." : "Ejecuta npm run db:sync-catalog para importar el catálogo actual."}
           />
         ) : (
-          <Table minWidth={1180}>
+          <Table minWidth={1240}>
             <thead>
               <tr>
                 <Th>Producto</Th>
                 <Th>SKU</Th>
-                <Th align="right">Precio</Th>
                 <Th align="right">Margen</Th>
                 <Th align="right">Vendidos</Th>
                 <Th>Estado</Th>
-                <Th>Costo · Stock</Th>
+                <Th>Precio · Costo · Stock</Th>
               </tr>
             </thead>
             <tbody>
               {products.map((product) => (
                 <tr key={product.id} className="align-top">
-                  <Td className="max-w-72">
-                    <p className="line-clamp-2">{product.name}</p>
-                    <p className="mt-1 type-label text-steel">{[product.brand, product.category, product.supplier?.name].filter(Boolean).join(" · ")}</p>
+                  <Td className="max-w-80">
+                    <Link href={`/admin/products/${encodeURIComponent(product.id)}`} className="group flex items-center gap-3">
+                      <span className="relative h-14 w-11 shrink-0 overflow-hidden bg-void ring-1 ring-inset ring-line-strong">
+                        {product.image ? (
+                          <Image src={product.image} alt="" fill sizes="44px" className="object-cover" />
+                        ) : (
+                          <span className="absolute inset-0 flex items-center justify-center type-label text-[0.5rem] text-steel">SIN IMG</span>
+                        )}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="line-clamp-2 transition-colors group-hover:text-arc">{product.name}</span>
+                        <span className="mt-1 block type-label text-steel">{[product.brand, product.category].filter(Boolean).join(" · ")}</span>
+                      </span>
+                    </Link>
                   </Td>
                   <Td className="font-mono text-xs text-steel">{product.sku}</Td>
-                  <Td align="right" className="font-mono">{money(product.price)}</Td>
                   <Td align="right" className="font-mono">
                     {product.margin === null ? <span className="text-steel">—</span> : <span className={product.margin < 0.15 ? "text-amber-200" : ""}>{percent(product.margin, 1)}</span>}
                   </Td>
@@ -89,11 +106,11 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
                     {product.revenue > 0 && <p className="mt-1 text-xs text-steel">{money(product.revenue)}</p>}
                   </Td>
                   <Td>
-                    {product.active ? <Badge tone="good">Activo</Badge> : <Badge tone="muted">Inactivo</Badge>}
-                    {product.stock !== null && product.stock <= 5 && <div className="mt-2"><Badge tone="warn">Stock {product.stock}</Badge></div>}
+                    {product.active ? <Badge tone="good">Visible</Badge> : <Badge tone="muted">Oculto</Badge>}
+                    {product.stock !== null && product.stock <= 5 && <div className="mt-2"><Badge tone="warn">{product.stock === 0 ? "Agotado" : `Stock ${product.stock}`}</Badge></div>}
                   </Td>
                   <Td>
-                    <ProductEditor productId={product.id} costPrice={product.costPrice} stock={product.stock} active={product.active} />
+                    <ProductEditor key={`${product.id}-${product.price}-${product.costPrice}-${product.stock}-${product.active}`} productId={product.id} price={product.price} costPrice={product.costPrice} stock={product.stock} active={product.active} />
                   </Td>
                 </tr>
               ))}

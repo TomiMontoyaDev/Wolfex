@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { InvalidWebhookSignatureError, WebhookSignatureValidator } from "mercadopago";
+import { revalidateTag } from "next/cache";
+import { PRODUCTS_TAG } from "@/lib/commerce";
 import { processMercadoPagoPayment } from "@/server/payments";
 
 export async function POST(request: Request) {
@@ -36,6 +38,8 @@ export async function POST(request: Request) {
 
   try {
     const outcome = await processMercadoPagoPayment(paymentId);
+    // Un pago aprobado descuenta stock: la tienda debe reflejar "agotado" sin esperar a la caché.
+    if (outcome.result === "processed" && outcome.status === "APPROVED") revalidateTag(PRODUCTS_TAG, { expire: 0 });
     return NextResponse.json({ ok: true, ...outcome });
   } catch (error) {
     // 500 → Mercado Pago reintenta la notificación más tarde.

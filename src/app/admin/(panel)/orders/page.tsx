@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ORDER_STATUS, PAYMENT_STATUS, formatDateTime, money, paymentMethodLabel } from "@/components/admin/format";
 import { EmptyState, PageHeader, Pagination, StatusBadge, Table, Td, Th, buildQuery, ghostButtonClass, inputClass } from "@/components/admin/ui";
+import { BulkDeleteOrders, RowCheckbox, SelectAllCheckbox } from "@/components/admin/DeleteControls";
 import { cn } from "@/lib/utils";
+import { deleteOrdersAction } from "@/server/admin/actions";
 import { ORDER_VIEWS, listOrders, orderViewCounts, type OrderFilters, type OrderView } from "@/server/admin/queries";
 import { requireAdmin } from "@/server/auth";
 
@@ -35,6 +37,12 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
         title="Pedidos"
         description={`${total} ${total === 1 ? "pedido" : "pedidos"} en “${ORDER_VIEWS[view].label}”${hasFilters ? " con los filtros actuales" : ""}.`}
       />
+
+      {one(raw.eliminados) && (
+        <p role="status" className="mt-6 rounded-sm border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">
+          Pedido eliminado.
+        </p>
+      )}
 
       <nav aria-label="Estado de los pedidos" className="no-scrollbar mt-8 flex gap-1 overflow-x-auto border-b border-line">
         {(Object.keys(ORDER_VIEWS) as OrderView[]).map((key) => {
@@ -94,9 +102,14 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
             description={hasFilters ? "Prueba con otros filtros o limpia la búsqueda." : "Los pedidos aparecen aquí en cuanto un cliente completa el checkout."}
           />
         ) : (
-          <Table minWidth={1100}>
+          <>
+          <div className="mb-3">
+            <BulkDeleteOrders action={deleteOrdersAction} />
+          </div>
+          <Table minWidth={1140}>
             <thead>
               <tr>
+                <Th className="w-10"><SelectAllCheckbox /></Th>
                 <Th>Pedido</Th>
                 <Th>Fecha</Th>
                 <Th>Cliente</Th>
@@ -112,6 +125,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
             <tbody>
               {orders.map((order) => (
                 <tr key={order.id} className="transition-colors hover:bg-graphite/60">
+                  <Td><RowCheckbox id={order.id} label={`Seleccionar pedido ${order.orderNumber}`} /></Td>
                   <Td><Link href={`/admin/orders/${order.id}`} className="font-mono text-xs text-arc hover:underline">{order.orderNumber}</Link></Td>
                   <Td className="whitespace-nowrap text-steel">{formatDateTime(order.createdAt)}</Td>
                   <Td className="max-w-48 truncate">{order.customerName}</Td>
@@ -126,6 +140,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
               ))}
             </tbody>
           </Table>
+          </>
         )}
         <Pagination page={page} pages={pages} href={(p) => buildQuery("/admin/orders", { ...filters, page: p })} />
       </div>

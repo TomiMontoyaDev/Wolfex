@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EVENT_LABEL, FULFILLMENT_STATUS, ORDER_STATUS, PAYMENT_STATUS, formatDateTime, money, paymentMethodLabel } from "@/components/admin/format";
+import { DangerAction } from "@/components/admin/DeleteControls";
 import { OrderStatusActions, ShippingForm } from "@/components/admin/OrderActions";
+import { deleteOrdersAction } from "@/server/admin/actions";
 import { DefinitionList, PageHeader, Panel, StatusBadge, Table, Td, Th } from "@/components/admin/ui";
 import { getOrder } from "@/server/admin/queries";
 import { requireAdmin } from "@/server/auth";
@@ -141,6 +143,19 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
         </div>
 
         <div className="space-y-6">
+          <section className="rounded-sm border border-red-400/20 p-5">
+            <p className="type-label text-red-300">Zona de peligro</p>
+            <div className="mt-3">
+              <DangerAction
+                action={deleteOrdersAction}
+                fields={{ ids: order.id, redirectTo: "list" }}
+                label="Eliminar pedido…"
+                title={`¿Eliminar el pedido ${order.orderNumber}? Se borra con sus pagos e historial y no se puede deshacer.`}
+                description={order.paymentStatus === "APPROVED" ? "Este pedido está PAGADO: borrarlo aquí no reembolsa ni cancela nada en Mercado Pago." : undefined}
+                confirmLabel="Sí, eliminar pedido"
+              />
+            </div>
+          </section>
           <Panel index="04" title="Cliente" action={<Link href={`/admin/customers/${order.customerId}`} className="type-label text-steel hover:text-arc">Perfil →</Link>}>
             <DefinitionList
               items={[

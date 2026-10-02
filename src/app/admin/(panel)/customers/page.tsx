@@ -20,6 +20,10 @@ export default async function AdminCustomersPage({ searchParams }: { searchParam
     <>
       <PageHeader eyebrow="WOLFEX® ADMIN / 02 — CLIENTES" title="Clientes" description={`${total} ${total === 1 ? "cliente" : "clientes"}. Un cliente se identifica por su email.`} />
 
+      {one(raw.eliminado) && (
+        <p role="status" className="mt-6 rounded-sm border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">Cliente eliminado.</p>
+      )}
+
       <form className="mt-8 flex max-w-xl gap-2" role="search">
         <label className="block flex-1">
           <span className="sr-only">Buscar cliente</span>

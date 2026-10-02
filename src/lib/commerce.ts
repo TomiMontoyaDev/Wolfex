@@ -1,39 +1,66 @@
 /**
  * WOLFEX — COMMERCE ADAPTER
  * ─────────────────────────────────────────────────────────────
- * The UI only ever talks to these functions. Today they read the
- * local catalog; tomorrow swap the bodies for Shopify Storefront API
- * calls (or any headless backend) — components stay untouched.
+ * The UI only ever talks to these functions. Products live in Postgres (managed from /admin/products);
+ * this module maps them to the storefront `Product` shape so components stay untouched.
  *
- * Shopify hint:
- *   const res = await fetch(`https://${SHOPIFY_DOMAIN}/api/2025-01/graphql.json`, {
- *     method: "POST",
- *     headers: { "X-Shopify-Storefront-Access-Token": TOKEN, "Content-Type": "application/json" },
- *     body: JSON.stringify({ query, variables }),
- *     next: { revalidate: 60 },
- *   });
+ * Cached under the "products" tag: admin changes call updateTag/revalidateTag("products").
  */
-import { PRODUCTS, type Product } from "@/data/products";
+import "server-only";
+import { unstable_cache } from "next/cache";
+import type { Product, ProductCategory } from "@/data/products";
+import type { Product as DbProduct } from "@/generated/prisma/client";
+import { db } from "@/server/db";
+
+export const PRODUCTS_TAG = "products";
+
+const PLACEHOLDER_SRC = "/images/products/placeholder.jpg";
+
+/** DB → forma que usan los componentes de la tienda. */
+function toStorefront(product: DbProduct): Product {
+  const available = product.active && (product.stock === null || product.stock > 0);
+  const slot = (alt: string) => ({
+    src: product.image ?? PLACEHOLDER_SRC,
+    alt,
+    ready: Boolean(product.image),
+    art: "cat-performance" as const,
+    recommended: "1600x2000 (4:5)",
+  });
+  return {
+    id: product.id,
+    sku: product.sku,
+    brand: product.brand ?? "",
+    handle: product.slug,
+    name: product.name,
+    descriptor: product.description ?? "",
+    category: (product.category ?? "SUPLEMENTOS") as ProductCategory,
+    price: product.price,
+    available,
+    colors: [{ name: "", hex: "#0066FF" }],
+    ...(!available && { badge: "AGOTADO" as const }),
+    spec: product.category ?? "",
+    images: { primary: slot(`${product.name}, vista principal`), secondary: slot(`${product.name}, detalle`) },
+  };
+}
+
+const loadCatalog = unstable_cache(
+  async () => {
+    // Los productos inactivos no se muestran; los agotados sí (con badge AGOTADO), como antes.
+    const products = await db.product.findMany({ where: { active: true }, orderBy: { id: "asc" } });
+    return products.map(toStorefront);
+  },
+  ["storefront-catalog"],
+  { tags: [PRODUCTS_TAG], revalidate: 3600 },
+);
 
 export async function getFeaturedProducts(): Promise<Product[]> {
-  return PRODUCTS.filter((product) => product.available).slice(0, 8);
+  return (await loadCatalog()).filter((product) => product.available).slice(0, 8);
 }
 
 export async function getCatalogProducts(): Promise<Product[]> {
-  return PRODUCTS;
+  return loadCatalog();
 }
 
 export async function getProductByHandle(handle: string): Promise<Product | undefined> {
-  return PRODUCTS.find((p) => p.handle === handle);
-}
-
-export interface CheckoutLine {
-  productId: string;
-  color: string;
-  quantity: number;
-}
-
-/** Returns a checkout URL. Wire to Shopify `cartCreate` → `checkoutUrl`. */
-export async function createCheckout(_lines: CheckoutLine[]): Promise<string | null> {
-  return null;
+  return (await loadCatalog()).find((p) => p.handle === handle);
 }

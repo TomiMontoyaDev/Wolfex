@@ -145,36 +145,33 @@ export async function updateShippingAction(_prev: ActionState, formData: FormDat
   return { ok: true, message: "Datos de envío guardados." };
 }
 
-// ───────────── Productos ─────────────
+// ───────────── Eliminar ─────────────
 
-const money = z
-  .string()
-  .trim()
-  .transform((value) => (value === "" ? null : Number(value.replace(/[.\s$]/g, ""))))
-  .refine((value) => value === null || (Number.isInteger(value) && value >= 0 && value < 100_000_000), "Valor inválido.");
+const idsSchema = z.array(z.string().min(1).max(40)).min(1, "Selecciona al menos un pedido.").max(200);
 
-const productSchema = z.object({
-  productId: z.string().min(1).max(160),
-  costPrice: money,
-  stock: z
-    .string()
-    .trim()
-    .transform((value) => (value === "" ? null : Number(value)))
-    .refine((value) => value === null || (Number.isInteger(value) && value >= 0 && value < 1_000_000), "Stock inválido."),
-  active: z.boolean(),
-});
-
-export async function updateProductAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+/**
+ * Borra pedidos definitivamente (con sus ítems, pagos y eventos).
+ * No toca Mercado Pago: si un pedido estaba pagado, el dinero sigue allá.
+ */
+export async function deleteOrdersAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   await requireAdmin();
-  const parsed = productSchema.safeParse({
-    productId: formData.get("productId"),
-    costPrice: String(formData.get("costPrice") ?? ""),
-    stock: String(formData.get("stock") ?? ""),
-    active: formData.get("active") === "on",
-  });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
-  const { productId, ...data } = parsed.data;
-  await db.product.update({ where: { id: productId }, data });
-  revalidatePath("/admin/products");
-  return { ok: true, message: "Guardado." };
+  const parsed = idsSchema.safeParse(formData.getAll("ids").map(String));
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Selección inválida." };
+  const { count } = await db.order.deleteMany({ where: { id: { in: parsed.data } } });
+  revalidatePath("/admin", "layout");
+  if (formData.get("redirectTo") === "list") redirect("/admin/orders?eliminados=" + count);
+  return { ok: true, message: `${count} ${count === 1 ? "pedido eliminado" : "pedidos eliminados"}.` };
+}
+
+/** Borra un cliente con todos sus pedidos y direcciones. */
+export async function deleteCustomerAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdmin();
+  const customerId = String(formData.get("customerId") ?? "");
+  if (!customerId) return { error: "Cliente inválido." };
+  await db.$transaction([
+    db.order.deleteMany({ where: { customerId } }),
+    db.customer.deleteMany({ where: { id: customerId } }),
+  ]);
+  revalidatePath("/admin", "layout");
+  redirect("/admin/customers?eliminado=1");
 }

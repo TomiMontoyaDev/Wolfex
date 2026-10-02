@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import type { ReactNode } from "react";
@@ -91,6 +92,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <StorefrontOnly>
             <Footer />
             <CustomCursor />
+            {/* Vercel Analytics: solo en la tienda, para que las visitas al /admin no inflen las métricas. */}
+            <Analytics />
           </StorefrontOnly>
         </Providers>
         <div className="grain" aria-hidden="true" />

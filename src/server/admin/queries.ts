@@ -348,6 +348,20 @@ export async function getAnalytics(rangeParam: string | undefined, now = new Dat
 
 // ───────────── Productos ─────────────
 
+export async function listCategories() {
+  const rows = await db.product.findMany({ distinct: ["category"], select: { category: true }, where: { category: { not: null } }, orderBy: { category: "asc" } });
+  return rows.map((row) => row.category!).filter(Boolean);
+}
+
+export async function getProduct(id: string) {
+  const [product, sales] = await Promise.all([
+    db.product.findUnique({ where: { id }, include: { supplier: { select: { name: true } } } }),
+    db.orderItem.aggregate({ where: { productId: id, order: PAID }, _sum: { quantity: true, totalPrice: true } }),
+  ]);
+  if (!product) return null;
+  return { product, unitsSold: sales._sum.quantity ?? 0, revenue: sales._sum.totalPrice ?? 0 };
+}
+
 export const PRODUCTS_PAGE_SIZE = 50;
 
 export async function listProducts(filters: { q?: string; status?: string; category?: string; page?: string }) {

@@ -57,10 +57,16 @@ Variables en el hosting: `DATABASE_URL`, `DIRECT_URL`, `MERCADOPAGO_ACCESS_TOKEN
 
 ## Reglas importantes
 
-- El precio cobrado sale de la tabla `Product`. Si cambias precios en `src/data/products.ts`, ejecuta `db:sync-catalog`
-  o la tienda mostrará un precio y cobrará otro.
-- Desactivar un producto en el admin bloquea su compra en el checkout, pero la tienda lo sigue mostrando
-  (el frontend lee el catálogo estático).
+- **Los productos viven en la base de datos** y se gestionan en `/admin/products` (crear, editar, precio, imagen,
+  stock, ocultar, eliminar). La tienda los lee de ahí (`src/lib/commerce.ts`, caché con la etiqueta `products`
+  que el admin invalida al guardar). `src/data/products.ts` solo se usó para la importación inicial:
+  `db:sync-catalog` no hace nada si la tabla ya tiene productos y nunca modifica productos existentes.
+- Imágenes: se suben a un Blob store **privado** de Vercel (`BLOB_READ_WRITE_TOKEN`), comprimidas en el navegador
+  a ≤1600 px, y la tienda las muestra por `/api/images/products/…` (solo expone `products/`; caché de CDN de 1 año).
+  Las imágenes antiguas en `public/images/products` siguen funcionando.
+- Vercel Analytics (`<Analytics />` en el layout) solo se carga en la tienda, no en `/admin`.
+- `active = false` → el producto se oculta de la tienda. `stock = 0` → visible como AGOTADO y no se puede comprar.
 - `stock = NULL` → inventario no controlado. Con número, el checkout lo valida y el pago aprobado lo descuenta.
+- Eliminar pedidos/clientes desde el admin es definitivo y no toca Mercado Pago.
 - Cancelar un pedido pagado NO reembolsa: el reembolso se hace en Mercado Pago y su webhook marca el pedido `REFUNDED`.
 - Los costos desconocidos quedan en NULL; la utilidad estimada indica cuándo es parcial.
