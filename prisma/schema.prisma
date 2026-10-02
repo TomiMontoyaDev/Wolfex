@@ -1,0 +1,290 @@
+// WOLFEX® — modelo de datos de la tienda.
+// Montos en pesos colombianos enteros (Int): COP no usa centavos en la práctica y
+// evita errores de redondeo. Si algún día se vende en otra moneda, migrar a Decimal.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ───────────── Enums ─────────────
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  REFUNDED
+}
+
+enum FulfillmentStatus {
+  PENDING
+  PROCESSING
+  READY_TO_SHIP
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentProvider {
+  MERCADOPAGO
+}
+
+enum OrderEventType {
+  ORDER_CREATED
+  CHECKOUT_CREATED
+  CHECKOUT_FAILED
+  PAYMENT_PENDING
+  PAYMENT_APPROVED
+  PAYMENT_REJECTED
+  PAYMENT_CANCELLED
+  PAYMENT_MISMATCH
+  ORDER_CONFIRMED
+  ORDER_PROCESSING
+  ORDER_READY_TO_SHIP
+  ORDER_SHIPPED
+  ORDER_DELIVERED
+  ORDER_CANCELLED
+  REFUND_CREATED
+  TRACKING_UPDATED
+  NOTE_ADDED
+}
+
+// ───────────── Clientes ─────────────
+
+model Customer {
+  id        String   @id @default(cuid())
+  firstName String
+  lastName  String?
+  fullName  String
+  /// Siempre en minúsculas. Identifica clientes recurrentes.
+  email     String   @unique
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  addresses Address[]
+  orders    Order[]
+}
+
+model Address {
+  id                String   @id @default(cuid())
+  customerId        String
+  country           String   @default("CO")
+  department        String?
+  city              String?
+  neighborhood      String?
+  address           String
+  addressComplement String?
+  postalCode        String?
+  recipientName     String?
+  recipientPhone    String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  orders   Order[]
+
+  @@index([customerId])
+}
+
+// ───────────── Catálogo ─────────────
+
+model Supplier {
+  id        String   @id @default(cuid())
+  /// Identificador estable, ej. "power-nutrition".
+  slug      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+}
+
+model Product {
+  /// Mismo id que el catálogo estático (src/data/products.ts).
+  id             String   @id
+  name           String
+  slug           String   @unique
+  sku            String   @unique
+  brand          String?
+  description    String?
+  /// Precio de venta vigente. El backend SIEMPRE cobra este valor, nunca el del navegador.
+  price          Int
+  compareAtPrice Int?
+  /// Costo unitario. NULL mientras no se conozca: no se inventan costos.
+  costPrice      Int?
+  /// NULL = inventario no controlado todavía.
+  stock          Int?
+  image          String?
+  active         Boolean  @default(true)
+  category       String?
+  supplierId     String?
+  /// Referencia del producto en el sistema del proveedor (para futuras integraciones).
+  supplierSku    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  supplier   Supplier?   @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  orderItems OrderItem[]
+
+  @@index([active])
+  @@index([category])
+}
+
+// ───────────── Pedidos ─────────────
+
+model Order {
+  id                String            @id @default(cuid())
+  /// Número legible para cliente y soporte, ej. WFX-261002-7K3QD.
+  orderNumber       String            @unique
+  customerId        String
+  addressId         String?
+  status            OrderStatus       @default(PENDING)
+  paymentStatus     PaymentStatus     @default(PENDING)
+  fulfillmentStatus FulfillmentStatus @default(PENDING)
+
+  subtotal     Int
+  shippingCost Int    @default(0)
+  discount     Int    @default(0)
+  tax          Int    @default(0)
+  total        Int
+  currency     String @default("COP")
+
+  paymentMethod     String?
+  paymentProvider   PaymentProvider @default(MERCADOPAGO)
+  /// Id del pago aprobado en el proveedor.
+  paymentId         String?
+  /// Se envía a Mercado Pago como external_reference para enlazar el pago con la orden.
+  externalReference String          @unique
+  /// Evita pedidos duplicados por doble clic o reintentos del checkout.
+  idempotencyKey    String?         @unique
+  mpPreferenceId    String?
+  checkoutUrl       String?
+
+  // Snapshot histórico: el pedido conserva los datos usados al comprar aunque el cliente cambie después.
+  customerName         String
+  customerEmail        String
+  customerPhone        String?
+  shippingCountry      String  @default("CO")
+  shippingDepartment   String?
+  shippingCity         String?
+  shippingNeighborhood String?
+  shippingAddress      String
+  shippingComplement   String?
+  shippingPostalCode   String?
+  recipientName        String?
+  recipientPhone       String?
+  customerNotes        String?
+
+  // Costos reales (para utilidad estimada). NULL = todavía desconocido.
+  shippingCostActual Int?
+  paymentFee         Int?
+
+  // Logística (preparado para transportadoras).
+  carrier        String?
+  trackingNumber String?
+  trackingUrl    String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  paidAt      DateTime?
+  shippedAt   DateTime?
+  deliveredAt DateTime?
+  cancelledAt DateTime?
+
+  customer Customer     @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  address  Address?     @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  items    OrderItem[]
+  payments Payment[]
+  events   OrderEvent[]
+
+  @@index([customerId])
+  @@index([createdAt])
+  @@index([status])
+  @@index([paymentStatus])
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  productId   String?
+  // Snapshot del producto al momento de la compra.
+  productName String
+  sku         String
+  variant     String?
+  quantity    Int
+  unitPrice   Int
+  totalPrice  Int
+  /// Costo unitario al momento de la compra (si se conocía).
+  unitCost    Int?
+  createdAt   DateTime @default(now())
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+// ───────────── Pagos ─────────────
+
+/// Nunca guarda datos de tarjeta, CVV ni datos bancarios: solo lo que devuelve Mercado Pago, filtrado.
+model Payment {
+  id                   String          @id @default(cuid())
+  orderId              String
+  provider             PaymentProvider @default(MERCADOPAGO)
+  providerPaymentId    String
+  /// Merchant order / preferencia en Mercado Pago.
+  providerOrderId      String?
+  status               PaymentStatus
+  providerStatus       String?
+  providerStatusDetail String?
+  amount               Int
+  currency             String
+  paymentMethod        String?
+  paymentType          String?
+  /// Comisión cobrada por Mercado Pago (si viene en la respuesta).
+  feeAmount            Int?
+  netAmount            Int?
+  rawResponse          Json?
+  approvedAt           DateTime?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerPaymentId])
+  @@index([orderId])
+}
+
+// ───────────── Auditoría ─────────────
+
+model OrderEvent {
+  id        String         @id @default(cuid())
+  orderId   String
+  type      OrderEventType
+  message   String?
+  /// "system", "webhook", "admin", "checkout".
+  actor     String         @default("system")
+  metadata  Json?
+  createdAt DateTime       @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+}

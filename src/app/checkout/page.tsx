@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { useCart } from "@/components/providers/CartProvider";
 import { Media } from "@/components/ui/Media";
 import { formatPrice } from "@/lib/utils";
@@ -20,19 +20,23 @@ export default function CheckoutPage() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", address: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const payload = useMemo(
+    () => JSON.stringify({ customer: form, lines: lines.map((line) => ({ productId: line.product.id, color: line.color, quantity: line.quantity })) }),
+    [form, lines],
+  );
+  // Misma clave mientras no cambien los datos: un doble clic o reintento no crea un pedido duplicado.
+  const idempotencyKey = useMemo(() => (payload ? crypto.randomUUID() : ""), [payload]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (loading) return;
     setError("");
     setLoading(true);
     try {
       const response = await fetch("/api/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer: form,
-          lines: lines.map((line) => ({ productId: line.product.id, color: line.color, quantity: line.quantity })),
-        }),
+        headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
+        body: payload,
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "No fue posible preparar el pago.");

@@ -5,6 +5,7 @@ import { CartDrawer } from "@/components/layout/CartDrawer";
 import { Footer } from "@/components/layout/Footer";
 import { Loader } from "@/components/layout/Loader";
 import { Navbar } from "@/components/layout/Navbar";
+import { StorefrontOnly } from "@/components/layout/StorefrontOnly";
 import { Providers } from "@/components/providers/Providers";
 import { CustomCursor } from "@/components/visuals/CustomCursor";
 import { SITE, SOCIALS } from "@/data/site";
@@ -81,12 +82,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </noscript>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <Providers>
-          <Loader />
-          <Navbar />
-          <CartDrawer />
+          <StorefrontOnly>
+            <Loader />
+            <Navbar />
+            <CartDrawer />
+          </StorefrontOnly>
           {children}
-          <Footer />
-          <CustomCursor />
+          <StorefrontOnly>
+            <Footer />
+            <CustomCursor />
+          </StorefrontOnly>
         </Providers>
         <div className="grain" aria-hidden="true" />
       </body>
