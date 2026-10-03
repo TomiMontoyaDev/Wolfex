@@ -45,8 +45,12 @@ function toStorefront(product: DbProduct): Product {
 
 const loadCatalog = unstable_cache(
   async () => {
-    // Los productos inactivos no se muestran; los agotados sí (con badge AGOTADO), como antes.
-    const products = await db.product.findMany({ where: { active: true }, orderBy: { id: "asc" } });
+    // Solo productos visibles y con stock: los agotados (stock 0) se ocultan solos y reaparecen al cargarles stock.
+    // stock NULL = inventario no controlado, se muestra siempre.
+    const products = await db.product.findMany({
+      where: { active: true, OR: [{ stock: null }, { stock: { gt: 0 } }] },
+      orderBy: { id: "asc" },
+    });
     return products.map(toStorefront);
   },
   ["storefront-catalog"],
