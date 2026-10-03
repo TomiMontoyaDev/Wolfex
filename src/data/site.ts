@@ -23,10 +23,24 @@ export interface NavLink {
   href: string;
 }
 
+/** Categorías del menú → valor de `category` en la base. La clave es lo que va en /catalogo?categoria=… */
+export const CATEGORY_SLUGS = {
+  suplementos: "SUPLEMENTOS",
+  proteinas: "PROTEINAS",
+  creatinas: "CREATINAS",
+  "pre-entreno": "PRE-ENTRENO",
+  "vitaminas-y-bienestar": "VITAMINAS Y BIENESTAR",
+} as const;
+
+export type CategorySlug = keyof typeof CATEGORY_SLUGS;
+
 export const NAV_LINKS: NavLink[] = [
   { label: "Shop", href: "/catalogo" },
-  { label: "Supplements", href: "#categories" },
-  { label: "Accessories", href: "#categories" },
+  { label: "Supplements", href: "/catalogo?categoria=suplementos" },
+  { label: "Proteins", href: "/catalogo?categoria=proteinas" },
+  { label: "Creatines", href: "/catalogo?categoria=creatinas" },
+  { label: "Pre-workout", href: "/catalogo?categoria=pre-entreno" },
+  { label: "Vitamins & wellness", href: "/catalogo?categoria=vitaminas-y-bienestar" },
   { label: "About", href: "#code" },
 ];
 
@@ -81,15 +95,16 @@ export const CATEGORIES = [
     index: "01",
     title: "Supplements",
     caption: "Fuel your hunt",
-    href: "#",
+    href: "/catalogo?categoria=suplementos",
     media: MEDIA.categories.performance,
   },
   {
-    id: "accessories",
+    id: "proteins",
     index: "02",
-    title: "Accessories",
-    caption: "Details of the pack",
-    href: "#",
+    title: "Proteins",
+    caption: "Build your strength",
+    href: "/catalogo?categoria=proteinas",
+    // Ilustración abstracta (no muestra accesorios): sirve para cualquier categoría.
     media: MEDIA.categories.accessories,
   },
 ] as const;

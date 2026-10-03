@@ -68,7 +68,7 @@ export function Navbar() {
           <nav className="container-wfx flex h-[var(--nav-h)] items-center justify-between" aria-label="Main">
             {/* Mobile: menu trigger */}
             <button
-              className="-ml-2 flex h-11 w-11 items-center justify-center lg:hidden"
+              className="-ml-2 flex h-11 w-11 items-center justify-center min-[1360px]:hidden"
               onClick={() => setMenuOpen((o) => !o)}
               aria-label={menuOpen ? "Close menu" : "Open menu"}
               aria-expanded={menuOpen}
@@ -83,24 +83,26 @@ export function Navbar() {
                 event.preventDefault();
                 router.push("/");
               }}
-              className="group flex items-center gap-3 max-lg:absolute max-lg:left-1/2 max-lg:-translate-x-1/2"
+              className="group flex shrink-0 items-center gap-3 max-[1359px]:absolute max-[1359px]:left-1/2 max-[1359px]:-translate-x-1/2"
               aria-label="WOLFEX home"
             >
               <WolfMark outline className="h-7 w-auto text-bone transition-colors duration-500 group-hover:text-arc md:h-8" />
               <Wordmark className="h-[15px] w-auto text-bone md:h-[18px]" title="" />
             </a>
 
-            <ul className="hidden items-center gap-10 lg:flex">
+            {/* 7 enlaces: en línea solo en pantallas anchas; por debajo van en el menú (☰). */}
+            <ul className="hidden items-center gap-6 min-[1360px]:flex 2xl:gap-9">
               {NAV_LINKS.map((l) => (
                 <li key={l.label}>
                   <a
                     href={l.href.startsWith("/") ? l.href : pathname === "/" ? l.href : `/${l.href}`}
                     onClick={(event) => {
-                      if (pathname === "/") return;
+                      // Rutas (/catalogo…): navegación instantánea. Anclas (#…): scroll nativo en el inicio.
+                      if (!l.href.startsWith("/") && pathname === "/") return;
                       event.preventDefault();
                       router.push(l.href.startsWith("/") ? l.href : `/${l.href}`);
                     }}
-                    className="group relative block overflow-hidden type-title text-[0.75rem] text-bone/80 transition-colors hover:text-bone"
+                    className="group relative block overflow-hidden whitespace-nowrap type-title text-[0.6875rem] text-bone/80 transition-colors hover:text-bone 2xl:text-[0.75rem]"
                   >
                     <span className="block transition-transform duration-500 ease-[var(--ease-apex)] group-hover:-translate-y-full">{t(l.label)}</span>
                     <span className="absolute inset-0 translate-y-full text-arc transition-transform duration-500 ease-[var(--ease-apex)] group-hover:translate-y-0">{t(l.label)}</span>
@@ -171,11 +173,12 @@ function IconButton({ children, label, onClick, className }: { children: React.R
 /** Mobile: full-screen editorial menu — not a shrunken desktop nav. */
 function MobileMenu({ open, onClose, onSearch }: { open: boolean; onClose: () => void; onSearch: () => void }) {
   const { t } = useLanguage();
+  const router = useRouter();
   return (
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-40 flex flex-col bg-void pt-[var(--nav-h)] lg:hidden"
+          className="fixed inset-0 z-40 flex flex-col overflow-y-auto bg-void pt-[var(--nav-h)] min-[1360px]:hidden"
           initial={{ clipPath: "inset(0 0 100% 0)" }}
           animate={{ clipPath: "inset(0 0 0% 0)" }}
           exit={{ clipPath: "inset(0 0 100% 0)" }}
@@ -192,17 +195,17 @@ function MobileMenu({ open, onClose, onSearch }: { open: boolean; onClose: () =>
                       href={l.href.startsWith("/") ? l.href : `/${l.href}`}
                       onClick={(event) => {
                         onClose();
-                        if (window.location.pathname !== "/") {
-                          event.preventDefault();
-                          window.location.assign(l.href.startsWith("/") ? l.href : `/${l.href}`);
-                        }
+                        // Anclas (#…) en el inicio: scroll nativo. Lo demás: navegación instantánea.
+                        if (!l.href.startsWith("/") && window.location.pathname === "/") return;
+                        event.preventDefault();
+                        router.push(l.href.startsWith("/") ? l.href : `/${l.href}`);
                       }}
-                      className="flex items-baseline justify-between py-4"
+                      className="flex items-baseline justify-between gap-4 py-3"
                       initial={{ y: "100%" }}
                       animate={{ y: 0 }}
                       transition={{ duration: 0.7, delay: 0.25 + i * 0.06, ease: [0.16, 1, 0.3, 1] }}
                     >
-                      <span className="type-headline text-[clamp(2.25rem,11vw,3.5rem)]">{t(l.label)}</span>
+                      <span className="type-headline text-[clamp(1.6rem,7.5vw,3rem)]">{t(l.label)}</span>
                       <span className="type-label text-arc">{pad(i + 1)}</span>
                     </motion.a>
                   </li>

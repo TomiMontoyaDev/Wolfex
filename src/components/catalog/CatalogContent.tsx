@@ -11,11 +11,22 @@ import { cn, formatPrice, pad } from "@/lib/utils";
 
 const ALL = "TODAS";
 
-export function CatalogContent({ products, initialQuery = "" }: { products: Product[]; initialQuery?: string }) {
+const CATEGORY_LABELS: Record<string, string> = {
+  SUPLEMENTOS: "Suplementos",
+  PROTEINAS: "Proteínas",
+  CREATINAS: "Creatinas",
+  "PRE-ENTRENO": "Pre-entreno",
+  "VITAMINAS Y BIENESTAR": "Vitaminas y bienestar",
+  AMINOACIDOS: "Aminoácidos",
+};
+
+export function CatalogContent({ products, initialQuery = "", initialCategory }: { products: Product[]; initialQuery?: string; initialCategory?: string }) {
   const { t } = useLanguage();
   const [query, setQuery] = useState(initialQuery);
   const [brand, setBrand] = useState(ALL);
-  const [category, setCategory] = useState<"TODAS" | ProductCategory>(ALL);
+  const [category, setCategory] = useState<"TODAS" | ProductCategory>(() =>
+    initialCategory && products.some((product) => product.category === initialCategory) ? (initialCategory as ProductCategory) : ALL,
+  );
   const [maxPrice, setMaxPrice] = useState(Math.max(...products.map((product) => product.price)));
   const [filtersOpen, setFiltersOpen] = useState(false);
 
@@ -50,9 +61,11 @@ export function CatalogContent({ products, initialQuery = "" }: { products: Prod
 
         <div className="mt-12 flex flex-col gap-6 md:mt-16 md:flex-row md:items-end md:justify-between">
           <div>
-            <h1 className="type-display text-[clamp(3.5rem,11vw,10rem)] leading-[0.85]">Catálogo</h1>
+            <h1 className="type-display text-[clamp(3rem,9vw,8.5rem)] leading-[0.85]">{category === ALL ? "Catálogo" : CATEGORY_LABELS[category] ?? category}</h1>
             <p className="mt-6 max-w-xl type-body text-steel">
-              Explora todos nuestros suplementos y accesorios. Filtra por marca, categoría y presupuesto.
+              {category === ALL
+                ? "Explora todos nuestros suplementos. Filtra por marca, categoría y presupuesto."
+                : `${filteredProducts.length} ${filteredProducts.length === 1 ? "producto" : "productos"} en ${(CATEGORY_LABELS[category] ?? category).toLowerCase()}. Filtra por marca y presupuesto, o elige otra categoría.`}
             </p>
           </div>
           <button

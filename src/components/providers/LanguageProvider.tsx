@@ -5,7 +5,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 export type Language = "en" | "es";
 
 const translations: Record<string, string> = {
-  "Shop": "Tienda", "Men": "Hombre", "Women": "Mujer", "Accessories": "Accesorios", "Supplements": "Suplementos", "About": "Nosotros", "The": "El", "Code": "Código", "categories": "categorías", "Menu": "Menú",
+  "Shop": "Tienda", "Men": "Hombre", "Women": "Mujer", "Accessories": "Accesorios", "Supplements": "Suplementos", "Proteins": "Proteínas", "Build your strength": "Construye tu fuerza", "Creatines": "Creatinas", "Pre-workout": "Pre-entreno", "Vitamins & wellness": "Vitaminas y bienestar", "About": "Nosotros", "The": "El", "Code": "Código", "categories": "categorías", "Menu": "Menú",
   "BUILT TO HUNT.": "HECHO PARA CAZAR.", "NO COMFORT.": "SIN COMODIDAD.", "BEYOND YOUR LIMITS.": "MÁS ALLÁ DE TUS LÍMITES.", "FIND YOUR WOLF.": "ENCUENTRA TU LOBO.", "HUNT YOUR APEX.": "ALCANZA TU CIMA.",
   "Search": "Buscar", "Account": "Cuenta", "Open menu": "Abrir menú", "Close menu": "Cerrar menú",
   "The WOLFEX Code": "El código WOLFEX", "Manifesto — WFX/M-01": "Manifiesto — WFX/M-01",

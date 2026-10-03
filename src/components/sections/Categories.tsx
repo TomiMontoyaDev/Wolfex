@@ -11,14 +11,14 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 /**
  * Editorial asymmetric layout (desktop):
  *   ┌───────────────┬───────────────┐
- *   │  SUPPLEMENTS  │  ACCESSORIES  │
+ *   │  SUPPLEMENTS  │   PROTEINS    │
  *   │               │               │
  *   └───────────────┴───────────────┘
  * Mobile: full-bleed stacked panels with persistent labels.
  */
 const LAYOUT: Record<string, string> = {
   supplements: "lg:col-span-6 aspect-[4/5] sm:aspect-[16/11] lg:aspect-auto",
-  accessories: "lg:col-span-6 aspect-[4/5] sm:aspect-[16/11] lg:aspect-auto",
+  proteins: "lg:col-span-6 aspect-[4/5] sm:aspect-[16/11] lg:aspect-auto",
 };
 
 export function Categories() {
@@ -29,7 +29,7 @@ export function Categories() {
         <SectionLabel index="03" label={t("Collections")} meta={`02 ${t("categories")}`} />
         <div className="mt-12 flex flex-col justify-between gap-6 md:mt-16 md:flex-row md:items-end">
           <SplitReveal as="h2" text={t("Find your wolf")} className="type-display text-[clamp(3rem,9vw,8.5rem)]" />
-          <p className="max-w-xs type-label text-steel md:pb-4 md:text-right">Supplements / Accessories</p>
+          <p className="max-w-xs type-label text-steel md:pb-4 md:text-right">{t("Supplements")} / {t("Proteins")}</p>
         </div>
 
         <div className="mt-12 grid gap-3 md:mt-16 lg:grid-cols-12 lg:gap-4" id="cat-title">
@@ -46,7 +46,7 @@ export function Categories() {
               transition={{ duration: 1.3, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="absolute inset-0 transition-transform duration-[1.4s] ease-[var(--ease-apex)] group-hover:scale-[1.07]">
-                <Media slot={c.media} sizes={c.id === "accessories" ? "100vw" : "(min-width:1024px) 50vw, 100vw"} />
+                <Media slot={c.media} sizes="(min-width:1024px) 50vw, 100vw" />
               </div>
               {/* overlay: darkens at rest, opens to blue on hover */}
               <div className="absolute inset-0 bg-gradient-to-t from-void via-void/40 to-void/10 transition-opacity duration-700 group-hover:opacity-70" />
