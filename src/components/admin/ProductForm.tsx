@@ -57,11 +57,16 @@ export function ProductForm({ action, values, categories, submitLabel }: { actio
   const [removeImage, setRemoveImage] = useState(false);
   const [compressing, setCompressing] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [link, setLink] = useState("");
+  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
-  // Al guardar con éxito, la imagen ya está en el servidor: se limpia el archivo pendiente.
+  // Al guardar con éxito, la imagen ya está en el servidor: se limpia lo pendiente.
   useEffect(() => {
-    if (state.ok) setFile(null);
+    if (state.ok) {
+      setFile(null);
+      setLink("");
+    }
   }, [state]);
 
   async function pick(selected: File | undefined) {
@@ -71,15 +76,35 @@ export function ProductForm({ action, values, categories, submitLabel }: { actio
     const compressed = await compressImage(selected);
     setCompressing(false);
     setFile(compressed);
+    setLink("");
     setRemoveImage(false);
     setPreview(URL.createObjectURL(compressed));
   }
+
+  function applyLink(value: string) {
+    setLink(value);
+    const trimmed = value.trim();
+    if (/^https:\/\/\S+$/i.test(trimmed)) {
+      setFile(null);
+      setRemoveImage(false);
+      setPreview(trimmed);
+      if (fileInput.current) fileInput.current.value = "";
+    } else if (!trimmed) {
+      setPreview(file ? preview : values.image);
+    }
+  }
+
+  // Resolución real de lo que se ve en la vista previa (para detectar fotos pixeladas).
+  const lowRes = size !== null && Math.max(size.width, size.height) < 800;
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     // Reemplaza el archivo original por la versión comprimida (sin archivo nuevo, va vacío y se ignora).
-    if (file) formData.set("image", file);
+    if (file) {
+      formData.set("image", file);
+      formData.delete("imageUrl");
+    }
     if (removeImage) formData.set("removeImage", "on");
     startTransition(() => formAction(formData));
   }
@@ -165,7 +190,14 @@ export function ProductForm({ action, values, categories, submitLabel }: { actio
           >
             {preview && !removeImage ? (
               // eslint-disable-next-line @next/next/no-img-element -- vista previa local (blob:) o remota
-              <img src={preview} alt="Vista previa" className="h-full w-full object-cover" />
+              <img
+                key={preview}
+                src={preview}
+                alt="Vista previa"
+                className="h-full w-full object-contain"
+                onLoad={(event) => setSize({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })}
+                onError={() => setSize(null)}
+              />
             ) : (
               <div className="flex flex-col items-center gap-3 px-6 text-center">
                 <ImagePlus className="h-8 w-8 text-arc" strokeWidth={1.25} />
@@ -179,6 +211,8 @@ export function ProductForm({ action, values, categories, submitLabel }: { actio
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
             {file ? (
               <span className="type-label text-emerald-300">Nueva imagen lista · {formatKb(file.size)} (se sube al guardar)</span>
+            ) : link.trim() ? (
+              <span className="type-label text-emerald-300">Se importará desde el link al guardar</span>
             ) : (
               <span className="type-label text-steel">{preview && !removeImage ? "Imagen actual" : "Sin imagen"}</span>
             )}
@@ -187,7 +221,9 @@ export function ProductForm({ action, values, categories, submitLabel }: { actio
                 type="button"
                 onClick={() => {
                   setFile(null);
+                  setLink("");
                   setPreview(null);
+                  setSize(null);
                   setRemoveImage(Boolean(values.image));
                   if (fileInput.current) fileInput.current.value = "";
                 }}
@@ -197,11 +233,33 @@ export function ProductForm({ action, values, categories, submitLabel }: { actio
               </button>
             )}
           </div>
+
+          {preview && !removeImage && size && (
+            <p className={`mt-2 type-label ${lowRes ? "text-amber-200" : "text-steel"}`}>
+              {size.width}×{size.height} px · {lowRes ? "baja resolución, se verá pixelada en la tienda" : "buena resolución"}
+            </p>
+          )}
+
+          <label className="mt-5 block border-t border-line pt-4">
+            <span className="type-label text-steel">O importa desde un link</span>
+            <input
+              name="imageUrl"
+              type="url"
+              inputMode="url"
+              value={link}
+              onChange={(event) => applyLink(event.target.value)}
+              placeholder="https://… (clic derecho en la foto → Copiar dirección de la imagen)"
+              className={`mt-2 ${inputClass}`}
+            />
+            <span className="mt-2 block text-xs leading-5 text-steel">
+              Usa fotos del fabricante o de tu proveedor, de al menos 800 px. Se descargan, se optimizan y se guardan en tu almacenamiento.
+            </span>
+          </label>
         </div>
 
         <div className="space-y-3">
           <button disabled={pending || compressing} className={`${buttonClass} h-14 w-full justify-between`}>
-            <span>{pending ? (file ? "Subiendo imagen y guardando…" : "Guardando…") : submitLabel}</span>
+            <span>{pending ? (file ? "Subiendo imagen y guardando…" : link.trim() ? "Importando imagen y guardando…" : "Guardando…") : submitLabel}</span>
             <span aria-hidden="true">→</span>
           </button>
           {state.error && <p role="alert" className="text-sm text-red-300">{state.error}</p>}

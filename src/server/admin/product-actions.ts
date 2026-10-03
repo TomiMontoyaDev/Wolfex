@@ -10,6 +10,7 @@ import { PRODUCTS_TAG } from "@/lib/commerce";
 import { requireAdmin } from "../auth";
 import { db } from "../db";
 import type { ActionState } from "./actions";
+import { ImageImportError, MIN_SHARP_SIDE, importImageFromUrl } from "./image-import";
 
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 const IMAGE_TYPES = ["image/webp", "image/jpeg", "image/png", "image/avif"];
@@ -113,15 +114,31 @@ function friendlyError(error: unknown) {
   if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
     return "Ya existe un producto con ese SKU.";
   }
+  if (error instanceof ImageImportError) return error.message;
   if (error instanceof Error && /Blob|imagen|Formato/.test(error.message)) return error.message;
   console.error("[admin] producto", error);
   return "No se pudo guardar el producto.";
 }
 
-const imageFrom = (formData: FormData) => {
+/**
+ * Imagen nueva del formulario: un archivo subido o, si no hay, un link para importar.
+ * Devuelve la ruta guardada y un aviso si la imagen original es de baja resolución.
+ */
+async function resolveNewImage(formData: FormData, productId: string) {
   const file = formData.get("image");
-  return file instanceof File && file.size > 0 ? file : null;
-};
+  if (file instanceof File && file.size > 0) return { url: await uploadImage(file, productId), note: "" };
+
+  const link = String(formData.get("imageUrl") ?? "").trim();
+  if (!link) return null;
+  const imported = await importImageFromUrl(link);
+  const { width, height } = imported.original;
+  return {
+    url: await uploadImage(imported.file, productId),
+    note: imported.lowResolution
+      ? ` Ojo: la imagen original mide ${width}×${height} px; para que se vea nítida busca una de al menos ${MIN_SHARP_SIDE} px.`
+      : ` Imagen importada (${width}×${height} px).`,
+  };
+}
 
 // ───────────── Crear ─────────────
 
@@ -135,8 +152,7 @@ export async function createProductAction(_prev: ActionState, formData: FormData
   const id = `wfx-${slugify(data.name) || "producto"}-${suffix}`;
   let createdId: string;
   try {
-    const image = imageFrom(formData);
-    const imageUrl = image ? await uploadImage(image, id) : null;
+    const imageUrl = (await resolveNewImage(formData, id))?.url ?? null;
     const product = await db.product.create({
       data: {
         id,
@@ -173,12 +189,15 @@ export async function updateProductDetailsAction(_prev: ActionState, formData: F
   const current = await db.product.findUnique({ where: { id: productId } });
   if (!current) return { error: "El producto ya no existe." };
 
+  let note = "";
   try {
-    const image = imageFrom(formData);
+    const newImage = await resolveNewImage(formData, productId);
     const removeImage = formData.get("removeImage") === "on";
     let imageUrl = current.image;
-    if (image) imageUrl = await uploadImage(image, productId);
-    else if (removeImage) imageUrl = null;
+    if (newImage) {
+      imageUrl = newImage.url;
+      note = newImage.note;
+    } else if (removeImage) imageUrl = null;
 
     await db.product.update({
       where: { id: productId },
@@ -200,7 +219,7 @@ export async function updateProductDetailsAction(_prev: ActionState, formData: F
     return { error: friendlyError(error) };
   }
   refreshStorefront(productId);
-  return { ok: true, message: "Producto guardado." };
+  return { ok: true, message: `Producto guardado.${note}` };
 }
 
 /** Edición rápida desde la lista: precio, costo, stock y estado. */
