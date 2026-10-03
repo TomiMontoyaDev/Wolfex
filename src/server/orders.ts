@@ -190,9 +190,13 @@ export async function createMercadoPagoCheckout(order: OrderForCheckout, baseUrl
         },
         external_reference: order.externalReference,
         statement_descriptor: "WOLFEX",
-        back_urls: { success: resultUrl, pending: resultUrl, failure: resultUrl },
-        // Mercado Pago rechaza auto_return y notification_url con URLs locales (http://localhost).
-        ...(isPublic && { auto_return: "approved", notification_url: `${baseUrl}/api/mercadopago/webhook` }),
+        // Mercado Pago solo acepta back_urls / notification_url públicas con HTTPS: con una URL local
+        // (http://localhost) no se envían, para no romper el checkout al probar en desarrollo.
+        ...(isPublic && {
+          back_urls: { success: resultUrl, pending: resultUrl, failure: resultUrl },
+          auto_return: "approved",
+          notification_url: `${baseUrl}/api/mercadopago/webhook`,
+        }),
         metadata: { order_id: order.id, order_number: order.orderNumber },
       },
       requestOptions: { idempotencyKey: `pref-${order.id}` },
