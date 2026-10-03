@@ -6,7 +6,12 @@ export type ProductCategory = "CREATINAS" | "PROTEINAS" | "ACCESORIOS" | "AMINOA
 
 export interface ProductColor { name: string; hex: string; }
 
-export interface Product { id: string; sku: string; brand: string; handle: string; name: string; descriptor: string; category: ProductCategory; price: number; available: boolean; colors: ProductColor[]; badge?: "AGOTADO"; spec: string; images: { primary: MediaSlot; secondary: MediaSlot; }; }
+export interface Product { id: string; sku: string; brand: string; handle: string; name: string; descriptor: string; category: ProductCategory; price: number; available: boolean; colors: ProductColor[]; badge?: "AGOTADO"; spec: string; images: { primary: MediaSlot; secondary: MediaSlot; };
+  /** Precio anterior (tachado). Solo se envía cuando es mayor que `price`. */
+  compareAtPrice?: number;
+  /** STOCK = entrega inmediata en Pereira · DROP = envío nacional. */
+  delivery?: "STOCK" | "DROP";
+}
 
 export const PRODUCTS: Product[] = [
   {

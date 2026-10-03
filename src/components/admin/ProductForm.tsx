@@ -15,8 +15,11 @@ export interface ProductFormValues {
   sku: string | null;
   description: string | null;
   price: number | null;
+  compareAtPrice: number | null;
   costPrice: number | null;
   stock: number | null;
+  fulfillment: "STOCK" | "DROP" | null;
+  sortOrder: number | null;
   active: boolean;
   image: string | null;
 }
@@ -148,6 +151,26 @@ export function ProductForm({ action, values, categories, submitLabel }: { actio
           <label className="block">
             <span className="type-label text-steel">Stock</span>
             <input name="stock" inputMode="numeric" defaultValue={values.stock ?? ""} placeholder="Vacío = sin control" className={field} />
+          </label>
+        </div>
+        <div className="grid gap-5 sm:grid-cols-3">
+          <label className="block">
+            <span className="type-label text-steel">Precio antes (tachado)</span>
+            <input name="compareAtPrice" inputMode="numeric" defaultValue={values.compareAtPrice ?? ""} placeholder="Opcional" className={field} />
+            <span className="mt-1.5 block text-xs text-steel">Se muestra tachado solo si es mayor que el precio de venta.</span>
+          </label>
+          <label className="block">
+            <span className="type-label text-steel">Entrega</span>
+            <select name="fulfillment" defaultValue={values.fulfillment ?? ""} className={`${field} appearance-none`}>
+              <option value="">Sin etiqueta</option>
+              <option value="STOCK">Entrega inmediata en Pereira (stock)</option>
+              <option value="DROP">Envío nacional (dropshipping)</option>
+            </select>
+          </label>
+          <label className="block">
+            <span className="type-label text-steel">Posición en la tienda</span>
+            <input name="sortOrder" inputMode="numeric" defaultValue={values.sortOrder ?? ""} placeholder="Vacío = al final" className={field} />
+            <span className="mt-1.5 block text-xs text-steel">1 = primero. Los 12 primeros salen destacados en el inicio.</span>
           </label>
         </div>
         <div className="grid gap-5 sm:grid-cols-2">

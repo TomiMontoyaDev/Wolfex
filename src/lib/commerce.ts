@@ -38,6 +38,8 @@ function toStorefront(product: DbProduct): Product {
     available,
     colors: [{ name: "", hex: "#0066FF" }],
     ...(!available && { badge: "AGOTADO" as const }),
+    ...(product.compareAtPrice && product.compareAtPrice > product.price && { compareAtPrice: product.compareAtPrice }),
+    ...(product.fulfillment && { delivery: product.fulfillment }),
     spec: product.category ?? "",
     images: { primary: slot(`${product.name}, vista principal`), secondary: slot(`${product.name}, detalle`) },
   };
@@ -49,7 +51,8 @@ const loadCatalog = unstable_cache(
     // stock NULL = inventario no controlado, se muestra siempre.
     const products = await db.product.findMany({
       where: { active: true, OR: [{ stock: null }, { stock: { gt: 0 } }] },
-      orderBy: { id: "asc" },
+      // Primero los que tienen posición asignada (sortOrder), luego el resto.
+      orderBy: [{ sortOrder: { sort: "asc", nulls: "last" } }, { id: "asc" }],
     });
     return products.map(toStorefront);
   },
@@ -58,7 +61,8 @@ const loadCatalog = unstable_cache(
 );
 
 export async function getFeaturedProducts(): Promise<Product[]> {
-  return (await loadCatalog()).filter((product) => product.available).slice(0, 8);
+  // Destacados del inicio: los 12 primeros según la posición asignada en el admin.
+  return (await loadCatalog()).filter((product) => product.available).slice(0, 12);
 }
 
 export async function getCatalogProducts(): Promise<Product[]> {

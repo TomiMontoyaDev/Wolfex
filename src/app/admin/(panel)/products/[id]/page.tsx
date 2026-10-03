@@ -57,8 +57,11 @@ export default async function EditProductPage({ params, searchParams }: { params
             sku: product.sku,
             description: product.description,
             price: product.price,
+            compareAtPrice: product.compareAtPrice,
             costPrice: product.costPrice,
             stock: product.stock,
+            fulfillment: product.fulfillment,
+            sortOrder: product.sortOrder,
             active: product.active,
             image: product.image,
           }}

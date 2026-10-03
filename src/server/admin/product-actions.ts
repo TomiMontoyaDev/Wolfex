@@ -47,12 +47,21 @@ const productSchema = z.object({
   sku: text(40),
   description: text(2000),
   price: pesos("el precio", { required: true }),
+  compareAtPrice: pesos("el precio anterior"),
   costPrice: pesos("el costo"),
   stock: z
     .string()
     .trim()
     .transform((value) => (value === "" ? null : Number(value)))
     .refine((value) => value === null || (Number.isInteger(value) && value >= 0 && value < 1_000_000), "Stock inválido."),
+  fulfillment: z
+    .enum(["", "STOCK", "DROP"], { error: "Tipo de entrega inválido." })
+    .transform((value) => (value === "" ? null : value)),
+  sortOrder: z
+    .string()
+    .trim()
+    .transform((value) => (value === "" ? null : Number(value)))
+    .refine((value) => value === null || (Number.isInteger(value) && value >= 0 && value < 100_000), "Posición inválida."),
   active: z.boolean(),
 });
 
@@ -65,8 +74,11 @@ function readProductForm(formData: FormData) {
     sku: field("sku"),
     description: field("description"),
     price: field("price"),
+    compareAtPrice: field("compareAtPrice"),
     costPrice: field("costPrice"),
     stock: field("stock"),
+    fulfillment: field("fulfillment"),
+    sortOrder: field("sortOrder"),
     active: formData.get("active") === "on",
   });
 }
@@ -164,6 +176,9 @@ export async function createProductAction(_prev: ActionState, formData: FormData
         description: data.description,
         price: data.price!,
         costPrice: data.costPrice,
+        compareAtPrice: data.compareAtPrice,
+        fulfillment: data.fulfillment,
+        sortOrder: data.sortOrder,
         stock: data.stock,
         active: data.active,
         image: imageUrl,
@@ -209,6 +224,9 @@ export async function updateProductDetailsAction(_prev: ActionState, formData: F
         description: data.description,
         price: data.price!,
         costPrice: data.costPrice,
+        compareAtPrice: data.compareAtPrice,
+        fulfillment: data.fulfillment,
+        sortOrder: data.sortOrder,
         stock: data.stock,
         active: data.active,
         image: imageUrl,

@@ -16,7 +16,9 @@
     "db:seed": "prisma db seed",
     "db:sync-catalog": "tsx prisma/sync-catalog.ts",
     "db:seed:demo": "tsx prisma/seed-demo.ts",
-    "db:seed:demo:clean": "tsx prisma/seed-demo.ts --clean"
+    "db:seed:demo:clean": "tsx prisma/seed-demo.ts --clean",
+    "db:backup-products": "tsx prisma/backup-products.ts",
+    "db:restore-products": "tsx prisma/restore-products.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",

@@ -379,7 +379,7 @@ export async function listProducts(filters: { q?: string; status?: string; categ
     db.product.count({ where }),
     db.product.findMany({
       where,
-      orderBy: [{ active: "desc" }, { name: "asc" }],
+      orderBy: [{ active: "desc" }, { sortOrder: { sort: "asc", nulls: "last" } }, { name: "asc" }],
       skip: (page - 1) * PRODUCTS_PAGE_SIZE,
       take: PRODUCTS_PAGE_SIZE,
       include: { supplier: { select: { name: true } } },

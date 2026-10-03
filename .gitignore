@@ -9,3 +9,6 @@ next-env.d.ts
 
 # Prisma Client generado (se regenera en postinstall)
 /src/generated/
+
+# Respaldos locales de la base (contienen costos y datos del negocio)
+/backups/

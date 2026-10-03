@@ -117,10 +117,10 @@ model Supplier {
 
 model Product {
   /// Mismo id que el catálogo estático (src/data/products.ts).
-  id             String   @id
+  id             String       @id
   name           String
-  slug           String   @unique
-  sku            String   @unique
+  slug           String       @unique
+  sku            String       @unique
   brand          String?
   description    String?
   /// Precio de venta vigente. El backend SIEMPRE cobra este valor, nunca el del navegador.
@@ -131,19 +131,29 @@ model Product {
   /// NULL = inventario no controlado todavía.
   stock          Int?
   image          String?
-  active         Boolean  @default(true)
+  active         Boolean      @default(true)
   category       String?
   supplierId     String?
   /// Referencia del producto en el sistema del proveedor (para futuras integraciones).
   supplierSku    String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  /// STOCK = en físico en Pereira (entrega inmediata) · DROP = lo despacha el proveedor. NULL = sin etiqueta.
+  fulfillment    Fulfillment?
+  /// Posición en la tienda: menor sale primero (inicio y catálogo). NULL = al final.
+  sortOrder      Int?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   supplier   Supplier?   @relation(fields: [supplierId], references: [id], onDelete: SetNull)
   orderItems OrderItem[]
 
   @@index([active])
   @@index([category])
+  @@index([sortOrder])
+}
+
+enum Fulfillment {
+  STOCK
+  DROP
 }
 
 // ───────────── Pedidos ─────────────

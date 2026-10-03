@@ -116,9 +116,14 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
     >
       <div className="mb-3 flex items-center justify-between type-label">
         <span className="text-steel">{product.sku}</span>
-        {product.badge && (
+        {product.badge ? (
           <span className={cn(product.badge === "AGOTADO" ? "text-red-400" : "text-bone/70")}>{t(product.badge)}</span>
-        )}
+        ) : product.delivery ? (
+          <span className={cn("flex items-center gap-1.5", product.delivery === "STOCK" ? "text-arc" : "text-steel")}>
+            <span className={cn("h-1.5 w-1.5 rounded-full", product.delivery === "STOCK" ? "bg-arc shadow-[0_0_8px_rgba(0,168,255,0.9)]" : "bg-steel")} aria-hidden="true" />
+            {product.delivery === "STOCK" ? "Entrega inmediata en Pereira" : "Envío nacional"}
+          </span>
+        ) : null}
       </div>
 
       {/* Image stage */}
@@ -155,7 +160,14 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
             <p className="type-label text-steel">{product.brand}</p>
             <h3 className="mt-1 type-title text-lg leading-tight transition-colors duration-500 group-hover:text-arc">{t(product.name)}</h3>
           </div>
-          <p className="pt-4 font-mono text-sm">{formatPrice(product.price)}</p>
+          <p className="flex shrink-0 flex-col items-end pt-4 font-mono text-sm">
+            {product.compareAtPrice && (
+              <s className="text-xs text-steel" aria-label={`Antes ${formatPrice(product.compareAtPrice)}`}>
+                {formatPrice(product.compareAtPrice)}
+              </s>
+            )}
+            <span className={product.compareAtPrice ? "text-arc" : undefined}>{formatPrice(product.price)}</span>
+          </p>
         </div>
         <p className="mt-2 text-sm text-steel">{t(product.descriptor)}</p>
 
