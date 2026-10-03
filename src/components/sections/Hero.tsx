@@ -140,7 +140,7 @@ export function Hero() {
               animate={ready ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 1, delay: 1.3, ease }}
             >
-              <MagneticButton href="#drop" className="w-full sm:w-auto [&>a]:w-full">{t("Shop the drop")}</MagneticButton>
+              <MagneticButton href="#drop" className="w-full sm:w-auto [&>a]:w-full">{t("Shop supplements")}</MagneticButton>
               <MagneticButton href="#code" variant="ghost" arrow={false} className="w-full sm:w-auto [&>a]:w-full">
                 {t("Explore WOLFEX")}
               </MagneticButton>
@@ -157,13 +157,13 @@ export function Hero() {
         transition={{ duration: 1.2, delay: 1.6 }}
       >
         <div className="container-wfx absolute inset-x-0 top-[calc(var(--nav-h)+1.5rem)] flex justify-between type-label text-steel">
-          <span>WFX-001 / SS{String(SITE.established).slice(2)} DROP</span>
+          <span>WFX-001 / {t("SUPPLEMENTS")} {SITE.established}</span>
           <span className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-arc" /> Limited release — live
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-arc" /> {t("Nationwide shipping — live")}
           </span>
         </div>
         <span className="absolute left-[var(--gutter)] top-1/2 -translate-y-1/2 -rotate-90 origin-left translate-x-3 type-label text-steel/80">
-          Built for your progress
+          {t("Built for your progress")}
         </span>
         <div className="absolute right-[var(--gutter)] top-1/2 flex -translate-y-1/2 flex-col items-end gap-3 type-label text-steel/80">
           <span className="text-bone">01</span>

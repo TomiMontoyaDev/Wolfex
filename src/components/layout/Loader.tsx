@@ -65,7 +65,7 @@ export function Loader() {
           initial={{ clipPath: "inset(0 0 0% 0)" }}
           transition={{ duration: 0.9, ease: [0.76, 0, 0.24, 1] }}
           aria-live="polite"
-          aria-label="Loading WOLFEX"
+          aria-label="Cargando WOLFEX"
         >
           <div className="absolute inset-0 bg-tech-grid opacity-40 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
 
@@ -114,7 +114,7 @@ export function Loader() {
 
           <div className="absolute bottom-6 left-0 right-0 flex justify-between px-[var(--gutter)] type-label text-steel/70">
             <span>EST. {SITE.established}</span>
-            <span>PERFORMANCE SYSTEM</span>
+            <span>SISTEMA DE RENDIMIENTO</span>
           </div>
         </motion.div>
       )}

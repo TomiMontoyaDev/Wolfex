@@ -42,8 +42,8 @@ export function CampaignSection() {
 
       <div className="container-wfx relative flex h-full flex-col justify-between py-24 md:py-32">
         <div className="flex justify-between type-label text-steel">
-          <span>Campaign 01</span>
-          <span className="hidden sm:block">WOLFEX — Film / Photo</span>
+          <span>{t("Campaign 01")}</span>
+          <span className="hidden sm:block">{t("WOLFEX — Film / Photo")}</span>
         </div>
 
         <div>

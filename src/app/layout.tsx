@@ -32,11 +32,11 @@ const jetbrains = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: `${SITE.name} — Hunt Your Apex`,
+    default: `${SITE.name} — Suplementos deportivos en Colombia`,
     template: `%s · ${SITE.name}`,
   },
   description: SITE.description,
-  keywords: ["WOLFEX", "performance apparel", "streetwear", "gym wear", "athleisure", "heavyweight tee", "hoodie", "Hunt Your Apex"],
+  keywords: ["WOLFEX", "suplementos deportivos", "proteína", "creatina", "pre-entreno", "vitaminas", "tienda de suplementos Colombia", "suplementos Pereira"],
   applicationName: SITE.name,
   authors: [{ name: SITE.name }],
   alternates: { canonical: "/" },
@@ -44,17 +44,17 @@ export const metadata: Metadata = {
     type: "website",
     url: SITE.url,
     siteName: SITE.name,
-    title: `${SITE.name} — Hunt Your Apex`,
+    title: `${SITE.name} — Suplementos deportivos en Colombia`,
     description: SITE.description,
-    locale: "en_US",
+    locale: "es_CO",
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE.name} — Hunt Your Apex`,
+    title: `${SITE.name} — Suplementos deportivos en Colombia`,
     description: SITE.description,
   },
   robots: { index: true, follow: true },
-  category: "fashion",
+  category: "health",
 };
 
 export const viewport: Viewport = {
@@ -69,14 +69,14 @@ const jsonLd = {
   "@type": "Organization",
   name: SITE.name,
   url: SITE.url,
-  slogan: "Hunt Your Apex.",
+  slogan: "Alcanza tu cima.",
   foundingDate: String(SITE.established),
   sameAs: SOCIALS.map((s) => s.href),
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${archivo.variable} ${jetbrains.variable}`} suppressHydrationWarning>
+    <html lang="es" className={`${archivo.variable} ${jetbrains.variable}`} suppressHydrationWarning>
       <body>
         <noscript>
           <style>{`#wfx-loader{display:none!important}`}</style>

@@ -4,7 +4,7 @@ export const SITE = {
   name: "WOLFEX",
   tagline: "HUNT YOUR APEX.",
   description:
-    "WOLFEX is a performance, streetwear and lifestyle brand built for those who refuse to stay at the same level. Discipline over comfort. Hunt your apex.",
+    "WOLFEX es tu tienda de suplementos deportivos en Colombia: proteínas, creatinas, pre-entrenos y vitaminas para entrenar más fuerte y recuperarte mejor. Disciplina sobre comodidad. Alcanza tu cima.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://wolfex.com",
   established: 2026,
   locale: "es-CO",
@@ -71,21 +71,21 @@ export const SOCIALS: Social[] = [
     label: "Instagram",
     handle: "@wolfex",
     href: "https://www.instagram.com/wolfexwear/?hl=es-la",
-    pitch: "Drops, campaigns & the pack in motion.",
+    pitch: "Offers, new arrivals & the pack in motion.",
   },
   {
     platform: "tiktok",
     label: "TikTok",
     handle: "@wolfex",
     href: "https://tiktok.com/",
-    pitch: "Training, fits & behind the hunt.",
+    pitch: "Training tips, supplements & behind the hunt.",
   },
   {
     platform: "youtube",
     label: "YouTube",
     handle: "WOLFEX",
     href: "https://youtube.com/",
-    pitch: "Films, programs & WOLFEX // MOTOR.",
+    pitch: "Videos, guides & WOLFEX // MOTOR.",
   },
 ];
 

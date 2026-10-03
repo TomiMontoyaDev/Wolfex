@@ -34,7 +34,7 @@ export function Community() {
             <SplitReveal as="h2" text={t("Run with the pack.")} className="type-display text-[clamp(3rem,7vw,7rem)]" />
             <Reveal delay={0.2}>
               <p id="pack-title" className="mt-8 max-w-md type-body text-steel">
-                {t("WOLFEX is bigger than a logo. It's the 5AM sessions, the night runs, the people who push you past the point you would have stopped alone. Wear it. Tag it. Train with us.")}
+                {t("WOLFEX is bigger than a logo. It's the 5AM sessions, the late-night workouts, the people who push you past the point you would have stopped alone. Fuel up. Tag us. Train with us.")}
               </p>
               <div className="mt-10">
                 <MagneticButton href="#join">{t("Join WOLFEX")}</MagneticButton>
@@ -55,7 +55,7 @@ export function Community() {
                       </div>
                       <div className="absolute inset-0 bg-gradient-to-t from-void/80 via-transparent to-transparent" />
                       <figcaption className="absolute inset-x-3 bottom-3 flex items-center justify-between type-label md:inset-x-4 md:bottom-4">
-                        <span className="text-bone">{CAPTIONS[i]}</span>
+                        <span className="text-bone">{t(CAPTIONS[i])}</span>
                         <span className="text-arc">{pad(i + 1)}</span>
                       </figcaption>
                     </figure>
@@ -77,7 +77,7 @@ export function Community() {
                   <SocialIcon platform={s.platform} className="h-5 w-5 text-steel transition-colors group-hover:text-arc md:h-6 md:w-6" />
                   <span className="type-headline text-[clamp(1.5rem,4vw,3.25rem)] transition-transform duration-500 ease-[var(--ease-apex)] group-hover:translate-x-2">{s.label}</span>
                 </span>
-                <span className="relative hidden text-sm text-steel md:block">{s.pitch}</span>
+                <span className="relative hidden text-sm text-steel md:block">{t(s.pitch)}</span>
                 <span className="relative flex items-center gap-3 type-label text-bone/80">
                   <span className="hidden sm:inline">{s.handle}</span>
                   <ArrowUpRight className="h-5 w-5 transition-transform duration-500 group-hover:-translate-y-1 group-hover:translate-x-1" strokeWidth={1.5} />

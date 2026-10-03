@@ -35,7 +35,7 @@ export function Newsletter() {
         <p className="type-label text-arc">{t("Early access")}</p>
         <SplitReveal as="h2" text={t("Join the pack.")} className="mt-6 justify-center type-display text-[clamp(3rem,9vw,8.5rem)]" />
         <Reveal delay={0.2} className="w-full max-w-xl">
-          <p id="join-title" className="mt-6 type-body text-steel">{t("Get early access to drops, exclusive releases and WOLFEX updates.")}</p>
+          <p id="join-title" className="mt-6 type-body text-steel">{t("Get early access to offers, new supplements and WOLFEX updates.")}</p>
 
           <form onSubmit={onSubmit} className="mt-12" noValidate>
             <AnimatePresence mode="wait" initial={false}>
@@ -60,7 +60,7 @@ export function Newsletter() {
                     className="h-16 flex-1 bg-transparent font-mono text-sm uppercase tracking-[0.14em] text-bone placeholder:text-steel focus:outline-none"
                   />
                   <button type="submit" disabled={status === "loading"} className="flex h-16 items-center gap-3 pl-4 type-title text-sm text-bone transition-colors hover:text-arc disabled:opacity-50" data-cursor="hover">
-                    {status === "loading" ? "Joining…" : t("Join")}
+                    {status === "loading" ? t("Joining…") : t("Join")}
                     <ArrowRight className="h-4 w-4 transition-transform duration-500 group-focus-within:translate-x-1" strokeWidth={1.5} />
                   </button>
                   <span className="absolute -bottom-px left-0 h-px w-0 bg-arc shadow-[0_0_12px_rgba(0,168,255,0.9)] transition-[width] duration-700 ease-[var(--ease-apex)] group-focus-within:w-full" />
@@ -68,7 +68,7 @@ export function Newsletter() {
               )}
             </AnimatePresence>
             <p className="mt-4 h-4 type-label text-steel" role="status">
-              {status === "error" ? <span className="text-arc">{error}</span> : t("No spam. Only drops. Unsubscribe anytime.")}
+              {status === "error" ? <span className="text-arc">{error}</span> : t("No spam. Only offers and new arrivals. Unsubscribe anytime.")}
             </p>
           </form>
         </Reveal>
