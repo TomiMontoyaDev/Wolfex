@@ -6,6 +6,7 @@ import { DangerAction } from "@/components/admin/DeleteControls";
 import { OrderStatusActions, ShippingForm } from "@/components/admin/OrderActions";
 import { deleteOrdersAction } from "@/server/admin/actions";
 import { DefinitionList, PageHeader, Panel, StatusBadge, Table, Td, Th } from "@/components/admin/ui";
+import { FREE_SHIPPING_MIN } from "@/data/site";
 import { getOrder } from "@/server/admin/queries";
 import { requireAdmin } from "@/server/auth";
 
@@ -69,7 +70,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
               {[
                 ["Subtotal", money(order.subtotal)],
                 ["Descuento", order.discount ? `− ${money(order.discount)}` : money(0)],
-                ["Envío", order.shippingCost ? money(order.shippingCost) : "Gratis"],
+                ["Envío", order.shippingCost ? money(order.shippingCost) : order.subtotal >= FREE_SHIPPING_MIN ? "Gratis" : "Se cobra aparte (según producto y localidad)"],
                 ["Impuestos", order.tax ? money(order.tax) : "Incluidos"],
               ].map(([label, value]) => (
                 <div key={label} className="flex justify-between text-steel">

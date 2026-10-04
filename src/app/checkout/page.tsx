@@ -4,9 +4,11 @@ import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useMemo, useState } from "react";
+import { ShippingNotice } from "@/components/cart/ShippingNotice";
 import { useCart } from "@/components/providers/CartProvider";
 import { Media } from "@/components/ui/Media";
 import { COLOMBIA, DEPARTMENTS, OTHER_CITY } from "@/data/colombia";
+import { FREE_SHIPPING_MIN } from "@/data/site";
 import { formatPrice } from "@/lib/utils";
 
 const fields = [
@@ -159,8 +161,16 @@ export default function CheckoutPage() {
             </ul>
             <div className="relative mt-7 space-y-3 border-t border-line pt-5 text-sm">
               <div className="flex justify-between text-steel"><span>Subtotal</span><span className="font-mono">{formatPrice(subtotal)}</span></div>
-              <div className="flex justify-between text-steel"><span>Envío</span><span className="type-label text-arc">GRATIS</span></div>
+              <div className="flex justify-between gap-4 text-steel">
+                <span>Envío</span>
+                {subtotal >= FREE_SHIPPING_MIN ? (
+                  <span className="type-label text-arc">GRATIS</span>
+                ) : (
+                  <span className="text-right text-[0.625rem] leading-snug text-steel/70">Según producto y localidad</span>
+                )}
+              </div>
               <div className="flex justify-between border-t border-line pt-4 type-title text-lg"><span>Total</span><span className="font-mono text-arc">{formatPrice(subtotal)}</span></div>
+              <div className="pt-2"><ShippingNotice subtotal={subtotal} /></div>
             </div>
           </motion.aside>
         </div>

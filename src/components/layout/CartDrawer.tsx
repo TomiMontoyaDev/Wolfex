@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { ShippingNotice } from "@/components/cart/ShippingNotice";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Media } from "@/components/ui/Media";
@@ -69,6 +70,11 @@ export function CartDrawer() {
             </div>
 
             <div className="border-t border-line p-6">
+              {lines.length > 0 && (
+                <div className="mb-5">
+                  <ShippingNotice subtotal={subtotal} />
+                </div>
+              )}
               <div className="flex justify-between type-title text-sm">
                 <span>{t("Subtotal")}</span>
                 <span className="font-mono">{formatPrice(subtotal)}</span>

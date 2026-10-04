@@ -1,5 +1,8 @@
 import { MEDIA } from "./media";
 
+/** Compras desde este subtotal (COP) tienen envío gratis; por debajo se cobra según producto y localidad. */
+export const FREE_SHIPPING_MIN = 180_000;
+
 export const SITE = {
   name: "WOLFEX",
   tagline: "HUNT YOUR APEX.",

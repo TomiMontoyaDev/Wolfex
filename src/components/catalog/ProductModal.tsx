@@ -1,12 +1,13 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Package, Plus, X } from "lucide-react";
+import { Check, Package, Plus, Truck, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useCart } from "@/components/providers/CartProvider";
 import { Media } from "@/components/ui/Media";
 import type { Product } from "@/data/products";
+import { FREE_SHIPPING_MIN } from "@/data/site";
 import { productSize } from "@/lib/product-size";
 import { cn, formatPrice } from "@/lib/utils";
 
@@ -138,7 +139,11 @@ export function ProductModal({ product, open, onClose }: { product: Product; ope
                 ) : (
                   <p className="flex h-12 items-center justify-center border border-line-strong type-label text-steel">Agotado</p>
                 )}
-                <p className="mt-3 text-xs text-steel/80">Suplemento dietario. No reemplaza una alimentación balanceada.</p>
+                <p className="mt-3 flex items-center gap-1.5 text-xs text-arc">
+                  <Truck className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
+                  Envío gratis en compras desde {formatPrice(FREE_SHIPPING_MIN)}
+                </p>
+                <p className="mt-1.5 text-xs text-steel/80">Suplemento dietario. No reemplaza una alimentación balanceada.</p>
               </Stagger>
             </div>
           </motion.div>

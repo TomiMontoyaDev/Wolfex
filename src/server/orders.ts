@@ -8,7 +8,8 @@ import type { CheckoutInput } from "./validation";
 /** Error con mensaje seguro para mostrar al cliente. */
 export class CheckoutError extends Error {}
 
-const SHIPPING_COST = 0; // Envío gratis hoy. Centralizado aquí para cuando se cobre.
+// No se cobra en línea: desde FREE_SHIPPING_MIN es gratis y por debajo se cobra aparte según producto y localidad.
+const SHIPPING_COST = 0;
 const ORDER_CODE_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"; // sin 0/O ni 1/I
 
 function generateOrderNumber(now = new Date()) {

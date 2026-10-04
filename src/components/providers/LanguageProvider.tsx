@@ -17,7 +17,7 @@ const translations: Record<string, string> = {
   "Built to hunt": "Hecho para cazar", "Beyond your limits": "Más allá de tus límites",
   "Shop supplements": "Ver suplementos", "Explore WOLFEX": "Explorar WOLFEX",
   "Performance supplements for those who refuse to stay at the same level.": "Suplementos de rendimiento para quienes se niegan a quedarse en el mismo nivel.",
-  "SUPPLEMENTS": "SUPLEMENTOS", "Nationwide shipping — live": "Envíos a toda Colombia", "Built for your progress": "Diseñado para tu progreso",
+  "SUPPLEMENTS": "SUPLEMENTOS", "Nationwide shipping — live": "Envío gratis desde $180.000", "Built for your progress": "Diseñado para tu progreso",
   "Campaign 01": "Campaña 01", "WOLFEX — Film / Photo": "WOLFEX — Video / Foto",
   "Shop all": "Ver todo", "Ver catálogo completo": "Ver catálogo completo", "Add to bag": "Añadir al carrito", "Added": "Añadido",
   "Built different.": "Hecho diferente.", "Performance isn't a destination.": "El rendimiento no es un destino.", "It's a standard.": "Es un estándar.",
