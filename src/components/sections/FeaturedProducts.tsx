@@ -2,7 +2,8 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight, Check, Plus } from "lucide-react";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import { ProductModal } from "@/components/catalog/ProductModal";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Media } from "@/components/ui/Media";
@@ -99,6 +100,8 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
   const { t } = useLanguage();
   const [color, setColor] = useState(product.colors[0]);
   const [added, setAdded] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const closeDetails = useCallback(() => setDetailsOpen(false), []);
 
   const onAdd = () => {
     add(product, color.name);
@@ -130,8 +133,9 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
       <div
         className="relative aspect-[4/5] overflow-hidden bg-ink shadow-[inset_0_0_0_1px_rgba(245,247,250,0.06)] transition-shadow duration-700 group-hover:shadow-[inset_0_0_0_1px_rgba(0,168,255,0.45),0_30px_80px_-30px_rgba(0,102,255,0.55)]"
         data-cursor="view"
-        data-cursor-label="View"
+        data-cursor-label="Ver más"
       >
+        <button type="button" onClick={() => setDetailsOpen(true)} aria-label={`Ver más de ${product.name}`} className="absolute inset-0 z-[1] cursor-pointer" />
         <div className="absolute inset-0 transition-[transform,opacity] duration-[1.2s] ease-[var(--ease-apex)] group-hover:scale-[1.06] group-hover:opacity-0">
           <Media slot={product.images.primary} sizes="(min-width:1024px) 25vw, 82vw" />
         </div>
@@ -148,7 +152,7 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
         </span>
 
         {/* Desktop add-to-cart: rises in on hover */}
-        <div className="absolute inset-x-3 bottom-3 hidden translate-y-[calc(100%+1rem)] transition-transform duration-500 ease-[var(--ease-apex)] group-hover:translate-y-0 lg:block">
+        <div className="absolute inset-x-3 bottom-3 z-[2] hidden translate-y-[calc(100%+1rem)] transition-transform duration-500 ease-[var(--ease-apex)] group-hover:translate-y-0 lg:block">
           <AddButton added={added} onAdd={onAdd} disabled={!product.available} />
         </div>
       </div>
@@ -158,7 +162,11 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
         <div className="flex items-start justify-between gap-4">
           <div className="transition-transform duration-500 ease-[var(--ease-apex)] group-hover:translate-x-1.5">
             <p className="type-label text-steel">{product.brand}</p>
-            <h3 className="mt-1 type-title text-lg leading-tight transition-colors duration-500 group-hover:text-arc">{t(product.name)}</h3>
+            <h3 className="mt-1 type-title text-lg leading-tight transition-colors duration-500 group-hover:text-arc">
+              <button type="button" onClick={() => setDetailsOpen(true)} className="text-left">
+                {t(product.name)}
+              </button>
+            </h3>
           </div>
           <p className="flex shrink-0 flex-col items-end pt-4 font-mono text-sm">
             {product.compareAtPrice && (
@@ -169,7 +177,15 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
             <span className={product.compareAtPrice ? "text-arc" : undefined}>{formatPrice(product.price)}</span>
           </p>
         </div>
-        <p className="mt-2 text-sm text-steel">{t(product.descriptor)}</p>
+        <button
+          type="button"
+          onClick={() => setDetailsOpen(true)}
+          className="group/more mt-3 inline-flex items-center gap-1.5 type-label text-bone/80 transition-colors hover:text-arc"
+          data-cursor="hover"
+        >
+          <span className="border-b border-line-strong pb-0.5 transition-colors group-hover/more:border-arc">Ver más</span>
+          <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover/more:-translate-y-0.5 group-hover/more:translate-x-0.5" strokeWidth={1.5} />
+        </button>
 
         <div className="mt-4 flex items-center justify-between">
           <div className="flex items-center gap-2" role="radiogroup" aria-label="Color">
@@ -196,6 +212,8 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
           <AddButton added={added} onAdd={onAdd} disabled={!product.available} />
         </div>
       </div>
+
+      <ProductModal product={product} open={detailsOpen} onClose={closeDetails} />
     </motion.article>
   );
 }

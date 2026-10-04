@@ -57,7 +57,7 @@ const loadCatalog = unstable_cache(
     return products.map(toStorefront);
   },
   // Subir la versión de la clave invalida la caché al desplegar (útil tras cambios masivos hechos directo en la base).
-  ["storefront-catalog", "v2"],
+  ["storefront-catalog", "v3"],
   { tags: [PRODUCTS_TAG], revalidate: 3600 },
 );
 
