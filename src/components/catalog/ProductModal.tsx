@@ -7,7 +7,8 @@ import { createPortal } from "react-dom";
 import { useCart } from "@/components/providers/CartProvider";
 import { Media } from "@/components/ui/Media";
 import type { Product } from "@/data/products";
-import { FREE_SHIPPING_MIN } from "@/data/site";
+import { FREE_SHIPPING_NATIONAL_MIN, FREE_SHIPPING_PEREIRA_MIN, LOCAL_CITY, deliveryLabel } from "@/config/shipping";
+import { visibleDiscount } from "@/lib/pricing";
 import { productSize } from "@/lib/product-size";
 import { cn, formatPrice } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ export function ProductModal({ product, open, onClose }: { product: Product; ope
   const [added, setAdded] = useState(false);
   const [mounted, setMounted] = useState(false);
   const sizes = productSize(product.name);
+  const discount = visibleDiscount(product.price, product.compareAtPrice);
 
   useEffect(() => setMounted(true), []);
 
@@ -92,12 +94,19 @@ export function ProductModal({ product, open, onClose }: { product: Product; ope
               </Stagger>
 
               <Stagger delay={0.18} className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span className={cn("font-mono text-2xl", product.compareAtPrice ? "text-arc" : "text-bone")}>{formatPrice(product.price)}</span>
-                {product.compareAtPrice && <s className="font-mono text-sm text-steel">{formatPrice(product.compareAtPrice)}</s>}
+                <span className={cn("font-mono text-2xl", discount ? "text-arc" : "text-bone")}>{formatPrice(product.price)}</span>
+                {discount && product.compareAtPrice && (
+                  <>
+                    <s className="font-mono text-sm text-steel" aria-label={`Precio público ${formatPrice(product.compareAtPrice)}`}>
+                      {formatPrice(product.compareAtPrice)}
+                    </s>
+                    <span className="bg-arc px-1.5 py-0.5 font-mono text-xs font-semibold text-void">-{discount}%</span>
+                  </>
+                )}
                 {product.delivery && (
                   <span className={cn("flex items-center gap-1.5 type-label", product.delivery === "STOCK" ? "text-arc" : "text-steel")}>
                     <span className={cn("h-1.5 w-1.5 rounded-full", product.delivery === "STOCK" ? "bg-arc" : "bg-steel")} aria-hidden="true" />
-                    {product.delivery === "STOCK" ? "Entrega inmediata en Pereira" : "Envío nacional"}
+                    {deliveryLabel(product.delivery)}
                   </span>
                 )}
               </Stagger>
@@ -141,7 +150,7 @@ export function ProductModal({ product, open, onClose }: { product: Product; ope
                 )}
                 <p className="mt-3 flex items-center gap-1.5 text-xs text-arc">
                   <Truck className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
-                  Envío gratis en compras desde {formatPrice(FREE_SHIPPING_MIN)}
+                  Envío gratis en {LOCAL_CITY} desde {formatPrice(FREE_SHIPPING_PEREIRA_MIN)} · resto del país desde {formatPrice(FREE_SHIPPING_NATIONAL_MIN)}
                 </p>
                 <p className="mt-1.5 text-xs text-steel/80">Suplemento dietario. No reemplaza una alimentación balanceada.</p>
               </Stagger>

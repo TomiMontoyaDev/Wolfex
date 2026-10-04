@@ -45,7 +45,7 @@ function toStorefront(product: DbProduct): Product {
   };
 }
 
-const loadCatalog = unstable_cache(
+const loadCatalogData = unstable_cache(
   async () => {
     // Solo productos visibles y con stock: los agotados (stock 0) se ocultan solos y reaparecen al cargarles stock.
     // stock NULL = inventario no controlado, se muestra siempre.
@@ -54,16 +54,23 @@ const loadCatalog = unstable_cache(
       // Primero los que tienen posición asignada (sortOrder), luego el resto.
       orderBy: [{ sortOrder: { sort: "asc", nulls: "last" } }, { id: "asc" }],
     });
-    return products.map(toStorefront);
+    // lowPriority es una decisión interna: se usa aquí en el servidor y no viaja al navegador.
+    return { products: products.map(toStorefront), lowPriorityIds: products.filter((p) => p.lowPriority).map((p) => p.id) };
   },
   // Subir la versión de la clave invalida la caché al desplegar (útil tras cambios masivos hechos directo en la base).
-  ["storefront-catalog", "v3"],
+  ["storefront-catalog", "v4"],
   { tags: [PRODUCTS_TAG], revalidate: 3600 },
 );
 
+async function loadCatalog(): Promise<Product[]> {
+  return (await loadCatalogData()).products;
+}
+
 export async function getFeaturedProducts(): Promise<Product[]> {
-  // Destacados del inicio: los 12 primeros según la posición asignada en el admin.
-  return (await loadCatalog()).filter((product) => product.available).slice(0, 12);
+  // Destacados del inicio: los 12 primeros según la posición asignada en el admin, sin los de baja prioridad.
+  const { products, lowPriorityIds } = await loadCatalogData();
+  const lowPriority = new Set(lowPriorityIds);
+  return products.filter((product) => product.available && !lowPriority.has(product.id)).slice(0, 12);
 }
 
 export async function getCatalogProducts(): Promise<Product[]> {

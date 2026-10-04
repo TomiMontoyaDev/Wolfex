@@ -63,6 +63,7 @@ export default async function EditProductPage({ params, searchParams }: { params
             fulfillment: product.fulfillment,
             sortOrder: product.sortOrder,
             active: product.active,
+            lowPriority: product.lowPriority,
             image: product.image,
           }}
         />

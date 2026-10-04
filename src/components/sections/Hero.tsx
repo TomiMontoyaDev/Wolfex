@@ -156,7 +156,7 @@ export function Hero() {
         animate={ready ? { opacity: 1 } : {}}
         transition={{ duration: 1.2, delay: 1.6 }}
       >
-        <div className="container-wfx absolute inset-x-0 top-[calc(var(--nav-h)+1.5rem)] flex justify-between type-label text-steel">
+        <div className="container-wfx absolute inset-x-0 top-[calc(var(--nav-h)+var(--bar-h)+1.25rem)] flex justify-between type-label text-steel">
           <span>WFX-001 / {t("SUPPLEMENTS")} {SITE.established}</span>
           <span className="flex items-center gap-2">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-arc" /> {t("Nationwide shipping — live")}

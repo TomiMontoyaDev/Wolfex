@@ -1,8 +1,5 @@
 import { MEDIA } from "./media";
 
-/** Compras desde este subtotal (COP) tienen envío gratis; por debajo se cobra según producto y localidad. */
-export const FREE_SHIPPING_MIN = 180_000;
-
 export const SITE = {
   name: "WOLFEX",
   tagline: "HUNT YOUR APEX.",
@@ -50,11 +47,11 @@ export const NAV_LINKS: NavLink[] = [
 export const FOOTER_LINKS: NavLink[] = [
   { label: "Shop", href: "/catalogo" },
   { label: "About", href: "#code" },
-  { label: "Contact", href: "#" },
-  { label: "FAQ", href: "#" },
-  { label: "Shipping", href: "#" },
-  { label: "Returns", href: "#" },
-  { label: "Privacy", href: "#" },
+  { label: "Contact", href: "/contacto" },
+  { label: "FAQ", href: "/preguntas-frecuentes" },
+  { label: "Shipping", href: "/envios" },
+  { label: "Returns", href: "/devoluciones" },
+  { label: "Privacy", href: "/privacidad" },
 ];
 
 export type SocialPlatform = "instagram" | "tiktok" | "youtube";
@@ -68,11 +65,15 @@ export interface Social {
   pitch: string;
 }
 
-export const SOCIALS: Social[] = [
+/**
+ * Todas las redes. Las que apuntan solo al dominio (tiktok.com, youtube.com) se ocultan en la tienda
+ * hasta que tengan un perfil real: basta con poner la URL del perfil para que aparezcan.
+ */
+const ALL_SOCIALS: Social[] = [
   {
     platform: "instagram",
     label: "Instagram",
-    handle: "@wolfex",
+    handle: "@wolfexwear",
     href: "https://www.instagram.com/wolfexwear/?hl=es-la",
     pitch: "Offers, new arrivals & the pack in motion.",
   },
@@ -91,6 +92,10 @@ export const SOCIALS: Social[] = [
     pitch: "Videos, guides & WOLFEX // MOTOR.",
   },
 ];
+
+const isProfileUrl = (href: string) => new URL(href).pathname.replace(/\/+$/, "") !== "";
+
+export const SOCIALS: Social[] = ALL_SOCIALS.filter((social) => isProfileUrl(social.href));
 
 export const CATEGORIES = [
   {

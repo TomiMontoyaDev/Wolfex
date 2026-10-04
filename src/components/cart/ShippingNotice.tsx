@@ -1,14 +1,16 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Truck } from "lucide-react";
-import { FREE_SHIPPING_MIN } from "@/data/site";
+import { Check, Truck } from "lucide-react";
+import { FREE_SHIPPING_NATIONAL_MIN, FREE_SHIPPING_PEREIRA_MIN, LOCAL_CITY, freeShippingMin, isLocalCity } from "@/config/shipping";
 import { formatPrice } from "@/lib/utils";
 
-/** Aviso de envío del carrito: "¡ENVÍO GRATIS!" desde FREE_SHIPPING_MIN; si no, cuánto falta y que el envío se cobra aparte. */
-export function ShippingNotice({ subtotal }: { subtotal: number }) {
-  const free = subtotal >= FREE_SHIPPING_MIN;
-  const progress = Math.min(subtotal / FREE_SHIPPING_MIN, 1);
+/**
+ * Aviso de envío. Con `city` (checkout) usa el mínimo de esa ciudad; sin ciudad (carrito) muestra
+ * los dos mínimos: Pereira y resto del país.
+ */
+export function ShippingNotice({ subtotal, city }: { subtotal: number; city?: string }) {
+  const free = city ? subtotal >= freeShippingMin(city) : subtotal >= FREE_SHIPPING_NATIONAL_MIN;
 
   return (
     <AnimatePresence mode="wait" initial={false}>
@@ -28,19 +30,41 @@ export function ShippingNotice({ subtotal }: { subtotal: number }) {
           <span className="type-title text-sm text-arc">¡ENVÍO GRATIS!</span>
         </motion.div>
       ) : (
-        <motion.div key="paid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
-          <div className="flex items-center justify-between gap-3 text-[0.7rem] text-steel">
-            <span>
-              Te faltan <span className="font-mono text-bone">{formatPrice(FREE_SHIPPING_MIN - subtotal)}</span> para envío gratis
-            </span>
-            <span className="font-mono">{formatPrice(FREE_SHIPPING_MIN)}</span>
-          </div>
-          <div className="mt-1.5 h-1 overflow-hidden bg-line-strong">
-            <motion.div className="h-full bg-arc" initial={false} animate={{ width: `${progress * 100}%` }} transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }} />
-          </div>
-          <p className="mt-1.5 text-[0.625rem] leading-snug text-steel/70">El envío se cobra dependiendo del producto y la localidad.</p>
+        <motion.div key="paid" className="space-y-2.5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
+          {city ? (
+            <Progress subtotal={subtotal} min={freeShippingMin(city)} label={isLocalCity(city) ? `en ${LOCAL_CITY}` : ""} />
+          ) : (
+            <>
+              <Progress subtotal={subtotal} min={FREE_SHIPPING_PEREIRA_MIN} label={`en ${LOCAL_CITY}`} />
+              <Progress subtotal={subtotal} min={FREE_SHIPPING_NATIONAL_MIN} label="al resto del país" />
+            </>
+          )}
+          <p className="text-[0.625rem] leading-snug text-steel/70">El envío se cobra dependiendo del producto y la localidad.</p>
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+function Progress({ subtotal, min, label }: { subtotal: number; min: number; label: string }) {
+  const reached = subtotal >= min;
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-3 text-[0.7rem] text-steel">
+        {reached ? (
+          <span className="flex items-center gap-1 text-arc">
+            <Check className="h-3 w-3" strokeWidth={2} aria-hidden="true" /> Envío gratis {label}
+          </span>
+        ) : (
+          <span>
+            Te faltan <span className="font-mono text-bone">{formatPrice(min - subtotal)}</span> para envío gratis {label}
+          </span>
+        )}
+        <span className="shrink-0 font-mono">{formatPrice(min)}</span>
+      </div>
+      <div className="mt-1 h-1 overflow-hidden bg-line-strong">
+        <motion.div className="h-full bg-arc" initial={false} animate={{ width: `${Math.min(subtotal / min, 1) * 100}%` }} transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }} />
+      </div>
+    </div>
   );
 }

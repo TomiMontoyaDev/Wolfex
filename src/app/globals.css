@@ -54,6 +54,8 @@
   :root {
     color-scheme: dark;
     --nav-h: 72px;
+    /* Barra de envíos encima del navbar (se recoge al hacer scroll). */
+    --bar-h: 32px;
     --gutter: clamp(1rem, 4vw, 3rem);
   }
 

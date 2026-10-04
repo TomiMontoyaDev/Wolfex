@@ -2,6 +2,8 @@
 
 import { ImagePlus, X } from "lucide-react";
 import { startTransition, useActionState, useEffect, useRef, useState, type FormEvent } from "react";
+import { minPrice } from "@/lib/pricing";
+import { formatPrice } from "@/lib/utils";
 import type { ActionState } from "@/server/admin/actions";
 import { buttonClass, inputClass } from "./ui";
 
@@ -21,6 +23,7 @@ export interface ProductFormValues {
   fulfillment: "STOCK" | "DROP" | null;
   sortOrder: number | null;
   active: boolean;
+  lowPriority: boolean;
   image: string | null;
 }
 
@@ -143,6 +146,9 @@ export function ProductForm({ action, values, categories, submitLabel }: { actio
           <label className="block">
             <span className="type-label text-steel">Precio de venta (COP) *</span>
             <input name="price" required inputMode="numeric" defaultValue={values.price ?? ""} placeholder="79900" className={field} />
+            {values.costPrice !== null && (
+              <span className="mt-1.5 block text-xs text-steel">Mínimo con 15% neto: {formatPrice(minPrice(values.costPrice))}</span>
+            )}
           </label>
           <label className="block">
             <span className="type-label text-steel">Costo (COP)</span>
@@ -157,13 +163,13 @@ export function ProductForm({ action, values, categories, submitLabel }: { actio
           <label className="block">
             <span className="type-label text-steel">Precio antes (tachado)</span>
             <input name="compareAtPrice" inputMode="numeric" defaultValue={values.compareAtPrice ?? ""} placeholder="Opcional" className={field} />
-            <span className="mt-1.5 block text-xs text-steel">Se muestra tachado solo si es mayor que el precio de venta.</span>
+            <span className="mt-1.5 block text-xs text-steel">Precio público del proveedor. Se muestra tachado (con -X%) solo si el descuento es de 5% o más.</span>
           </label>
           <label className="block">
             <span className="type-label text-steel">Entrega</span>
             <select name="fulfillment" defaultValue={values.fulfillment ?? ""} className={`${field} appearance-none`}>
               <option value="">Sin etiqueta</option>
-              <option value="STOCK">Entrega inmediata en Pereira (stock)</option>
+              <option value="STOCK">Entrega HOY en Pereira (stock)</option>
               <option value="DROP">Envío nacional (dropshipping)</option>
             </select>
           </label>
@@ -183,6 +189,13 @@ export function ProductForm({ action, values, categories, submitLabel }: { actio
             <span className="text-sm text-bone">Visible en la tienda</span>
           </label>
         </div>
+        <label className="flex items-start gap-3">
+          <input type="checkbox" name="lowPriority" defaultChecked={values.lowPriority} className="mt-0.5 h-5 w-5 shrink-0 accent-[#0066ff]" />
+          <span className="text-sm text-bone">
+            Baja prioridad
+            <span className="mt-0.5 block text-xs text-steel">No compites en precio con este producto: nunca sale en los destacados del inicio. Sirve para filtrarlo cuando reduzcas el catálogo.</span>
+          </span>
+        </label>
         <label className="block">
           <span className="type-label text-steel">Descripción</span>
           <textarea name="description" rows={4} maxLength={2000} defaultValue={values.description ?? ""} className={`${field} h-auto py-3`} />

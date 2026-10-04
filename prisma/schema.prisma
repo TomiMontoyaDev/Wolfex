@@ -140,6 +140,8 @@ model Product {
   fulfillment    Fulfillment?
   /// Posición en la tienda: menor sale primero (inicio y catálogo). NULL = al final.
   sortOrder      Int?
+  /// Productos donde no se compite en precio (la competencia vende casi al costo): fuera de destacados, candidatos a salir del catálogo.
+  lowPriority    Boolean      @default(false)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 

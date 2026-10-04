@@ -63,6 +63,7 @@ const productSchema = z.object({
     .transform((value) => (value === "" ? null : Number(value)))
     .refine((value) => value === null || (Number.isInteger(value) && value >= 0 && value < 100_000), "Posición inválida."),
   active: z.boolean(),
+  lowPriority: z.boolean(),
 });
 
 function readProductForm(formData: FormData) {
@@ -80,6 +81,7 @@ function readProductForm(formData: FormData) {
     fulfillment: field("fulfillment"),
     sortOrder: field("sortOrder"),
     active: formData.get("active") === "on",
+    lowPriority: formData.get("lowPriority") === "on",
   });
 }
 
@@ -181,6 +183,7 @@ export async function createProductAction(_prev: ActionState, formData: FormData
         sortOrder: data.sortOrder,
         stock: data.stock,
         active: data.active,
+        lowPriority: data.lowPriority,
         image: imageUrl,
       },
     });
@@ -229,6 +232,7 @@ export async function updateProductDetailsAction(_prev: ActionState, formData: F
         sortOrder: data.sortOrder,
         stock: data.stock,
         active: data.active,
+        lowPriority: data.lowPriority,
         image: imageUrl,
       },
     });
@@ -247,6 +251,7 @@ const quickSchema = z.object({
   costPrice: pesos("el costo"),
   stock: productSchema.shape.stock,
   active: z.boolean(),
+  lowPriority: z.boolean(),
 });
 
 export async function quickUpdateProductAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -257,6 +262,7 @@ export async function quickUpdateProductAction(_prev: ActionState, formData: For
     costPrice: String(formData.get("costPrice") ?? ""),
     stock: String(formData.get("stock") ?? ""),
     active: formData.get("active") === "on",
+    lowPriority: formData.get("lowPriority") === "on",
   });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
   const { productId, price, ...rest } = parsed.data;

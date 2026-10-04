@@ -10,6 +10,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { SocialIcon } from "@/components/ui/SocialIcon";
 import { WolfMark, Wordmark } from "@/components/visuals/WolfMark";
 import { NAV_LINKS, SITE, SOCIALS } from "@/data/site";
+import { AnnouncementBar } from "./AnnouncementBar";
 import { SearchOverlay } from "./SearchOverlay";
 import { cn, pad } from "@/lib/utils";
 
@@ -59,6 +60,8 @@ export function Navbar() {
         animate={{ y: ready ? 0 : -100, opacity: ready ? 1 : 0 }}
         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 1.2 }}
       >
+        {/* Se recoge al hacer scroll o abrir el menú para no robar espacio. */}
+        <AnnouncementBar hidden={scrolled || menuOpen} />
         <div
           className={cn(
             "border-b transition-[background-color,border-color,backdrop-filter] duration-500",

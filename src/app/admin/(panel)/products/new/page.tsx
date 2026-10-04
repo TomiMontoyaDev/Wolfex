@@ -22,7 +22,7 @@ export default async function NewProductPage() {
           action={createProductAction}
           categories={categories}
           submitLabel="Crear producto"
-          values={{ name: "", brand: null, category: null, sku: null, description: null, price: null, compareAtPrice: null, costPrice: null, stock: null, fulfillment: null, sortOrder: null, active: true, image: null }}
+          values={{ name: "", brand: null, category: null, sku: null, description: null, price: null, compareAtPrice: null, costPrice: null, stock: null, fulfillment: null, sortOrder: null, active: true, lowPriority: false, image: null }}
         />
       </div>
     </>

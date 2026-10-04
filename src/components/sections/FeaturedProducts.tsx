@@ -10,7 +10,9 @@ import { Media } from "@/components/ui/Media";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { SplitReveal } from "@/components/ui/SplitReveal";
+import { deliveryLabel } from "@/config/shipping";
 import type { Product, ProductCategory } from "@/data/products";
+import { visibleDiscount } from "@/lib/pricing";
 import { cn, formatPrice, pad } from "@/lib/utils";
 
 export function FeaturedProducts({ products }: { products: Product[] }) {
@@ -102,6 +104,7 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
   const [added, setAdded] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const closeDetails = useCallback(() => setDetailsOpen(false), []);
+  const discount = visibleDiscount(product.price, product.compareAtPrice);
 
   const onAdd = () => {
     add(product, color.name);
@@ -124,7 +127,7 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
         ) : product.delivery ? (
           <span className={cn("flex items-center gap-1.5", product.delivery === "STOCK" ? "text-arc" : "text-steel")}>
             <span className={cn("h-1.5 w-1.5 rounded-full", product.delivery === "STOCK" ? "bg-arc shadow-[0_0_8px_rgba(0,168,255,0.9)]" : "bg-steel")} aria-hidden="true" />
-            {product.delivery === "STOCK" ? "Entrega inmediata en Pereira" : "Envío nacional"}
+            {deliveryLabel(product.delivery)}
           </span>
         ) : null}
       </div>
@@ -146,6 +149,12 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
         <span className="pointer-events-none absolute -bottom-4 -left-1 type-display text-[7rem] leading-none text-outline opacity-60 transition-[transform,opacity] duration-700 group-hover:-translate-y-2 group-hover:opacity-100 md:text-[8rem]">
           {pad(index + 1)}
         </span>
+
+        {discount && (
+          <span className="pointer-events-none absolute left-3 top-3 z-[2] bg-arc px-2 py-1 font-mono text-xs font-semibold text-void shadow-[0_0_18px_rgba(0,168,255,0.55)]">
+            -{discount}%
+          </span>
+        )}
 
         <span className="pointer-events-none absolute inset-0 overflow-hidden">
           <span className="absolute inset-y-0 -left-1/2 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-arc/15 to-transparent transition-[left] duration-[1.4s] ease-[var(--ease-apex)] group-hover:left-[130%]" />
@@ -169,12 +178,12 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
             </h3>
           </div>
           <p className="flex shrink-0 flex-col items-end pt-4 font-mono text-sm">
-            {product.compareAtPrice && (
-              <s className="text-xs text-steel" aria-label={`Antes ${formatPrice(product.compareAtPrice)}`}>
+            {discount && product.compareAtPrice && (
+              <s className="text-xs text-steel" aria-label={`Precio público ${formatPrice(product.compareAtPrice)}`}>
                 {formatPrice(product.compareAtPrice)}
               </s>
             )}
-            <span className={product.compareAtPrice ? "text-arc" : undefined}>{formatPrice(product.price)}</span>
+            <span className={discount ? "text-arc" : undefined}>{formatPrice(product.price)}</span>
           </p>
         </div>
         <button
