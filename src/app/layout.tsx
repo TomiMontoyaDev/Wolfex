@@ -1,5 +1,6 @@
 import { Analytics } from "@vercel/analytics/next";
-import { MetaPixel } from "@/components/analytics/MetaPixel";
+import { MetaPixelPageViews } from "@/components/analytics/MetaPixel";
+import { META_PIXEL_BASE_CODE, META_PIXEL_NOSCRIPT_SRC } from "@/lib/meta-pixel";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import type { ReactNode } from "react";
@@ -78,6 +79,15 @@ const jsonLd = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="es" className={`${archivo.variable} ${jetbrains.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Meta Pixel Code — en el <head>, como indica Meta (el propio código se salta el /admin). */}
+        <script id="meta-pixel" dangerouslySetInnerHTML={{ __html: META_PIXEL_BASE_CODE }} />
+        <noscript>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img height="1" width="1" style={{ display: "none" }} alt="" src={META_PIXEL_NOSCRIPT_SRC} />
+        </noscript>
+        {/* End Meta Pixel Code */}
+      </head>
       <body>
         <noscript>
           <style>{`#wfx-loader{display:none!important}`}</style>
@@ -95,8 +105,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <CustomCursor />
             {/* Vercel Analytics: solo en la tienda, para que las visitas al /admin no inflen las métricas. */}
             <Analytics />
-            {/* Meta Pixel: también solo en la tienda (las visitas al admin no son clientes). */}
-            <MetaPixel />
+            {/* Meta Pixel: PageView al navegar dentro de la tienda (el código base está en el <head>). */}
+            <MetaPixelPageViews />
           </StorefrontOnly>
         </Providers>
         <div className="grain" aria-hidden="true" />
