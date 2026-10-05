@@ -36,6 +36,6 @@ export const getPublishedReviews = unstable_cache(
     });
     return reviews.map(({ source, ...review }) => ({ ...review, verified: source === "CUSTOMER", label: source === "TEAM" ? review.label : null }));
   },
-  ["published-reviews", "v1"],
+  ["published-reviews", "v2"],
   { tags: [REVIEWS_TAG], revalidate: 3600 },
 );
