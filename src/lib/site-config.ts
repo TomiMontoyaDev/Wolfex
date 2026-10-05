@@ -8,7 +8,7 @@ export const CONTACT = {
   email: "tomasmontoyabuitrago@gmail.com",
   instagram: {
     handle: "@wolfexwear",
-    url: "https://www.instagram.com/wolfexwear/?hl=es-la",
+    url: "https://www.instagram.com/wolfex.col/?hl=es-la",
   },
   location: "Pereira, Risaralda, Colombia",
   city: "Pereira, Risaralda",
