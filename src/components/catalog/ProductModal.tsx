@@ -8,6 +8,7 @@ import { useCart } from "@/components/providers/CartProvider";
 import { Media } from "@/components/ui/Media";
 import type { Product } from "@/data/products";
 import { FREE_SHIPPING_NATIONAL_MIN, FREE_SHIPPING_PEREIRA_MIN, LOCAL_CITY, deliveryLabel } from "@/config/shipping";
+import { trackPixel } from "@/lib/meta-pixel";
 import { visibleDiscount } from "@/lib/pricing";
 import { productSize } from "@/lib/product-size";
 import { cn, formatPrice } from "@/lib/utils";
@@ -27,6 +28,7 @@ export function ProductModal({ product, open, onClose }: { product: Product; ope
 
   useEffect(() => {
     if (!open) return;
+    trackPixel("ViewContent", { content_ids: [product.sku], content_name: product.name, content_type: "product", value: product.price, currency: "COP" });
     const previousFocus = document.activeElement as HTMLElement | null;
     document.documentElement.style.overflow = "hidden";
     const timer = setTimeout(() => closeRef.current?.focus(), 50);
@@ -38,7 +40,7 @@ export function ProductModal({ product, open, onClose }: { product: Product; ope
       window.removeEventListener("keydown", onKey);
       previousFocus?.focus();
     };
-  }, [open, onClose]);
+  }, [open, onClose, product]);
 
   function onAdd() {
     add(product);

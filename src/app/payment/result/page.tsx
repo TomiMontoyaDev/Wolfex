@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PurchasePixel } from "@/components/analytics/PurchasePixel";
 import { db } from "@/server/db";
 import { processMercadoPagoPayment } from "@/server/payments";
 
@@ -26,7 +27,10 @@ const one = (value: string | string[] | undefined) => (typeof value === "string"
 async function findOrder(reference: string | undefined) {
   if (!reference || !/^[0-9a-f-]{36}$/i.test(reference)) return null;
   try {
-    return await db.order.findUnique({ where: { externalReference: reference }, select: { orderNumber: true, paymentStatus: true } });
+    return await db.order.findUnique({
+      where: { externalReference: reference },
+      select: { orderNumber: true, paymentStatus: true, total: true, items: { select: { sku: true } } },
+    });
   } catch {
     return null;
   }
@@ -56,5 +60,5 @@ export default async function PaymentResultPage({ searchParams }: { searchParams
   const returned = String(params.collection_status ?? params.status ?? "pending");
   const key = order?.paymentStatus === "APPROVED" ? "confirmed" : order?.paymentStatus === "REJECTED" ? "rejected" : returned;
   const { title, message } = COPY[key] ?? COPY.pending;
-  return <main className="container-wfx flex min-h-screen flex-col items-center justify-center text-center"><p className="type-label text-arc">WOLFEX · HUNT YOUR APEX</p><h1 className="mt-6 type-display text-[clamp(3rem,8vw,7rem)]">{title}</h1><p className="mt-6 max-w-lg text-steel">{message}</p>{order && <p className="mt-4 type-label text-steel/70">Pedido {order.orderNumber}</p>}<Link href="/" className="mt-10 border border-arc px-6 py-4 type-label text-bone hover:bg-arc hover:text-void">Volver a WOLFEX</Link></main>;
+  return <main className="container-wfx flex min-h-screen flex-col items-center justify-center text-center"><p className="type-label text-arc">WOLFEX · HUNT YOUR APEX</p><h1 className="mt-6 type-display text-[clamp(3rem,8vw,7rem)]">{title}</h1><p className="mt-6 max-w-lg text-steel">{message}</p>{order && <p className="mt-4 type-label text-steel/70">Pedido {order.orderNumber}</p>}{order && key === "confirmed" && <PurchasePixel orderNumber={order.orderNumber} value={order.total} contentIds={order.items.map((item) => item.sku)} />}<Link href="/" className="mt-10 border border-arc px-6 py-4 type-label text-bone hover:bg-arc hover:text-void">Volver a WOLFEX</Link></main>;
 }

@@ -1,4 +1,5 @@
 import { Analytics } from "@vercel/analytics/next";
+import { MetaPixel } from "@/components/analytics/MetaPixel";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import type { ReactNode } from "react";
@@ -94,6 +95,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <CustomCursor />
             {/* Vercel Analytics: solo en la tienda, para que las visitas al /admin no inflen las métricas. */}
             <Analytics />
+            {/* Meta Pixel: también solo en la tienda (las visitas al admin no son clientes). */}
+            <MetaPixel />
           </StorefrontOnly>
         </Providers>
         <div className="grain" aria-hidden="true" />

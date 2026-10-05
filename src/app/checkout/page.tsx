@@ -3,12 +3,13 @@
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ShippingNotice } from "@/components/cart/ShippingNotice";
 import { useCart } from "@/components/providers/CartProvider";
 import { Media } from "@/components/ui/Media";
 import { COLOMBIA, DEPARTMENTS, OTHER_CITY } from "@/data/colombia";
 import { hasFreeShipping } from "@/config/shipping";
+import { trackPixel } from "@/lib/meta-pixel";
 import { formatPrice } from "@/lib/utils";
 
 const fields = [
@@ -28,6 +29,20 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const cities = form.department ? COLOMBIA[form.department] ?? [] : [];
   const deliveryCity = form.city === OTHER_CITY ? form.otherCity : form.city;
+
+  // Meta Pixel: una vez por visita al checkout, con lo que hay en el carrito.
+  const checkoutTracked = useRef(false);
+  useEffect(() => {
+    if (checkoutTracked.current || !lines.length) return;
+    checkoutTracked.current = true;
+    trackPixel("InitiateCheckout", {
+      content_ids: lines.map((line) => line.product.sku),
+      content_type: "product",
+      num_items: lines.reduce((sum, line) => sum + line.quantity, 0),
+      value: subtotal,
+      currency: "COP",
+    });
+  }, [lines, subtotal]);
   const payload = useMemo(() => {
     const { otherCity, ...customer } = form;
     return JSON.stringify({
