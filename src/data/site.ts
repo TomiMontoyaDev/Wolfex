@@ -5,7 +5,7 @@ export const SITE = {
   tagline: "HUNT YOUR APEX.",
   description:
     "WOLFEX es tu tienda de suplementos deportivos en Colombia: proteínas, creatinas, pre-entrenos y vitaminas para entrenar más fuerte y recuperarte mejor. Disciplina sobre comodidad. Alcanza tu cima.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://wolfex.com",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://wolfex.xyz",
   established: 2026,
   locale: "es-CO",
   currency: "COP",
