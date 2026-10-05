@@ -1,8 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Plus, Sparkles } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Check, ChevronLeft, ChevronRight, Plus, Sparkles } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCart } from "@/components/providers/CartProvider";
 import { Media } from "@/components/ui/Media";
 import { Reveal } from "@/components/ui/Reveal";
@@ -153,7 +153,8 @@ function ComboBuilder({ options }: { options: Record<string, Product[]> }) {
 
   return (
     <div className="mt-20 grid gap-8 border border-line-strong bg-void p-6 md:p-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(300px,1fr)] lg:gap-12">
-      <div>
+      {/* min-w-0: sin esto la columna se estira al ancho de todas las tarjetas y la fila no se puede deslizar. */}
+      <div className="min-w-0">
         <p className="flex items-center gap-2 type-label text-arc">
           <Sparkles className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" /> Arma el tuyo
         </p>
@@ -182,7 +183,7 @@ function ComboBuilder({ options }: { options: Record<string, Product[]> }) {
                   )}
                 </div>
                 {/* Tarjetas con foto: toca una para elegirla (otra vez para quitarla). */}
-                <div className="no-scrollbar -mx-1 mt-3 flex snap-x gap-3 overflow-x-auto px-1 pb-1">
+                <ScrollRow label={slot.label}>
                   {slotOptions.map((product) => {
                     const active = value === product.id;
                     return (
@@ -211,7 +212,7 @@ function ComboBuilder({ options }: { options: Record<string, Product[]> }) {
                       </button>
                     );
                   })}
-                </div>
+                </ScrollRow>
               </fieldset>
             );
           })}
@@ -267,6 +268,48 @@ function ComboBuilder({ options }: { options: Record<string, Product[]> }) {
           {added ? <Check className="h-4 w-4" strokeWidth={2} /> : <Plus className="h-4 w-4" strokeWidth={1.5} />}
         </button>
       </aside>
+    </div>
+  );
+}
+
+/** Fila deslizable con flechas ‹ › para ver los productos que quedan fuera del ancho visible. */
+function ScrollRow({ label, children }: { label: string; children: React.ReactNode }) {
+  const row = useRef<HTMLDivElement>(null);
+  const [edges, setEdges] = useState({ start: true, end: false });
+
+  const update = useCallback(() => {
+    const el = row.current;
+    if (!el) return;
+    setEdges({ start: el.scrollLeft <= 4, end: el.scrollLeft + el.clientWidth >= el.scrollWidth - 4 });
+  }, []);
+
+  useEffect(() => {
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [update]);
+
+  // Avanza casi un "ancho visible" de tarjetas, dejando una a la vista como referencia.
+  const scroll = (direction: 1 | -1) => row.current?.scrollBy({ left: direction * Math.max(160, row.current.clientWidth - 150), behavior: "smooth" });
+
+  const arrow = "absolute top-[38%] z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center border border-line-strong bg-void/90 text-bone backdrop-blur-sm transition-[opacity,border-color,color] hover:border-arc hover:text-arc";
+  return (
+    <div className="relative mt-3">
+      <div ref={row} onScroll={update} className="no-scrollbar -mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-1">
+        {children}
+      </div>
+      {!(edges.start && edges.end) && (
+        <>
+          <button type="button" onClick={() => scroll(-1)} aria-label={`Ver productos anteriores de ${label}`} disabled={edges.start} className={cn(arrow, "-left-2 disabled:pointer-events-none disabled:opacity-0")}>
+            <ChevronLeft className="h-5 w-5" strokeWidth={1.75} />
+          </button>
+          <button type="button" onClick={() => scroll(1)} aria-label={`Ver más productos de ${label}`} disabled={edges.end} className={cn(arrow, "-right-2 disabled:pointer-events-none disabled:opacity-0")}>
+            <ChevronRight className="h-5 w-5" strokeWidth={1.75} />
+          </button>
+        </>
+      )}
+      {/* Degradado al borde: indica que hay más productos hacia ese lado. */}
+      {!edges.end && <span className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-void to-transparent" aria-hidden="true" />}
     </div>
   );
 }
