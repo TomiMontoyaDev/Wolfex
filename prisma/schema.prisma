@@ -147,6 +147,7 @@ model Product {
 
   supplier   Supplier?   @relation(fields: [supplierId], references: [id], onDelete: SetNull)
   orderItems OrderItem[]
+  reviews    Review[]
 
   @@index([active])
   @@index([category])
@@ -156,6 +157,44 @@ model Product {
 enum Fulfillment {
   STOCK
   DROP
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// CUSTOMER = la dejó un cliente desde su pedido pagado (se muestra "Compra verificada").
+/// TEAM = la cargó el admin (equipo, amigos): se muestra con su `label` para no hacerla pasar por compra.
+enum ReviewSource {
+  CUSTOMER
+  TEAM
+}
+
+model Review {
+  id          String       @id @default(cuid())
+  /// Nombre público (para clientes: nombre + inicial del apellido).
+  authorName  String
+  city        String?
+  rating      Int
+  body        String
+  source      ReviewSource @default(CUSTOMER)
+  /// Relación con la marca para reseñas TEAM (ej. "Equipo WOLFEX"). Obligatoria en ese caso.
+  label       String?
+  status      ReviewStatus @default(PENDING)
+  /// Snapshot del producto reseñado (se conserva aunque el producto se borre).
+  productName String?
+  productId   String?
+  /// Una reseña por pedido.
+  orderId     String?      @unique
+  createdAt   DateTime     @default(now())
+  approvedAt  DateTime?
+
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  order   Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
 }
 
 // ───────────── Pedidos ─────────────
@@ -224,6 +263,7 @@ model Order {
   items    OrderItem[]
   payments Payment[]
   events   OrderEvent[]
+  review   Review?
 
   @@index([customerId])
   @@index([createdAt])
