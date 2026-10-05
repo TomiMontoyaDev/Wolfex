@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { InfoPage } from "@/components/info/InfoPage";
+import { InfoLink, InfoPage } from "@/components/info/InfoPage";
+import { CONTACT } from "@/lib/site-config";
 
 export const metadata: Metadata = {
   title: "Cambios y devoluciones",
@@ -29,13 +30,15 @@ export default function ReturnsPage() {
         {
           title: "Producto equivocado, dañado o vencido",
           body: [
-            "Si recibes un producto distinto al que pediste, con el empaque o el sello dañado, o con fecha de vencimiento cumplida, escríbenos dentro de las [COMPLETAR: p. ej. 48 horas] siguientes a la entrega con fotos del producto, el sello y el lote.",
-            "En esos casos el cambio o la devolución no tiene costo para ti.",
+            "Si recibes un producto distinto al que pediste, con el empaque o el sello dañado, o con la fecha de vencimiento cumplida, escríbenos dentro de las 48 horas siguientes a la entrega con fotos del producto, el sello y el lote.",
+            "En esos casos el cambio o la devolución no tiene ningún costo para ti.",
           ],
         },
         {
           title: "Cambios por sabor o presentación",
-          body: ["[COMPLETAR: ¿aceptas cambios de sabor o tamaño de productos sellados? Plazo y quién paga el envío.]"],
+          body: [
+            "Sí aceptamos cambios de sabor o presentación, siempre que el producto esté sellado, sin abrir y en su empaque original, y que lo solicites dentro de los 5 días hábiles siguientes a la entrega. En este caso, los costos de envío del cambio (ida y vuelta) los asume el cliente. El cambio está sujeto a disponibilidad del sabor o la presentación; si cuesta más, pagas la diferencia.",
+          ],
         },
         {
           title: "Garantía",
@@ -54,8 +57,11 @@ export default function ReturnsPage() {
           title: "Cómo solicitarlo",
           body: [
             [
-              "Escríbenos a [COMPLETAR: WhatsApp] o a [COMPLETAR: correo] con tu número de pedido (empieza por WFX).",
-              "Te respondemos en máximo [COMPLETAR: p. ej. 2 días hábiles] con los pasos y la dirección de envío.",
+              <>
+                Escríbenos por WhatsApp al <InfoLink href={CONTACT.whatsapp.url}>{CONTACT.whatsapp.display}</InfoLink> o al correo{" "}
+                <InfoLink href={`mailto:${CONTACT.email}`}>{CONTACT.email}</InfoLink> con tu número de pedido (empieza por WFX).
+              </>,
+              "Te respondemos por WhatsApp con los pasos a seguir y la dirección a la que debes enviar el producto.",
             ],
           ],
         },

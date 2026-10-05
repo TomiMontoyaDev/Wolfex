@@ -10,6 +10,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { SocialIcon } from "@/components/ui/SocialIcon";
 import { WolfMark, Wordmark } from "@/components/visuals/WolfMark";
 import { NAV_LINKS, SITE, SOCIALS } from "@/data/site";
+import { CONTACT } from "@/lib/site-config";
 import { AnnouncementBar } from "./AnnouncementBar";
 import { SearchOverlay } from "./SearchOverlay";
 import { cn, pad } from "@/lib/utils";
@@ -123,7 +124,7 @@ export function Navbar() {
                 <User className="h-[18px] w-[18px]" strokeWidth={1.5} />
               </a>
               <a
-                href="https://www.instagram.com/wolfexwear/?hl=es-la"
+                href={CONTACT.instagram.url}
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Instagram de WOLFEX"

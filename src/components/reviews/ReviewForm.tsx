@@ -10,6 +10,9 @@ export function ReviewForm({ orderRef, products }: { orderRef: string; products:
   const [state, action, pending] = useActionState<ReviewFormState, FormData>(submitReviewAction, {});
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
+  // Controlados: React limpia el formulario tras enviarlo y, si hay un error, se perdería lo escrito.
+  const [body, setBody] = useState("");
+  const [productId, setProductId] = useState(products[0]?.id ?? "");
 
   if (state.ok) {
     return (
@@ -49,7 +52,7 @@ export function ReviewForm({ orderRef, products }: { orderRef: string; products:
       {products.length > 1 && (
         <label className="mt-5 block">
           <span className="type-label text-steel">Producto</span>
-          <select name="productId" className="mt-2 h-12 w-full rounded-sm border border-line-strong bg-void px-3 text-sm text-bone outline-none focus:border-arc">
+          <select name="productId" value={productId} onChange={(event) => setProductId(event.target.value)} className="mt-2 h-12 w-full rounded-sm border border-line-strong bg-void px-3 text-sm text-bone outline-none focus:border-arc">
             {products.map((product) => (
               <option key={product.id} value={product.id} className="bg-ink">
                 {product.name}
@@ -64,6 +67,8 @@ export function ReviewForm({ orderRef, products }: { orderRef: string; products:
         <span className="type-label text-steel">Tu reseña</span>
         <textarea
           name="body"
+          value={body}
+          onChange={(event) => setBody(event.target.value)}
           required
           minLength={10}
           maxLength={600}

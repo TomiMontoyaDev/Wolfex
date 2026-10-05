@@ -159,6 +159,44 @@ enum Fulfillment {
   DROP
 }
 
+enum InvoiceStatus {
+  NO_SOLICITADA
+  PENDIENTE
+  EMITIDA
+}
+
+enum PersonType {
+  NATURAL
+  JURIDICA
+}
+
+enum DocType {
+  CC
+  NIT
+  CE
+  PASAPORTE
+}
+
+/// Datos de facturación que el cliente pidió en el checkout (1 a 1 con el pedido).
+model InvoiceRequest {
+  id         String     @id @default(cuid())
+  orderId    String     @unique
+  personType PersonType
+  docType    DocType
+  docNumber  String
+  /// Dígito de verificación (solo NIT).
+  dv         String?
+  legalName  String
+  email      String
+  address    String
+  city       String
+  department String
+  phone      String
+  createdAt  DateTime   @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
 enum ReviewStatus {
   PENDING
   APPROVED
@@ -265,7 +303,19 @@ model Order {
   events   OrderEvent[]
   review   Review?
 
+  // Facturación. La factura electrónica válida la expide un proveedor autorizado por la DIAN;
+  // aquí solo se registra la solicitud, su estado y los datos de la factura real (número y CUFE).
+  requiresInvoice   Boolean         @default(false)
+  invoiceStatus     InvoiceStatus   @default(NO_SOLICITADA)
+  dianInvoiceNumber String?
+  cufe              String?
+  invoiceIssuedAt   DateTime?
+  /// Consecutivo del comprobante de venta (WFX-C-000001). Se asigna al imprimirlo por primera vez.
+  receiptNumber     String?         @unique
+  invoiceRequest    InvoiceRequest?
+
   @@index([customerId])
+  @@index([invoiceStatus])
   @@index([createdAt])
   @@index([status])
   @@index([paymentStatus])

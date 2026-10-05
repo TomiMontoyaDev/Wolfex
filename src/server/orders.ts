@@ -134,6 +134,12 @@ export async function createOrder(input: CheckoutInput, idempotencyKey?: string)
             recipientName: addressData.recipientName ?? customer.name,
             recipientPhone: addressData.recipientPhone ?? customer.phone,
             customerNotes: customer.notes,
+            // Solicitud de factura electrónica: queda "pendiente" para gestionarla en /admin/facturas.
+            ...(input.invoice && {
+              requiresInvoice: true,
+              invoiceStatus: "PENDIENTE" as const,
+              invoiceRequest: { create: input.invoice },
+            }),
             items: { create: items },
             events: { create: { type: "ORDER_CREATED", actor: "checkout", metadata: { items: items.length, total } } },
           },

@@ -5,6 +5,7 @@ import { ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ShippingNotice } from "@/components/cart/ShippingNotice";
+import { EMPTY_INVOICE, InvoiceFields, type InvoiceData } from "@/components/checkout/InvoiceFields";
 import { useCart } from "@/components/providers/CartProvider";
 import { Media } from "@/components/ui/Media";
 import { COLOMBIA, DEPARTMENTS, OTHER_CITY } from "@/data/colombia";
@@ -25,6 +26,8 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { lines, subtotal } = useCart();
   const [form, setForm] = useState({ name: "", email: "", phone: "", department: "", city: "", otherCity: "", address: "" });
+  const [invoiceOn, setInvoiceOn] = useState(false);
+  const [invoice, setInvoice] = useState<InvoiceData>(EMPTY_INVOICE);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const cities = form.department ? COLOMBIA[form.department] ?? [] : [];
@@ -44,8 +47,24 @@ export default function CheckoutPage() {
     return JSON.stringify({
       customer: { ...customer, city: customer.city === OTHER_CITY ? otherCity : customer.city },
       lines: lines.map((line) => ({ productId: line.product.id, color: line.color, quantity: line.quantity })),
+      ...(invoiceOn && { invoice: { ...invoice, dv: invoice.dv || undefined } }),
     });
-  }, [form, lines]);
+  }, [form, lines, invoiceOn, invoice]);
+
+  // Al pedir factura, se precargan los datos de entrega (el cliente puede cambiarlos).
+  function toggleInvoice(enabled: boolean) {
+    setInvoiceOn(enabled);
+    if (!enabled) return;
+    setInvoice((current) => ({
+      ...current,
+      legalName: current.legalName || form.name,
+      email: current.email || form.email,
+      phone: current.phone || form.phone.replace(/\D/g, "").replace(/^57(?=\d{10}$)/, ""),
+      address: current.address || form.address,
+      department: current.department || form.department,
+      city: current.city || deliveryCity,
+    }));
+  }
   // Misma clave mientras no cambien los datos: un doble clic o reintento no crea un pedido duplicado.
   const idempotencyKey = useMemo(() => (payload ? crypto.randomUUID() : ""), [payload]);
 
@@ -155,6 +174,7 @@ export default function CheckoutPage() {
                 <input required type="text" value={form.address} placeholder="Calle, número, barrio, apto…" onChange={(event) => setForm({ ...form, address: event.target.value })} className={inputClass} />
               </label>
             </div>
+            <InvoiceFields enabled={invoiceOn} onToggle={toggleInvoice} value={invoice} onChange={setInvoice} inputClass={inputClass} />
             {error && <p role="alert" className="mt-5 text-sm text-red-400">{error}</p>}
             <button disabled={loading} className="group relative mt-8 flex h-16 w-full items-center justify-between overflow-hidden bg-volt px-5 type-title text-sm text-bone transition-shadow hover:shadow-[0_0_35px_rgba(0,102,255,0.38)] disabled:opacity-50">
               <span className="absolute inset-y-0 left-0 w-0 bg-arc transition-all duration-500 group-hover:w-full" />

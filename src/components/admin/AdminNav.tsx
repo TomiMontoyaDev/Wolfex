@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/admin/analytics", label: "Ventas", index: "03" },
   { href: "/admin/products", label: "Productos", index: "04" },
   { href: "/admin/reviews", label: "Reseñas", index: "05" },
+  { href: "/admin/facturas", label: "Facturas", index: "06" },
 ];
 
 export function AdminNav() {

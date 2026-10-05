@@ -1,3 +1,4 @@
+import { CONTACT } from "@/lib/site-config";
 import { MEDIA } from "./media";
 
 export const SITE = {
@@ -73,8 +74,8 @@ const ALL_SOCIALS: Social[] = [
   {
     platform: "instagram",
     label: "Instagram",
-    handle: "@wolfexwear",
-    href: "https://www.instagram.com/wolfexwear/?hl=es-la",
+    handle: CONTACT.instagram.handle,
+    href: CONTACT.instagram.url,
     pitch: "Offers, new arrivals & the pack in motion.",
   },
   {

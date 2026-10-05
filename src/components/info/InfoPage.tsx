@@ -3,28 +3,17 @@ import type { ReactNode } from "react";
 
 export interface InfoSection {
   title: string;
-  /** Párrafos o listas. En el texto, `[COMPLETAR …]` se resalta para que se vea qué falta definir. */
-  body: Array<string | string[]>;
+  /** Párrafos (texto o contenido con enlaces) o listas (arreglo de ítems). */
+  body: Array<ReactNode | ReactNode[]>;
 }
 
-// Sin /g en el test: una regex global guarda lastIndex entre llamadas y falla de forma intermitente.
-const PENDING_SPLIT = /(\[COMPLETAR[^\]]*\])/;
-const IS_PENDING = /^\[COMPLETAR[^\]]*\]$/;
-
-/** Resalta los textos pendientes `[COMPLETAR …]`. */
-function Text({ value }: { value: string }) {
+/** Enlace dentro de los textos informativos (WhatsApp, correo, otras páginas). */
+export function InfoLink({ href, children }: { href: string; children: ReactNode }) {
+  const external = /^https?:/.test(href);
   return (
-    <>
-      {value.split(PENDING_SPLIT).map((part, i) =>
-        IS_PENDING.test(part) ? (
-          <mark key={i} className="bg-amber-300/15 px-1 font-mono text-[0.85em] text-amber-200">
-            {part}
-          </mark>
-        ) : (
-          part
-        ),
-      )}
-    </>
+    <a href={href} className="text-arc underline-offset-4 hover:underline" {...(external && { target: "_blank", rel: "noreferrer" })}>
+      {children}
+    </a>
   );
 }
 
@@ -65,9 +54,7 @@ export function InfoPage({ eyebrow, title, intro, sections, current, children }:
         <article className="order-1 max-w-3xl lg:order-2">
           <p className="type-label text-arc">{eyebrow}</p>
           <h1 className="mt-3 type-display text-[clamp(2.75rem,8vw,6rem)] leading-[0.9]">{title}</h1>
-          <p className="mt-6 text-base leading-relaxed text-bone/85">
-            <Text value={intro} />
-          </p>
+          <p className="mt-6 text-base leading-relaxed text-bone/85">{intro}</p>
           {children}
           <div className="mt-12 space-y-10">
             {sections.map((section) => (
@@ -77,16 +64,12 @@ export function InfoPage({ eyebrow, title, intro, sections, current, children }:
                   {section.body.map((block, i) =>
                     Array.isArray(block) ? (
                       <ul key={i} className="list-disc space-y-1.5 pl-5 marker:text-arc">
-                        {block.map((item) => (
-                          <li key={item}>
-                            <Text value={item} />
-                          </li>
+                        {block.map((item, j) => (
+                          <li key={j}>{item}</li>
                         ))}
                       </ul>
                     ) : (
-                      <p key={i}>
-                        <Text value={block} />
-                      </p>
+                      <p key={i}>{block}</p>
                     ),
                   )}
                 </div>

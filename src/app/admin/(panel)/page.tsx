@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { EVENT_LABEL, FULFILLMENT_STATUS, ORDER_STATUS, PAYMENT_STATUS, delta, formatDateTime, money } from "@/components/admin/format";
 import { DeltaBadge, EmptyState, KpiCard, PageHeader, Panel, StatusBadge } from "@/components/admin/ui";
+import { countPendingInvoices } from "@/server/admin/invoices";
 import { getDashboardStats } from "@/server/admin/queries";
 import { requireAdmin } from "@/server/auth";
 
 export default async function AdminDashboardPage() {
   await requireAdmin();
-  const s = await getDashboardStats();
+  const [s, pendingInvoices] = await Promise.all([getDashboardStats(), countPendingInvoices()]);
 
   return (
     <>
@@ -20,6 +21,15 @@ export default async function AdminDashboardPage() {
           </Link>
         }
       />
+
+      {pendingInvoices > 0 && (
+        <Link href="/admin/facturas" className="mt-6 flex items-center justify-between gap-4 rounded-sm border border-amber-400/40 bg-amber-400/10 px-5 py-4 text-amber-100 transition-colors hover:border-amber-300">
+          <span className="type-title text-sm">
+            {pendingInvoices === 1 ? "1 pedido pagado espera factura electrónica" : `${pendingInvoices} pedidos pagados esperan factura electrónica`}
+          </span>
+          <span className="type-label">Gestionar →</span>
+        </Link>
+      )}
 
       <section aria-label="Ventas" className="mt-8 grid gap-4 md:grid-cols-3">
         <KpiCard

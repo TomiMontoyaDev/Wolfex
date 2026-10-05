@@ -83,6 +83,24 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
                 <dd className="font-mono text-arc">{money(order.total)}</dd>
               </div>
             </dl>
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4 text-sm">
+              <p className={order.invoiceStatus === "PENDIENTE" ? "text-amber-200" : "text-steel"}>
+                Factura electrónica:{" "}
+                {order.invoiceStatus === "EMITIDA" ? `emitida (No. ${order.dianInvoiceNumber})` : order.invoiceStatus === "PENDIENTE" ? "solicitada, pendiente" : "no solicitada"}
+              </p>
+              {order.paymentStatus === "APPROVED" && (
+                <div className="flex gap-4 type-label">
+                  {order.requiresInvoice && (
+                    <Link href={`/admin/facturas?filtro=${order.invoiceStatus === "EMITIDA" ? "emitidas" : "pendientes"}`} className="text-arc hover:underline">
+                      Gestionar factura →
+                    </Link>
+                  )}
+                  <a href={`/admin/facturas/${order.orderNumber}/imprimir`} target="_blank" rel="noreferrer" className="text-arc hover:underline">
+                    Imprimir comprobante
+                  </a>
+                </div>
+              )}
+            </div>
           </Panel>
 
           <Panel index="02" title="Logística">
