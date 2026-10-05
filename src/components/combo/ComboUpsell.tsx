@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus, Sparkles } from "lucide-react";
 import { useCart } from "@/components/providers/CartProvider";
+import { Media } from "@/components/ui/Media";
 import { deliveryLabel } from "@/config/shipping";
 import { comboStatus } from "@/lib/combo";
 import { formatPrice } from "@/lib/utils";
@@ -39,7 +40,10 @@ export function ComboUpsell({ quote }: { quote: ComboQuote }) {
               exit={{ opacity: 0, height: 0 }}
               className="flex items-center justify-between gap-3 border border-line-strong bg-void/60 p-3"
             >
-              <div className="min-w-0">
+              <span className="relative h-14 w-14 shrink-0 overflow-hidden bg-ink ring-1 ring-inset ring-line-strong">
+                <Media slot={product.images.primary} sizes="56px" />
+              </span>
+              <div className="min-w-0 flex-1">
                 <p className="type-label text-steel">{product.category.toLowerCase()}</p>
                 <p className="mt-0.5 truncate text-sm text-bone">{product.name}</p>
                 <p className="mt-0.5 text-xs text-steel">

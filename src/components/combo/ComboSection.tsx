@@ -1,9 +1,10 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ChevronDown, Package, Plus, Sparkles } from "lucide-react";
+import { Check, Plus, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useCart } from "@/components/providers/CartProvider";
+import { Media } from "@/components/ui/Media";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { SplitReveal } from "@/components/ui/SplitReveal";
@@ -95,15 +96,23 @@ function RecommendedCard({ combo, index }: { combo: RecommendedComboView; index:
       </div>
       <h3 className="mt-3 type-title text-xl text-bone">{combo.name}</h3>
       <p className="mt-2 text-sm leading-relaxed text-steel">{combo.description}</p>
-      <ul className="mt-5 flex-1 space-y-2.5 border-t border-line pt-5">
+      {/* Fotos del combo, una al lado de la otra con un "+" entre ellas. */}
+      <div className="mt-5 flex items-center gap-1.5 border-t border-line pt-5" aria-hidden="true">
+        {combo.products.map((product, i) => (
+          <span key={product.id} className="flex min-w-0 flex-1 items-center gap-1.5">
+            {i > 0 && <Plus className="h-3.5 w-3.5 shrink-0 text-arc" strokeWidth={2} />}
+            <span className="relative aspect-square min-w-0 flex-1 overflow-hidden bg-ink ring-1 ring-inset ring-line-strong">
+              <Media slot={product.images.primary} sizes="120px" />
+            </span>
+          </span>
+        ))}
+      </div>
+      <ul className="mt-4 flex-1 space-y-2.5">
         {combo.products.map((product) => (
           <li key={product.id} className="flex items-start justify-between gap-3 text-sm">
-            <span className="flex items-start gap-2 text-bone/90">
-              <Package className="mt-0.5 h-3.5 w-3.5 shrink-0 text-arc" strokeWidth={1.5} aria-hidden="true" />
-              <span>
-                {product.name}
-                {product.delivery === "STOCK" && <span className="mt-0.5 block type-label text-[0.6rem] text-arc">{deliveryLabel("STOCK")}</span>}
-              </span>
+            <span className="text-bone/90">
+              {product.name}
+              {product.delivery === "STOCK" && <span className="mt-0.5 block type-label text-[0.6rem] text-arc">{deliveryLabel("STOCK")}</span>}
             </span>
             <span className="shrink-0 font-mono text-steel">{formatPrice(product.price)}</span>
           </li>
@@ -150,52 +159,78 @@ function ComboBuilder({ options }: { options: Record<string, Product[]> }) {
         </p>
         <h3 className="mt-3 type-title text-2xl text-bone">Elige lo que necesitas y mira el precio de combo al instante</h3>
         <p className="mt-2 text-sm text-steel">Todos los pasos son opcionales. Cuentan productos desde {formatPrice(COMBO_MIN_ITEM_PRICE)}.</p>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        <div className="mt-8 space-y-4">
           {COMBO_BUILDER_SLOTS.map((slot, i) => {
             const slotOptions = options[slot.id] ?? [];
             if (!slotOptions.length) return null;
             const value = picked[slot.id] ?? "";
             return (
-              <label key={slot.id} className={cn("block border p-4 transition-colors", value ? "border-arc/60 bg-arc/5" : "border-line-strong")}>
-                <span className="flex items-center justify-between type-label">
-                  <span className="text-bone">
+              <fieldset key={slot.id} className={cn("min-w-0 border p-4 transition-colors", value ? "border-arc/60 bg-arc/5" : "border-line-strong")}>
+                <legend className="sr-only">{slot.label}</legend>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="type-label">
                     <span className="mr-2 font-mono text-arc">0{i + 1}</span>
-                    {slot.label}
-                  </span>
-                  {value && <Check className="h-4 w-4 text-arc" strokeWidth={2} aria-hidden="true" />}
-                </span>
-                <span className="mt-1 block text-xs text-steel">{slot.hint}</span>
-                <span className="relative mt-3 block">
-                  <select
-                    value={value}
-                    onChange={(event) => setPicked((current) => ({ ...current, [slot.id]: event.target.value }))}
-                    className="h-12 w-full cursor-pointer appearance-none rounded-sm border border-line-strong bg-ink px-3 pr-9 text-sm text-bone outline-none focus:border-arc"
-                  >
-                    <option value="">Sin {slot.label.toLowerCase()}</option>
-                    {slotOptions.map((product) => (
-                      <option key={product.id} value={product.id}>
-                        {product.name} — {formatPrice(product.price)}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-steel" strokeWidth={1.5} aria-hidden="true" />
-                </span>
-              </label>
+                    <span className="text-bone">{slot.label}</span>
+                    <span className="ml-2 normal-case tracking-normal text-steel">· {slot.hint}</span>
+                  </p>
+                  {value ? (
+                    <button type="button" onClick={() => setPicked((current) => ({ ...current, [slot.id]: "" }))} className="shrink-0 type-label text-steel hover:text-arc">
+                      Quitar
+                    </button>
+                  ) : (
+                    <span className="shrink-0 type-label text-steel/60">Opcional</span>
+                  )}
+                </div>
+                {/* Tarjetas con foto: toca una para elegirla (otra vez para quitarla). */}
+                <div className="no-scrollbar -mx-1 mt-3 flex snap-x gap-3 overflow-x-auto px-1 pb-1">
+                  {slotOptions.map((product) => {
+                    const active = value === product.id;
+                    return (
+                      <button
+                        key={product.id}
+                        type="button"
+                        aria-pressed={active}
+                        onClick={() => setPicked((current) => ({ ...current, [slot.id]: active ? "" : product.id }))}
+                        className={cn(
+                          "group relative w-32 shrink-0 snap-start border p-2 text-left transition-[border-color,box-shadow] sm:w-36",
+                          active ? "border-arc shadow-[0_0_24px_-6px_rgba(0,168,255,0.7)]" : "border-line-strong hover:border-arc/50",
+                        )}
+                      >
+                        <span className="relative block aspect-square overflow-hidden bg-ink">
+                          <span className="absolute inset-0 transition-transform duration-500 group-hover:scale-105">
+                            <Media slot={product.images.primary} sizes="144px" />
+                          </span>
+                          {active && (
+                            <span className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-arc text-void">
+                              <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                            </span>
+                          )}
+                        </span>
+                        <span className="mt-2 line-clamp-2 block min-h-[2.5em] text-[0.7rem] leading-tight text-bone/90">{product.name}</span>
+                        <span className="mt-1 block font-mono text-xs text-steel">{formatPrice(product.price)}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </fieldset>
             );
           })}
         </div>
       </div>
 
-      <aside className="flex flex-col border border-line-strong bg-ink p-6" aria-live="polite">
+      <aside className="flex flex-col self-start border border-line-strong bg-ink p-6 lg:sticky lg:top-28" aria-live="polite">
         <p className="type-label text-steel">Tu combo</p>
         {selected.length === 0 ? (
-          <p className="mt-4 flex-1 text-sm text-steel">Elige al menos 2 productos para activar el descuento de combo.</p>
+          <p className="mt-4 text-sm text-steel">Toca los productos que quieras: con 2 o más se activa el descuento de combo.</p>
         ) : (
-          <ul className="mt-4 flex-1 space-y-2 text-sm">
+          <ul className="mt-4 space-y-3 text-sm">
             <AnimatePresence initial={false}>
               {selected.map((product) => (
-                <motion.li key={product.id} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} className="flex justify-between gap-3">
-                  <span className="text-bone/90">{product.name}</span>
+                <motion.li key={product.id} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} className="flex items-center gap-3">
+                  <span className="relative h-12 w-12 shrink-0 overflow-hidden bg-void ring-1 ring-inset ring-line-strong">
+                    <Media slot={product.images.primary} sizes="48px" />
+                  </span>
+                  <span className="min-w-0 flex-1 text-bone/90">{product.name}</span>
                   <span className="shrink-0 font-mono text-steel">{formatPrice(product.price)}</span>
                 </motion.li>
               ))}
