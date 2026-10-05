@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ShippingNotice } from "@/components/cart/ShippingNotice";
 import { EMPTY_INVOICE, InvoiceFields, type InvoiceData } from "@/components/checkout/InvoiceFields";
+import { ComboUpsell } from "@/components/combo/ComboUpsell";
+import { useComboQuote } from "@/components/combo/useComboQuote";
 import { useCart } from "@/components/providers/CartProvider";
 import { Media } from "@/components/ui/Media";
 import { COLOMBIA, DEPARTMENTS, OTHER_CITY } from "@/data/colombia";
@@ -34,6 +36,10 @@ export default function CheckoutPage() {
   const deliveryCity = form.city === OTHER_CITY ? form.otherCity : form.city;
 
   const cartContents = useMemo(() => lines.map((line) => ({ id: line.product.sku, quantity: line.quantity, item_price: line.product.price })), [lines]);
+  // Descuento de combo (lo confirma el servidor al crear el pedido) + sugerencias para completarlo.
+  const quoteLines = useMemo(() => lines.map((line) => ({ productId: line.product.id, quantity: line.quantity })), [lines]);
+  const { quote } = useComboQuote(quoteLines, { suggest: true });
+  const total = subtotal - quote.discount;
 
   // Meta: una vez por visita al checkout, con lo que hay en el carrito.
   const checkoutTracked = useRef(false);
@@ -85,7 +91,7 @@ export default function CheckoutPage() {
       // Paso de pago: el pedido ya existe y el cliente sale hacia Mercado Pago con sus datos de contacto.
       track("AddPaymentInfo", {
         contents: cartContents,
-        value: subtotal,
+        value: total,
         customer: { email: form.email, phone: form.phone, name: form.name, city: deliveryCity, department: form.department },
       });
       // Un instante para que el Pixel alcance a enviar antes de salir de la página (el envío al servidor usa keepalive).
@@ -201,17 +207,24 @@ export default function CheckoutPage() {
             </ul>
             <div className="relative mt-7 space-y-3 border-t border-line pt-5 text-sm">
               <div className="flex justify-between text-steel"><span>Subtotal</span><span className="font-mono">{formatPrice(subtotal)}</span></div>
+              {quote.discount > 0 && (
+                <div className="flex justify-between text-arc">
+                  <span>Descuento combo ({quote.count} productos · hasta −{quote.percent}%)</span>
+                  <span className="font-mono">− {formatPrice(quote.discount)}</span>
+                </div>
+              )}
               <div className="flex justify-between gap-4 text-steel">
                 <span>Envío</span>
-                {hasFreeShipping(subtotal, deliveryCity || null) ? (
+                {hasFreeShipping(total, deliveryCity || null) ? (
                   <span className="type-label text-arc">GRATIS</span>
                 ) : (
                   <span className="text-right text-[0.625rem] leading-snug text-steel/70">Según producto y localidad</span>
                 )}
               </div>
-              <div className="flex justify-between border-t border-line pt-4 type-title text-lg"><span>Total</span><span className="font-mono text-arc">{formatPrice(subtotal)}</span></div>
-              <div className="pt-2"><ShippingNotice subtotal={subtotal} city={deliveryCity || undefined} /></div>
+              <div className="flex justify-between border-t border-line pt-4 type-title text-lg"><span>Total</span><span className="font-mono text-arc">{formatPrice(total)}</span></div>
+              <div className="pt-2"><ShippingNotice subtotal={total} city={deliveryCity || undefined} /></div>
             </div>
+            <ComboUpsell quote={quote} />
           </motion.aside>
         </div>
       </main>

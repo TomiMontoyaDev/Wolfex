@@ -1,6 +1,7 @@
 import "server-only";
 import { randomInt, randomUUID } from "node:crypto";
 import { Prisma } from "@/generated/prisma/client";
+import { computeCombo } from "./combo";
 import { db } from "./db";
 import { mpPreferences } from "./mercadopago";
 import type { CheckoutInput } from "./validation";
@@ -73,11 +74,16 @@ export async function createOrder(input: CheckoutInput, idempotencyKey?: string)
       unitPrice: product.price,
       totalPrice: product.price * line.quantity,
       unitCost: product.costPrice,
+      unitDiscount: 0,
     };
   });
 
+  // Descuento por combo: lo calcula el servidor con los precios y costos de la base (tope de margen por producto).
+  const combo = await computeCombo(items.map((item) => ({ productId: item.productId, quantity: item.quantity })));
+  for (const item of items) Object.assign(item, { unitDiscount: combo.unitDiscounts.get(item.productId) ?? 0 });
+
   const subtotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
-  const discount = 0;
+  const discount = combo.discount;
   const tax = 0; // Precios con IVA incluido.
   const total = subtotal - discount + SHIPPING_COST + tax;
   const { customer } = input;
@@ -141,7 +147,7 @@ export async function createOrder(input: CheckoutInput, idempotencyKey?: string)
               invoiceRequest: { create: input.invoice },
             }),
             items: { create: items },
-            events: { create: { type: "ORDER_CREATED", actor: "checkout", metadata: { items: items.length, total } } },
+            events: { create: { type: "ORDER_CREATED", actor: "checkout", metadata: { items: items.length, total, ...(discount && { comboDiscount: discount, comboPercent: combo.percent }) } } },
           },
         });
       });
@@ -184,7 +190,8 @@ export async function createMercadoPagoCheckout(order: OrderForCheckout, baseUrl
           // Mercado Pago no tiene categoría de suplementos: "others" es la que corresponde (GET /item_categories).
           category_id: "others",
           quantity: item.quantity,
-          unit_price: item.unitPrice,
+          // Precio con el descuento de combo por unidad: la suma de ítems es exactamente order.total.
+          unit_price: item.unitPrice - item.unitDiscount,
           currency_id: order.currency,
         })),
         ...(order.shippingCost > 0 && { shipments: { cost: order.shippingCost, mode: "not_specified" } }),

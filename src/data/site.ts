@@ -37,6 +37,7 @@ export type CategorySlug = keyof typeof CATEGORY_SLUGS;
 
 export const NAV_LINKS: NavLink[] = [
   { label: "Shop", href: "/catalogo" },
+  { label: "Combos", href: "#combos" },
   { label: "Supplements", href: "/catalogo?categoria=suplementos" },
   { label: "Proteins", href: "/catalogo?categoria=proteinas" },
   { label: "Creatines", href: "/catalogo?categoria=creatinas" },

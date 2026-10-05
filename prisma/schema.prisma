@@ -332,6 +332,8 @@ model OrderItem {
   quantity    Int
   unitPrice   Int
   totalPrice  Int
+  /// Descuento por unidad (combo). Se cobra unitPrice − unitDiscount; Order.discount es la suma.
+  unitDiscount Int     @default(0)
   /// Costo unitario al momento de la compra (si se conocía).
   unitCost    Int?
   createdAt   DateTime @default(now())

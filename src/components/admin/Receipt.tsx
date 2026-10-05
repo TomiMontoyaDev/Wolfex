@@ -85,7 +85,7 @@ export function Receipt({ order }: { order: InvoiceOrder }) {
       <dl className="ml-auto mt-3 w-64 space-y-1">
         <Total label="Subtotal">{formatPrice(order.subtotal)}</Total>
         <Total label="Envío">{shippingLabel(order)}</Total>
-        <Total label="Descuentos">{order.discount ? `- ${formatPrice(order.discount)}` : formatPrice(0)}</Total>
+        <Total label={order.discount ? "Descuento combo" : "Descuentos"}>{order.discount ? `- ${formatPrice(order.discount)}` : formatPrice(0)}</Total>
         <div className="flex justify-between border-t-2 border-neutral-900 pt-1.5 text-[13px] font-bold">
           <dt>Total</dt>
           <dd className="font-mono">{formatPrice(order.total)}</dd>

@@ -2,7 +2,10 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import { ComboProgress } from "@/components/combo/ComboSection";
+import { useComboQuote } from "@/components/combo/useComboQuote";
+import { comboStatus } from "@/lib/combo";
 import { useRouter } from "next/navigation";
 import { ShippingNotice } from "@/components/cart/ShippingNotice";
 import { useCart } from "@/components/providers/CartProvider";
@@ -15,6 +18,8 @@ export function CartDrawer() {
   const router = useRouter();
   const { t } = useLanguage();
   const { isOpen, close, lines, subtotal, remove, count } = useCart();
+  const quoteLines = useMemo(() => lines.map((line) => ({ productId: line.product.id, quantity: line.quantity })), [lines]);
+  const { quote } = useComboQuote(quoteLines);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
@@ -71,13 +76,24 @@ export function CartDrawer() {
 
             <div className="border-t border-line p-6">
               {lines.length > 0 && (
-                <div className="mb-5">
-                  <ShippingNotice subtotal={subtotal} />
+                <div className="mb-5 space-y-4">
+                  <ComboProgress {...comboStatus(lines.map((line) => ({ productId: line.product.id, price: line.product.price })))} />
+                  <ShippingNotice subtotal={subtotal - quote.discount} />
                 </div>
               )}
-              <div className="flex justify-between type-title text-sm">
+              <div className="flex justify-between text-sm text-steel">
                 <span>{t("Subtotal")}</span>
                 <span className="font-mono">{formatPrice(subtotal)}</span>
+              </div>
+              {quote.discount > 0 && (
+                <div className="mt-1.5 flex justify-between text-sm text-arc">
+                  <span>Descuento combo</span>
+                  <span className="font-mono">− {formatPrice(quote.discount)}</span>
+                </div>
+              )}
+              <div className="mt-2 flex justify-between border-t border-line pt-2 type-title text-sm">
+                <span>Total</span>
+                <span className="font-mono">{formatPrice(subtotal - quote.discount)}</span>
               </div>
               <button
                 disabled={!lines.length}

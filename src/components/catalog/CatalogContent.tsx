@@ -6,6 +6,7 @@ import { ProductCard } from "@/components/sections/FeaturedProducts";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import type { Product, ProductCategory } from "@/data/products";
+import { MAX_COMBO_PERCENT } from "@/lib/combo";
 import { searchProducts } from "@/lib/search";
 import { cn, formatPrice, pad } from "@/lib/utils";
 
@@ -67,6 +68,14 @@ export function CatalogContent({ products, initialQuery = "", initialCategory }:
                 ? "Explora todos nuestros suplementos. Filtra por marca, categoría y presupuesto."
                 : `${filteredProducts.length} ${filteredProducts.length === 1 ? "producto" : "productos"} en ${(CATEGORY_LABELS[category] ?? category).toLowerCase()}. Filtra por marca y presupuesto, o elige otra categoría.`}
             </p>
+            <a
+              href="/#combos"
+              className="group mt-6 inline-flex items-center gap-3 border border-arc/50 bg-arc/10 px-4 py-3 type-label text-bone transition-colors hover:border-arc hover:bg-arc hover:text-void"
+            >
+              <span className="bg-arc px-1.5 py-0.5 font-mono text-[0.65rem] font-semibold text-void group-hover:bg-void group-hover:text-arc">COMBO</span>
+              Arma tu combo y ahorra hasta {MAX_COMBO_PERCENT}%
+              <span aria-hidden="true">→</span>
+            </a>
           </div>
           <button
             type="button"

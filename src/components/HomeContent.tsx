@@ -1,5 +1,6 @@
 "use client";
 
+import { ComboSection } from "@/components/combo/ComboSection";
 import { BrandStatement } from "@/components/sections/BrandStatement";
 import { CampaignSection } from "@/components/sections/CampaignSection";
 import { Categories } from "@/components/sections/Categories";
@@ -11,9 +12,20 @@ import { Reviews } from "@/components/sections/Reviews";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Marquee } from "@/components/ui/Marquee";
 import type { Product } from "@/data/products";
+import type { RecommendedComboView } from "@/server/combo";
 import type { PublicReview } from "@/server/reviews";
 
-export function HomeContent({ products, reviews }: { products: Product[]; reviews: PublicReview[] }) {
+export function HomeContent({
+  products,
+  reviews,
+  combos,
+  comboOptions,
+}: {
+  products: Product[];
+  reviews: PublicReview[];
+  combos: RecommendedComboView[];
+  comboOptions: Record<string, Product[]>;
+}) {
   const { t } = useLanguage();
   const mantras = ["BUILT TO HUNT.", "NO COMFORT.", "BEYOND YOUR LIMITS.", "FIND YOUR WOLF.", "HUNT YOUR APEX."];
 
@@ -22,6 +34,7 @@ export function HomeContent({ products, reviews }: { products: Product[]; review
       <Hero />
       <Marquee items={mantras.map(t)} className="bg-void type-headline text-[clamp(1.1rem,2.2vw,1.75rem)] text-bone/90" />
       <BrandStatement />
+      <ComboSection combos={combos} options={comboOptions} />
       <FeaturedProducts products={products} />
       <Reviews reviews={reviews} />
       <CampaignSection />

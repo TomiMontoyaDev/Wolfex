@@ -116,9 +116,9 @@ export function billingParty(order: InvoiceOrder) {
 }
 
 /** Valor del envío para mostrar: el pedido no cobra envío en línea (gratis o se cobra aparte). */
-export function shippingLabel(order: Pick<InvoiceOrder, "shippingCost" | "subtotal" | "shippingCity">) {
+export function shippingLabel(order: Pick<InvoiceOrder, "shippingCost" | "subtotal" | "discount" | "shippingCity">) {
   if (order.shippingCost > 0) return formatPrice(order.shippingCost);
-  return hasFreeShipping(order.subtotal, order.shippingCity) ? "Gratis" : "Se cobra aparte";
+  return hasFreeShipping(order.subtotal - order.discount, order.shippingCity) ? "Gratis" : "Se cobra aparte";
 }
 
 /** Bloque de texto para pegar en el software de facturación electrónica. */
@@ -140,7 +140,7 @@ export function invoiceCopyText(order: InvoiceOrder) {
     "",
     `Subtotal: ${formatPrice(order.subtotal)}`,
     `Envío: ${shippingLabel(order)}`,
-    ...(order.discount ? [`Descuentos: -${formatPrice(order.discount)}`] : []),
+    ...(order.discount ? [`Descuento combo: -${formatPrice(order.discount)}`] : []),
     `TOTAL: ${formatPrice(order.total)}`,
     `Medio de pago: Mercado Pago${order.paymentMethod ? ` · ${paymentMethodLabel(order.paymentMethod)}` : ""}${order.paymentId ? ` · ID ${order.paymentId}` : ""}`,
   ];

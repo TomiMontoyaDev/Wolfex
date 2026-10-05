@@ -69,8 +69,8 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             <dl className="ml-auto mt-6 max-w-sm space-y-2.5 text-sm">
               {[
                 ["Subtotal", money(order.subtotal)],
-                ["Descuento", order.discount ? `− ${money(order.discount)}` : money(0)],
-                ["Envío", order.shippingCost ? money(order.shippingCost) : hasFreeShipping(order.subtotal, order.shippingCity) ? "Gratis" : "Se cobra aparte (según producto y localidad)"],
+                ["Descuento combo", order.discount ? `− ${money(order.discount)}` : money(0)],
+                ["Envío", order.shippingCost ? money(order.shippingCost) : hasFreeShipping(order.subtotal - order.discount, order.shippingCity) ? "Gratis" : "Se cobra aparte (según producto y localidad)"],
                 ["Impuestos", order.tax ? money(order.tax) : "Incluidos"],
               ].map(([label, value]) => (
                 <div key={label} className="flex justify-between text-steel">
