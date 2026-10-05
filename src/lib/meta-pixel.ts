@@ -20,7 +20,8 @@ fbq('track', 'PageView');
 
 export const META_PIXEL_NOSCRIPT_SRC = `https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`;
 
-type StandardEvent = "PageView" | "ViewContent" | "AddToCart" | "InitiateCheckout" | "Purchase";
+/** Eventos que se envían al Pixel y, con el mismo event_id, a la API de Conversiones. */
+export type MetaEvent = "ViewContent" | "AddToCart" | "InitiateCheckout" | "AddPaymentInfo" | "Purchase";
 
 declare global {
   interface Window {
@@ -28,8 +29,67 @@ declare global {
   }
 }
 
-/** Envía un evento estándar al Pixel. Si el script no cargó (bloqueador de anuncios, admin), no hace nada. */
-export function trackPixel(event: StandardEvent, params?: Record<string, unknown>, eventId?: string) {
-  if (typeof window === "undefined" || !window.fbq) return;
-  window.fbq("track", event, params, eventId ? { eventID: eventId } : undefined);
+export interface TrackItem {
+  /** SKU del producto (PN-XXX): el mismo id en Pixel, API de Conversiones y catálogo de Meta. */
+  id: string;
+  quantity: number;
+  item_price: number;
+}
+
+export interface TrackParams {
+  contents?: TrackItem[];
+  /** Por defecto: suma de item_price × quantity. */
+  value?: number;
+  /** Datos que el cliente escribió en el checkout (se hashean en el servidor, nunca aquí). */
+  customer?: { email?: string; phone?: string; name?: string; city?: string; department?: string };
+  /** Purchase: external_reference del pedido; el servidor lo valida contra la base. */
+  orderRef?: string;
+}
+
+export const newEventId = () => crypto.randomUUID();
+
+/** PageView del Pixel (solo navegador). Si el script no cargó (bloqueador, admin), no hace nada. */
+export function trackPageView() {
+  if (typeof window !== "undefined") window.fbq?.("track", "PageView");
+}
+
+/**
+ * Registra un evento en el Pixel del navegador y lo reenvía a /api/meta-capi con el MISMO event_id,
+ * para que Meta los cuente una sola vez. Nunca lanza errores hacia la tienda.
+ */
+export function track(eventName: MetaEvent, params: TrackParams = {}, eventId: string = newEventId()) {
+  if (typeof window === "undefined") return;
+  const contents = params.contents ?? [];
+  const value = params.value ?? contents.reduce((sum, item) => sum + item.item_price * item.quantity, 0);
+
+  try {
+    window.fbq?.(
+      "track",
+      eventName,
+      {
+        currency: "COP",
+        value,
+        content_ids: contents.map((item) => item.id),
+        content_type: "product",
+        contents,
+        num_items: contents.reduce((sum, item) => sum + item.quantity, 0),
+      },
+      { eventID: eventId },
+    );
+  } catch {}
+
+  // keepalive: el envío sobrevive aunque la página navegue enseguida (p. ej. hacia Mercado Pago).
+  fetch("/api/meta-capi", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    keepalive: true,
+    body: JSON.stringify({
+      event_name: eventName,
+      event_id: eventId,
+      event_source_url: window.location.href,
+      items: contents.map((item) => ({ id: item.id, quantity: item.quantity })),
+      customer: params.customer,
+      order_ref: params.orderRef,
+    }),
+  }).catch(() => {});
 }

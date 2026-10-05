@@ -2,7 +2,7 @@
 
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef } from "react";
-import { trackPixel } from "@/lib/meta-pixel";
+import { trackPageView } from "@/lib/meta-pixel";
 
 /**
  * PageView en las navegaciones internas: Next cambia de página sin recargar, así que el código base
@@ -27,7 +27,7 @@ function RouteChangePageView() {
       firstRender.current = false;
       return;
     }
-    trackPixel("PageView");
+    trackPageView();
   }, [pathname, searchParams]);
 
   return null;

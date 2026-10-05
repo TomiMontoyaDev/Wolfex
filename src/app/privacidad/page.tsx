@@ -48,6 +48,7 @@ export default function PrivacyPage() {
               "Mercado Pago, para procesar el pago.",
               "La transportadora y nuestro aliado mayorista, para entregar tu pedido.",
               "Proveedores de tecnología que alojan la tienda y la base de datos (Vercel, Neon).",
+              "Meta (Facebook e Instagram), para medir y mejorar nuestros anuncios mediante el píxel de Meta y su API de Conversiones. Tu correo, teléfono, nombre y ciudad se envían convertidos en un código irreversible (hash SHA-256), nunca en texto plano.",
             ],
           ],
         },

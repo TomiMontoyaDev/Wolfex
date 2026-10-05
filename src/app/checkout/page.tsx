@@ -9,7 +9,7 @@ import { useCart } from "@/components/providers/CartProvider";
 import { Media } from "@/components/ui/Media";
 import { COLOMBIA, DEPARTMENTS, OTHER_CITY } from "@/data/colombia";
 import { hasFreeShipping } from "@/config/shipping";
-import { trackPixel } from "@/lib/meta-pixel";
+import { track } from "@/lib/meta-pixel";
 import { formatPrice } from "@/lib/utils";
 
 const fields = [
@@ -30,19 +30,15 @@ export default function CheckoutPage() {
   const cities = form.department ? COLOMBIA[form.department] ?? [] : [];
   const deliveryCity = form.city === OTHER_CITY ? form.otherCity : form.city;
 
-  // Meta Pixel: una vez por visita al checkout, con lo que hay en el carrito.
+  const cartContents = useMemo(() => lines.map((line) => ({ id: line.product.sku, quantity: line.quantity, item_price: line.product.price })), [lines]);
+
+  // Meta: una vez por visita al checkout, con lo que hay en el carrito.
   const checkoutTracked = useRef(false);
   useEffect(() => {
-    if (checkoutTracked.current || !lines.length) return;
+    if (checkoutTracked.current || !cartContents.length) return;
     checkoutTracked.current = true;
-    trackPixel("InitiateCheckout", {
-      content_ids: lines.map((line) => line.product.sku),
-      content_type: "product",
-      num_items: lines.reduce((sum, line) => sum + line.quantity, 0),
-      value: subtotal,
-      currency: "COP",
-    });
-  }, [lines, subtotal]);
+    track("InitiateCheckout", { contents: cartContents, value: subtotal });
+  }, [cartContents, subtotal]);
   const payload = useMemo(() => {
     const { otherCity, ...customer } = form;
     return JSON.stringify({
@@ -67,6 +63,14 @@ export default function CheckoutPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "No fue posible preparar el pago.");
       if (!data.checkoutUrl) throw new Error("Mercado Pago no está configurado todavía.");
+      // Paso de pago: el pedido ya existe y el cliente sale hacia Mercado Pago con sus datos de contacto.
+      track("AddPaymentInfo", {
+        contents: cartContents,
+        value: subtotal,
+        customer: { email: form.email, phone: form.phone, name: form.name, city: deliveryCity, department: form.department },
+      });
+      // Un instante para que el Pixel alcance a enviar antes de salir de la página (el envío al servidor usa keepalive).
+      await new Promise((resolve) => setTimeout(resolve, 300));
       window.location.href = data.checkoutUrl;
     } catch (submissionError) {
       setError(submissionError instanceof Error ? submissionError.message : "No fue posible iniciar el pago.");

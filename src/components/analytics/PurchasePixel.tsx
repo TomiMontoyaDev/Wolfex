@@ -1,32 +1,33 @@
 "use client";
 
 import { useEffect } from "react";
-import { trackPixel } from "@/lib/meta-pixel";
+import { track, type TrackItem } from "@/lib/meta-pixel";
 
 /**
- * Evento Purchase del Meta Pixel. Solo se monta cuando el pago está CONFIRMADO en la base.
- * El número de pedido va como eventID y se recuerda en el navegador: recargar la página no duplica la compra.
+ * Evento Purchase (Pixel + API de Conversiones). Solo se monta cuando el pago está CONFIRMADO en la base.
+ * event_id = número de pedido, y se recuerda en el navegador: recargar la página de confirmación no lo repite.
+ * (Si se abriera desde otro navegador, Meta igual lo deduplica por el mismo event_id.)
  */
-export function PurchasePixel({ orderNumber, value, contentIds }: { orderNumber: string; value: number; contentIds: string[] }) {
+export function PurchasePixel({ orderNumber, orderRef, value, contents }: { orderNumber: string; orderRef: string; value: number; contents: TrackItem[] }) {
   useEffect(() => {
-    const key = `wfx-pixel-purchase-${orderNumber}`;
+    const key = `wfx-meta-purchase-${orderNumber}`;
     try {
       if (localStorage.getItem(key)) return;
+      localStorage.setItem(key, "1");
     } catch {}
-    // El script del Pixel carga después de hidratar: se espera un momento a que exista fbq.
+
+    // El script del Pixel puede tardar en cargar: se espera hasta ~3 s. Si no aparece (bloqueador),
+    // track() igual envía la compra por la API de Conversiones.
     let tries = 0;
     const timer = setInterval(() => {
       tries += 1;
-      if (window.fbq) {
-        trackPixel("Purchase", { value, currency: "COP", content_ids: contentIds, content_type: "product" }, orderNumber);
-        try {
-          localStorage.setItem(key, "1");
-        } catch {}
+      if (window.fbq || tries >= 12) {
         clearInterval(timer);
-      } else if (tries > 20) clearInterval(timer);
+        track("Purchase", { contents, value, orderRef }, orderNumber);
+      }
     }, 250);
     return () => clearInterval(timer);
-  }, [orderNumber, value, contentIds]);
+  }, [orderNumber, orderRef, value, contents]);
 
   return null;
 }

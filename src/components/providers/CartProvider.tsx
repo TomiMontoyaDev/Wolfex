@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import type { Product } from "@/data/products";
-import { trackPixel } from "@/lib/meta-pixel";
+import { track } from "@/lib/meta-pixel";
 
 export interface CartLine {
   key: string;
@@ -39,7 +39,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return [...prev, { key, product, color, quantity: 1 }];
     });
     setPulse((p) => p + 1);
-    trackPixel("AddToCart", { content_ids: [product.sku], content_name: product.name, content_type: "product", value: product.price, currency: "COP" });
+    // Cada clic en "Agregar al carrito" suma 1 unidad.
+    track("AddToCart", { contents: [{ id: product.sku, quantity: 1, item_price: product.price }] });
   }, []);
 
   const remove = useCallback((key: string) => setLines((prev) => prev.filter((l) => l.key !== key)), []);
