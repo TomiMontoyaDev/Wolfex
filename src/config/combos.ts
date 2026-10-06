@@ -29,42 +29,52 @@ export interface RecommendedCombo {
   skus: string[];
 }
 
-/** Combos recomendados: armados con productos en stock en Pereira y con margen para el descuento. */
+/**
+ * Combos recomendados. Armados alrededor de los productos con margen para el descuento completo
+ * (CR7ATINE, RAW, Calcio Citrate) y priorizando el stock en Pereira. Revisado el 2026-10-06 con los costos reales.
+ */
 export const RECOMMENDED_COMBOS: RecommendedCombo[] = [
   {
-    id: "inicio",
-    name: "Combo Inicio",
-    goal: "Masa muscular",
-    description: "Lo básico para arrancar: proteína para recuperar, creatina para fuerza y omega 3 para tu salud.",
-    skus: ["PN-014", "PN-632", "PN-640"],
+    id: "fuerza-recuperacion",
+    name: "Combo Fuerza y Recuperación",
+    goal: "Fuerza y músculos",
+    description: "Creatina para más fuerza y potencia, magnesio para la función muscular y el descanso, y calcio para tus huesos.",
+    skus: ["PN-681", "PN-203", "PN-147"],
   },
   {
-    id: "fuerza",
-    name: "Combo Fuerza",
+    id: "energia",
+    name: "Combo Energía",
     goal: "Fuerza y energía",
-    description: "Creatina para más fuerza y potencia, más un pre-entreno para llegar con energía a cada sesión.",
-    skus: ["PN-681", "PN-166"],
+    description: "Creatina para rendir más, pre-entreno para cada sesión y un pack de sticks para probar sabores nuevos.",
+    skus: ["PN-681", "PN-166", "PN-613"],
   },
   {
     id: "rendimiento",
     name: "Combo Rendimiento Total",
-    goal: "Todo en uno",
-    description: "Proteína, creatina, pre-entreno y omega 3: el stack completo para entrenar y recuperarte mejor.",
-    skus: ["PN-381", "PN-014", "PN-166", "PN-640"],
+    goal: "Todo en uno · Entrega HOY",
+    description: "Proteína, creatina, pre-entreno y omega 3: el stack completo, todo en stock en Pereira.",
+    skus: ["PN-014", "PN-681", "PN-166", "PN-640"],
   },
   {
-    id: "definicion",
-    name: "Combo Definición",
-    goal: "Quemar grasa",
-    description: "L-carnitina, quemador termogénico y CLA para acompañar tu etapa de definición con dieta y ejercicio.",
-    skus: ["PN-393", "PN-268", "PN-386"],
+    id: "inicio",
+    name: "Combo Inicio",
+    goal: "Masa muscular · Entrega HOY",
+    description: "Lo básico para arrancar: proteína para recuperar, creatina para fuerza y omega 3 para tu salud.",
+    skus: ["PN-014", "PN-632", "PN-640"],
   },
   {
-    id: "bienestar",
-    name: "Combo Bienestar",
+    id: "huesos-descanso",
+    name: "Combo Huesos y Descanso",
     goal: "Salud y descanso",
-    description: "Magnesio para el descanso y los músculos, omega 3 para el corazón y zinc para tus defensas.",
-    skus: ["PN-203", "PN-640", "PN-646"],
+    description: "Calcio para tus huesos, magnesio para el descanso y los músculos, y omega 3 para el corazón.",
+    skus: ["PN-147", "PN-203", "PN-640"],
+  },
+  {
+    id: "prueba-sticks",
+    name: "Combo Prueba Sticks",
+    goal: "Prueba antes de elegir",
+    description: "Dos packs de pre-entreno y uno de quemador en sobres individuales: prueba varios antes de comprar un tarro completo.",
+    skus: ["PN-613", "PN-617", "PN-611"],
   },
 ];
 

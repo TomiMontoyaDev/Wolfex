@@ -144,7 +144,7 @@ export const getRecommendedCombos = unstable_cache(
     }
     return views;
   },
-  ["recommended-combos", "v2"],
+  ["recommended-combos", "v3"],
   { tags: [PRODUCTS_TAG], revalidate: 3600 },
 );
 
