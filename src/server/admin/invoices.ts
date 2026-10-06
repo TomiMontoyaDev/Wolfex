@@ -29,6 +29,7 @@ const invoiceOrderSelect = {
   total: true,
   paymentId: true,
   paymentMethod: true,
+  paymentProvider: true,
   customerName: true,
   customerEmail: true,
   customerPhone: true,
@@ -121,6 +122,12 @@ export function shippingLabel(order: Pick<InvoiceOrder, "shippingCost" | "subtot
   return hasFreeShipping(order.subtotal - order.discount, order.shippingCity) ? "Gratis" : "Se cobra aparte";
 }
 
+/** Medio de pago legible: "Mercado Pago · Visa" (web) o "Transferencia bancaria" (venta manual). */
+export function paymentLabel(order: Pick<InvoiceOrder, "paymentProvider" | "paymentMethod">) {
+  if (order.paymentProvider === "MANUAL") return paymentMethodLabel(order.paymentMethod);
+  return `Mercado Pago${order.paymentMethod ? ` · ${paymentMethodLabel(order.paymentMethod)}` : ""}`;
+}
+
 /** Bloque de texto para pegar en el software de facturación electrónica. */
 export function invoiceCopyText(order: InvoiceOrder) {
   const party = billingParty(order);
@@ -142,7 +149,7 @@ export function invoiceCopyText(order: InvoiceOrder) {
     `Envío: ${shippingLabel(order)}`,
     ...(order.discount ? [`Descuento combo: -${formatPrice(order.discount)}`] : []),
     `TOTAL: ${formatPrice(order.total)}`,
-    `Medio de pago: Mercado Pago${order.paymentMethod ? ` · ${paymentMethodLabel(order.paymentMethod)}` : ""}${order.paymentId ? ` · ID ${order.paymentId}` : ""}`,
+    `Medio de pago: ${paymentLabel(order)}${order.paymentId ? ` · ID ${order.paymentId}` : ""}`,
   ];
   return lines.join("\n");
 }

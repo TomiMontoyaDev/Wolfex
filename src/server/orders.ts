@@ -13,7 +13,7 @@ export class CheckoutError extends Error {}
 const SHIPPING_COST = 0;
 const ORDER_CODE_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"; // sin 0/O ni 1/I
 
-function generateOrderNumber(now = new Date()) {
+export function generateOrderNumber(now = new Date()) {
   const date = now.toISOString().slice(2, 10).replace(/-/g, "");
   const code = Array.from({ length: 5 }, () => ORDER_CODE_ALPHABET[randomInt(ORDER_CODE_ALPHABET.length)]).join("");
   return `WFX-${date}-${code}`;

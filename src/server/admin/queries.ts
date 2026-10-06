@@ -20,10 +20,15 @@ async function salesBetween(from: Date, to: Date) {
 }
 
 /**
- * Utilidad estimada = ingresos − costo de productos − comisión MP − costo real de envío.
+ * Utilidad neta = ingresos − costo de productos − comisión del medio de pago − costo real de envío − gastos operativos.
  * Solo usa costos conocidos; `complete` indica si faltó alguno (no se inventan costos).
  */
 export async function getProfitEstimate(from: Date, to: Date) {
+  const [expenseRow] = await db.$queryRaw<Array<{ amount: number }>>`
+    SELECT COALESCE(SUM(e.amount), 0)::float8 AS amount
+    FROM "OrderExpense" e JOIN "Order" o ON o.id = e."orderId"
+    WHERE o."paymentStatus" = 'APPROVED' AND o."paidAt" >= ${iso(from)}::timestamp AND o."paidAt" < ${iso(to)}::timestamp`;
+  const expenses = expenseRow?.amount ?? 0;
   const [items] = await db.$queryRaw<Array<{ cost: number; missing: number; lines: number }>>`
     SELECT COALESCE(SUM(oi."unitCost" * oi.quantity), 0)::float8 AS cost,
            COUNT(*) FILTER (WHERE oi."unitCost" IS NULL)::int AS missing,
@@ -44,7 +49,8 @@ export async function getProfitEstimate(from: Date, to: Date) {
     productCost,
     fees,
     shipping,
-    profit: revenue - productCost - fees - shipping,
+    expenses,
+    profit: revenue - productCost - fees - shipping - expenses,
     complete: (items?.missing ?? 0) === 0 && orders._count.paymentFee === orders._count._all,
     hasAnyCost: (items?.lines ?? 0) > (items?.missing ?? 0),
     missingCostLines: items?.missing ?? 0,
@@ -204,6 +210,7 @@ export function getOrder(id: string) {
     where: { id },
     include: {
       items: { orderBy: { createdAt: "asc" } },
+      expenses: { orderBy: { createdAt: "asc" } },
       payments: { orderBy: { createdAt: "desc" } },
       events: { orderBy: { createdAt: "desc" } },
     },

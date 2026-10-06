@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ORDER_STATUS, PAYMENT_STATUS, formatDate, formatDateTime, money } from "@/components/admin/format";
-import { DefinitionList, EmptyState, KpiCard, PageHeader, Panel, StatusBadge, Table, Td, Th } from "@/components/admin/ui";
+import { DefinitionList, EmptyState, KpiCard, PageHeader, Panel, StatusBadge, Table, Td, Th, buttonClass, ghostButtonClass } from "@/components/admin/ui";
 import { DangerAction } from "@/components/admin/DeleteControls";
 import { deleteCustomersAction } from "@/server/admin/actions";
 import { getCustomer } from "@/server/admin/queries";
@@ -10,7 +10,7 @@ import { requireAdmin } from "@/server/auth";
 
 export const metadata: Metadata = { title: "Cliente" };
 
-export default async function AdminCustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminCustomerDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await requireAdmin();
   const { id } = await params;
   const data = await getCustomer(id);
@@ -21,8 +21,28 @@ export default async function AdminCustomerDetailPage({ params }: { params: Prom
     <>
       <Link href="/admin/customers" className="type-label text-steel transition-colors hover:text-arc">← Clientes</Link>
       <div className="mt-4">
-        <PageHeader eyebrow={`CLIENTE DESDE ${formatDate(customer.createdAt).toUpperCase()}`} title={customer.fullName} description={customer.email} />
+        <PageHeader
+          eyebrow={`CLIENTE DESDE ${formatDate(customer.createdAt).toUpperCase()}`}
+          title={customer.fullName}
+          description={[customer.email, customer.phone].filter(Boolean).join(" · ") || undefined}
+          actions={
+            <>
+              <Link href={`/admin/customers/${customer.id}/edit`} className={ghostButtonClass}>
+                Editar cliente
+              </Link>
+              <Link href={`/admin/orders/new?cliente=${customer.id}`} className={buttonClass}>
+                + Registrar venta
+              </Link>
+            </>
+          }
+        />
       </div>
+
+      {(await searchParams).guardado === "1" && (
+        <p role="status" className="mt-6 rounded-sm border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">
+          Cliente guardado.
+        </p>
+      )}
 
       <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard highlight label="Total gastado" value={money(stats.totalSpent)} hint={`${stats.paidOrders} pedidos pagados`} />

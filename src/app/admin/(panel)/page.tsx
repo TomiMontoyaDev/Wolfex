@@ -14,7 +14,7 @@ export default async function AdminDashboardPage() {
       <PageHeader
         eyebrow="WOLFEX® ADMIN / 00 — DASHBOARD"
         title="Control"
-        description="Ventas = pedidos con pago aprobado por Mercado Pago, según la fecha de pago (hora Colombia)."
+        description="Ventas = pedidos con pago aprobado (página web y ventas registradas a mano), según la fecha de pago (hora Colombia)."
         actions={
           <Link href="/admin/orders" className="border border-line-strong px-5 py-3 type-label transition-colors hover:border-arc hover:text-arc">
             Ver pedidos →

@@ -71,9 +71,19 @@ export const EVENT_LABEL: Record<OrderEventType, string> = {
   REFUND_CREATED: "Reembolso registrado",
   TRACKING_UPDATED: "Datos de envío actualizados",
   NOTE_ADDED: "Nota",
+  ORDER_EDITED: "Venta editada",
 };
 
 const PAYMENT_METHODS: Record<string, string> = {
+  // Medios de las ventas registradas a mano (ver src/config/sales.ts).
+  transferencia: "Transferencia bancaria",
+  efectivo: "Efectivo",
+  daviplata: "Daviplata",
+  breb: "Llave Bre-B",
+  mercadopago_link: "Link de Mercado Pago",
+  datafono: "Datáfono / tarjeta",
+  contraentrega: "Contraentrega",
+  otro: "Otro",
   pse: "PSE",
   visa: "Visa",
   master: "Mastercard",

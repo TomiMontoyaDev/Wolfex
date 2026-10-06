@@ -1,9 +1,9 @@
-import { formatDateTime, paymentMethodLabel } from "@/components/admin/format";
+import { formatDateTime } from "@/components/admin/format";
 import { WolfMark, Wordmark } from "@/components/visuals/WolfMark";
 import { productSize } from "@/lib/product-size";
 import { CONTACT } from "@/lib/site-config";
 import { formatPrice } from "@/lib/utils";
-import { billingParty, shippingLabel, type InvoiceOrder } from "@/server/admin/invoices";
+import { billingParty, paymentLabel, shippingLabel, type InvoiceOrder } from "@/server/admin/invoices";
 
 /**
  * Comprobante de venta imprimible. NO es una factura electrónica: si ya se expidió la factura real,
@@ -38,7 +38,7 @@ export function Receipt({ order }: { order: InvoiceOrder }) {
           <dl className="mt-1 space-y-0.5">
             <Pair label="Fecha del pedido">{formatDateTime(order.createdAt)}</Pair>
             <Pair label="No. de pedido">{order.orderNumber}</Pair>
-            <Pair label="Medio de pago">Mercado Pago{order.paymentMethod ? ` · ${paymentMethodLabel(order.paymentMethod)}` : ""}</Pair>
+            <Pair label="Medio de pago">{paymentLabel(order)}</Pair>
             <Pair label="ID de pago">{order.paymentId ?? "—"}</Pair>
           </dl>
         </div>

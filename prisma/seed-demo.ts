@@ -105,7 +105,7 @@ async function create() {
         paymentId,
         paymentFee: fee,
         customerName: customer.fullName,
-        customerEmail: customer.email,
+        customerEmail: customer.email ?? "",
         customerPhone: customer.phone,
         shippingCity: address.city,
         shippingDepartment: address.department,

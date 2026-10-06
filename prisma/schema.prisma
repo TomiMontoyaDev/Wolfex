@@ -42,6 +42,20 @@ enum FulfillmentStatus {
 
 enum PaymentProvider {
   MERCADOPAGO
+  /// Venta registrada a mano en el admin (transferencia, efectivo, Nequi…).
+  MANUAL
+}
+
+/// Por dónde llegó la venta.
+enum SalesChannel {
+  WEB
+  WHATSAPP
+  INSTAGRAM
+  FACEBOOK
+  TIKTOK
+  PRESENCIAL
+  REFERIDO
+  OTRO
 }
 
 enum OrderEventType {
@@ -62,6 +76,7 @@ enum OrderEventType {
   REFUND_CREATED
   TRACKING_UPDATED
   NOTE_ADDED
+  ORDER_EDITED
 }
 
 // ───────────── Clientes ─────────────
@@ -71,8 +86,8 @@ model Customer {
   firstName String
   lastName  String?
   fullName  String
-  /// Siempre en minúsculas. Identifica clientes recurrentes.
-  email     String   @unique
+  /// Siempre en minúsculas. Identifica clientes recurrentes. Opcional para clientes creados a mano (WhatsApp, tienda).
+  email     String?  @unique
   phone     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -177,6 +192,19 @@ enum DocType {
   PASAPORTE
 }
 
+/// Gasto operativo adicional de una venta (empaque, domicilio, publicidad…). Se resta en la utilidad neta.
+model OrderExpense {
+  id        String   @id @default(cuid())
+  orderId   String
+  concept   String
+  amount    Int
+  createdAt DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
 /// Datos de facturación que el cliente pidió en el checkout (1 a 1 con el pedido).
 model InvoiceRequest {
   id         String     @id @default(cuid())
@@ -256,6 +284,7 @@ model Order {
 
   paymentMethod     String?
   paymentProvider   PaymentProvider @default(MERCADOPAGO)
+  salesChannel      SalesChannel    @default(WEB)
   /// Id del pago aprobado en el proveedor.
   paymentId         String?
   /// Se envía a Mercado Pago como external_reference para enlazar el pago con la orden.
@@ -301,6 +330,7 @@ model Order {
   items    OrderItem[]
   payments Payment[]
   events   OrderEvent[]
+  expenses OrderExpense[]
   review   Review?
 
   // Facturación. La factura electrónica válida la expide un proveedor autorizado por la DIAN;

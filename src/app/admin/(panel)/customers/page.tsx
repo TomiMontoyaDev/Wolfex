@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { formatDate, money } from "@/components/admin/format";
-import { EmptyState, PageHeader, Pagination, Table, Td, Th, buildQuery, ghostButtonClass, inputClass } from "@/components/admin/ui";
+import { EmptyState, PageHeader, Pagination, Table, Td, Th, buildQuery, buttonClass, ghostButtonClass, inputClass } from "@/components/admin/ui";
 import { BulkDelete, RowCheckbox, SelectAllCheckbox } from "@/components/admin/DeleteControls";
 import { deleteCustomersAction } from "@/server/admin/actions";
 import { listCustomers } from "@/server/admin/queries";
@@ -21,7 +21,16 @@ export default async function AdminCustomersPage({ searchParams }: { searchParam
 
   return (
     <>
-      <PageHeader eyebrow="WOLFEX® ADMIN / 02 — CLIENTES" title="Clientes" description={`${total} ${total === 1 ? "cliente" : "clientes"}. Un cliente se identifica por su email.`} />
+      <PageHeader
+        eyebrow="WOLFEX® ADMIN / 02 — CLIENTES"
+        title="Clientes"
+        description={`${total} ${total === 1 ? "cliente" : "clientes"}. Los de la página se identifican por su correo; los creados a mano pueden no tenerlo.`}
+        actions={
+          <Link href="/admin/customers/new" className={buttonClass}>
+            + Nuevo cliente
+          </Link>
+        }
+      />
 
       {one(raw.eliminados) && (
         <p role="status" className="mt-6 rounded-sm border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">
@@ -71,7 +80,7 @@ export default async function AdminCustomersPage({ searchParams }: { searchParam
                   <Td>
                     <Link href={`/admin/customers/${customer.id}`} className="hover:text-arc">{customer.fullName}</Link>
                   </Td>
-                  <Td className="text-steel">{customer.email}</Td>
+                  <Td className="text-steel">{customer.email ?? "—"}</Td>
                   <Td className="text-steel">{customer.phone ?? "—"}</Td>
                   <Td align="right" className="font-mono">{customer.orders}</Td>
                   <Td align="right" className="font-mono">{money(customer.totalSpent)}</Td>

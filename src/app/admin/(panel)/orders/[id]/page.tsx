@@ -5,14 +5,15 @@ import { EVENT_LABEL, FULFILLMENT_STATUS, ORDER_STATUS, PAYMENT_STATUS, formatDa
 import { DangerAction } from "@/components/admin/DeleteControls";
 import { OrderStatusActions, ShippingForm } from "@/components/admin/OrderActions";
 import { deleteOrdersAction } from "@/server/admin/actions";
-import { DefinitionList, PageHeader, Panel, StatusBadge, Table, Td, Th } from "@/components/admin/ui";
+import { DefinitionList, PageHeader, Panel, StatusBadge, Table, Td, Th, buttonClass } from "@/components/admin/ui";
+import { salesChannelLabel } from "@/config/sales";
 import { hasFreeShipping } from "@/config/shipping";
 import { getOrder } from "@/server/admin/queries";
 import { requireAdmin } from "@/server/auth";
 
 export const metadata: Metadata = { title: "Pedido" };
 
-export default async function AdminOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminOrderDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await requireAdmin();
   const { id } = await params;
   const order = await getOrder(id);
@@ -20,23 +21,40 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
 
   const approvedPayment = order.payments.find((payment) => payment.providerPaymentId === order.paymentId) ?? order.payments[0];
   const fullAddress = [order.shippingAddress, order.shippingComplement, order.shippingNeighborhood].filter(Boolean).join(", ");
+  const manual = order.paymentProvider === "MANUAL";
+  const saved = (await searchParams).guardada === "1";
+
+  // Utilidad neta de esta venta (solo con los costos conocidos).
+  const productCost = order.items.reduce((sum, item) => sum + (item.unitCost ?? 0) * item.quantity, 0);
+  const missingCost = order.items.filter((item) => item.unitCost === null).length;
+  const expensesTotal = order.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const profit = order.total - productCost - (order.paymentFee ?? 0) - (order.shippingCostActual ?? 0) - expensesTotal;
 
   return (
     <>
       <Link href="/admin/orders" className="type-label text-steel transition-colors hover:text-arc">← Pedidos</Link>
       <div className="mt-4">
         <PageHeader
-          eyebrow={`PEDIDO · ${formatDateTime(order.createdAt)}`}
+          eyebrow={`${manual ? "VENTA MANUAL" : "PEDIDO WEB"} · ${salesChannelLabel(order.salesChannel).toUpperCase()} · ${formatDateTime(order.createdAt)}`}
           title={order.orderNumber}
           actions={
             <>
               <StatusBadge map={PAYMENT_STATUS} value={order.paymentStatus} />
               <StatusBadge map={ORDER_STATUS} value={order.status} />
               <StatusBadge map={FULFILLMENT_STATUS} value={order.fulfillmentStatus} />
+              <Link href={`/admin/orders/${order.id}/edit`} className={buttonClass}>
+                Editar venta
+              </Link>
             </>
           }
         />
       </div>
+
+      {saved && (
+        <p role="status" className="mt-6 rounded-sm border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">
+          Venta guardada.
+        </p>
+      )}
 
       <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <div className="space-y-6">
@@ -69,7 +87,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             <dl className="ml-auto mt-6 max-w-sm space-y-2.5 text-sm">
               {[
                 ["Subtotal", money(order.subtotal)],
-                ["Descuento combo", order.discount ? `− ${money(order.discount)}` : money(0)],
+                [manual ? "Descuento" : "Descuento combo", order.discount ? `− ${money(order.discount)}` : money(0)],
                 ["Envío", order.shippingCost ? money(order.shippingCost) : hasFreeShipping(order.subtotal - order.discount, order.shippingCity) ? "Gratis" : "Se cobra aparte (según producto y localidad)"],
                 ["Impuestos", order.tax ? money(order.tax) : "Incluidos"],
               ].map(([label, value]) => (
@@ -103,7 +121,34 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             </div>
           </Panel>
 
-          <Panel index="02" title="Logística">
+          <Panel index="02" title="Utilidad neta" action={<Link href={`/admin/orders/${order.id}/edit`} className="type-label text-steel hover:text-arc">Editar costos →</Link>}>
+            <dl className="max-w-md space-y-2.5 text-sm">
+              {[
+                ["Total de la venta", money(order.total)],
+                ["Costo de productos", `− ${money(productCost)}`],
+                ["Comisión del medio de pago", order.paymentFee === null ? "Sin registrar" : `− ${money(order.paymentFee)}`],
+                ["Envío / domicilio real", order.shippingCostActual === null ? "Sin registrar" : `− ${money(order.shippingCostActual)}`],
+                ...order.expenses.map((expense) => [expense.concept, `− ${money(expense.amount)}`]),
+              ].map(([label, value], i) => (
+                <div key={`${label}-${i}`} className="flex justify-between gap-4 text-steel">
+                  <dt>{label}</dt>
+                  <dd className="font-mono">{value}</dd>
+                </div>
+              ))}
+              <div className="flex justify-between border-t border-line pt-3 type-title text-lg">
+                <dt>Utilidad neta</dt>
+                <dd className={profit < 0 ? "font-mono text-red-300" : "font-mono text-emerald-300"}>{money(profit)}</dd>
+              </div>
+              <p className="text-right type-label text-steel">Margen {order.total > 0 ? ((profit / order.total) * 100).toFixed(1) : "0"}%</p>
+            </dl>
+            {missingCost > 0 && (
+              <p className="mt-3 text-xs text-amber-200">
+                {missingCost === 1 ? "1 producto no tiene costo registrado" : `${missingCost} productos no tienen costo registrado`}: la utilidad sale inflada. Agrégalo en “Editar venta”.
+              </p>
+            )}
+          </Panel>
+
+          <Panel index="03" title="Logística">
             <DefinitionList
               items={[
                 ["Estado de fulfillment", <StatusBadge key="f" map={FULFILLMENT_STATUS} value={order.fulfillmentStatus} />],
@@ -139,7 +184,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             </div>
           </Panel>
 
-          <Panel index="03" title="Historial de eventos">
+          <Panel index="04" title="Historial de eventos">
             <ol className="space-y-4">
               {order.events.map((event) => (
                 <li key={event.id} className="relative border-l border-line-strong pl-4">
@@ -175,18 +220,18 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
               />
             </div>
           </section>
-          <Panel index="04" title="Cliente" action={<Link href={`/admin/customers/${order.customerId}`} className="type-label text-steel hover:text-arc">Perfil →</Link>}>
+          <Panel index="05" title="Cliente" action={<Link href={`/admin/customers/${order.customerId}`} className="type-label text-steel hover:text-arc">Perfil →</Link>}>
             <DefinitionList
               items={[
                 ["Nombre", order.customerName],
-                ["Email", <a key="e" href={`mailto:${order.customerEmail}`} className="hover:text-arc">{order.customerEmail}</a>],
+                ["Email", order.customerEmail ? <a key="e" href={`mailto:${order.customerEmail}`} className="hover:text-arc">{order.customerEmail}</a> : null],
                 ["Teléfono", order.customerPhone],
                 ["Notas del cliente", order.customerNotes],
               ]}
             />
           </Panel>
 
-          <Panel index="05" title="Entrega">
+          <Panel index="06" title="Entrega">
             <DefinitionList
               items={[
                 ["Dirección", fullAddress],
@@ -199,15 +244,16 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             />
           </Panel>
 
-          <Panel index="06" title="Pago">
+          <Panel index="07" title="Pago">
             <DefinitionList
               items={[
-                ["Proveedor", "Mercado Pago"],
+                ["Canal de venta", salesChannelLabel(order.salesChannel)],
+                ["Proveedor", manual ? "Registrada a mano" : "Mercado Pago"],
                 ["ID de pago", order.paymentId ? <span key="p" className="font-mono text-xs">{order.paymentId}</span> : null],
                 ["Estado", <StatusBadge key="s" map={PAYMENT_STATUS} value={order.paymentStatus} />],
                 ["Método", paymentMethodLabel(order.paymentMethod)],
                 ["Fecha de pago", formatDateTime(order.paidAt)],
-                ["Comisión MP", money(order.paymentFee)],
+                ["Comisión", money(order.paymentFee)],
                 ["Detalle", approvedPayment?.providerStatusDetail],
                 ["Preferencia", order.mpPreferenceId ? <span key="r" className="font-mono text-xs">{order.mpPreferenceId}</span> : null],
               ]}

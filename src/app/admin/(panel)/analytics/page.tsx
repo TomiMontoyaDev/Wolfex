@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BarChart, type BarDatum } from "@/components/admin/BarChart";
 import { delta, money, percent } from "@/components/admin/format";
-import { DeltaBadge, EmptyState, KpiCard, PageHeader, Panel, Table, Td, Th } from "@/components/admin/ui";
+import { DeltaBadge, EmptyState, KpiCard, PageHeader, Panel, Table, Td, Th, buttonClass } from "@/components/admin/ui";
 import { cn } from "@/lib/utils";
 import { ANALYTICS_RANGES, getAnalytics } from "@/server/admin/queries";
 import { requireAdmin } from "@/server/auth";
@@ -62,7 +62,12 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
       <PageHeader
         eyebrow="WOLFEX® ADMIN / 03 — VENTAS"
         title="Analytics"
-        description="Solo cuentan pedidos con pago aprobado. Los gráficos de tendencia muestran siempre los últimos 30 días, 12 semanas y 12 meses."
+        description="Solo cuentan pedidos con pago aprobado (web y ventas registradas a mano). Los gráficos de tendencia muestran siempre los últimos 30 días, 12 semanas y 12 meses."
+        actions={
+          <Link href="/admin/orders/new" className={buttonClass}>
+            + Registrar venta
+          </Link>
+        }
       />
 
       <nav aria-label="Período" className="mt-8 flex flex-wrap gap-1">
@@ -86,7 +91,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
         <KpiCard label="Pedidos pagados" value={a.summary.orders} footer={<DeltaBadge value={delta(a.summary.orders, a.prevSummary.orders)} />} />
         <KpiCard label="Ticket promedio" value={money(a.summary.avgTicket)} footer={<DeltaBadge value={delta(a.summary.avgTicket, a.prevSummary.avgTicket)} />} />
         <KpiCard
-          label="Utilidad estimada"
+          label="Utilidad neta"
           value={a.profit.hasAnyCost ? money(a.profit.profit) : "—"}
           hint={a.profit.hasAnyCost ? (a.profit.complete ? "Costos completos" : `Parcial · ${a.profit.missingCostLines} líneas sin costo`) : "Faltan costos de productos"}
         />
@@ -156,8 +161,9 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
                 {[
                   ["Ingresos", money(a.profit.revenue)],
                   ["Costo de productos", `− ${money(a.profit.productCost)}`],
-                  ["Comisión Mercado Pago", `− ${money(a.profit.fees)}`],
+                  ["Comisiones de medios de pago", `− ${money(a.profit.fees)}`],
                   ["Costo de envíos", `− ${money(a.profit.shipping)}`],
+                  ["Gastos operativos", `− ${money(a.profit.expenses)}`],
                 ].map(([label, value]) => (
                   <div key={label} className="flex justify-between text-steel">
                     <dt>{label}</dt>
@@ -165,7 +171,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
                   </div>
                 ))}
                 <div className="flex justify-between border-t border-line pt-2 type-title">
-                  <dt>Utilidad estimada</dt>
+                  <dt>Utilidad neta</dt>
                   <dd className="font-mono text-arc">{money(a.profit.profit)}</dd>
                 </div>
               </dl>

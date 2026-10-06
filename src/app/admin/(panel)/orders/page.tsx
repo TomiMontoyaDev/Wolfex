@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ORDER_STATUS, PAYMENT_STATUS, formatDateTime, money, paymentMethodLabel } from "@/components/admin/format";
-import { EmptyState, PageHeader, Pagination, StatusBadge, Table, Td, Th, buildQuery, ghostButtonClass, inputClass } from "@/components/admin/ui";
+import { EmptyState, PageHeader, Pagination, StatusBadge, Table, Td, Th, buildQuery, buttonClass, ghostButtonClass, inputClass } from "@/components/admin/ui";
 import { BulkDelete, RowCheckbox, SelectAllCheckbox } from "@/components/admin/DeleteControls";
 import { cn } from "@/lib/utils";
 import { deleteOrdersAction } from "@/server/admin/actions";
@@ -37,6 +37,11 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
         eyebrow="WOLFEX® ADMIN / 01 — PEDIDOS"
         title="Pedidos"
         description={`${total} ${total === 1 ? "pedido" : "pedidos"} en “${ORDER_VIEWS[view].label}”${hasFilters ? " con los filtros actuales" : ""}.`}
+        actions={
+          <Link href="/admin/orders/new" className={buttonClass}>
+            + Registrar venta
+          </Link>
+        }
       />
 
       {one(raw.eliminados) && (
