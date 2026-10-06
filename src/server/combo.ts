@@ -4,7 +4,7 @@ import { COMBO_MIN_ITEM_PRICE, COMBO_MIN_NET_MARGIN, RECOMMENDED_COMBOS } from "
 import type { Product } from "@/data/products";
 import { comboItemCount, comboTier, nextComboTier } from "@/lib/combo";
 import { getCatalogProducts, PRODUCTS_TAG } from "@/lib/commerce";
-import { GATEWAY_FEE, MIN_NET_MARGIN } from "@/lib/pricing";
+import { breakEvenPrice, MIN_NET_MARGIN, type CostProfile } from "@/lib/pricing";
 import { db } from "./db";
 
 /**
@@ -29,19 +29,27 @@ export interface ComboResult {
   next: { percent: number; missing: number } | null;
 }
 
-/** Precio más bajo que deja el margen neto mínimo del combo (nunca menor que la regla general de la tienda). */
-const floorPrice = (cost: number) => Math.ceil(cost / (1 - GATEWAY_FEE - Math.max(MIN_NET_MARGIN, COMBO_MIN_NET_MARGIN)));
+/**
+ * Precio más bajo que deja el margen neto mínimo del combo, con los costos reales de la venta
+ * (pasarela, recargo de stock y envío). Nunca menor que la regla general de la tienda.
+ */
+const floorPrice = (product: CostProfile) => Math.ceil(breakEvenPrice(product, Math.max(MIN_NET_MARGIN, COMBO_MIN_NET_MARGIN)));
+const profileOf = (product: { costPrice: number | null; fulfillment: "STOCK" | "DROP" | null; name: string; category: string | null }): CostProfile | null =>
+  product.costPrice === null ? null : { wholesale: product.costPrice, fulfillment: product.fulfillment, name: product.name, category: product.category };
 const toHundreds = (value: number) => Math.floor(value / 100) * 100;
 
 export async function computeCombo(lines: ComboLineInput[]): Promise<ComboResult> {
   const ids = [...new Set(lines.map((line) => line.productId))];
   const products = ids.length
-    ? await db.product.findMany({ where: { id: { in: ids }, active: true }, select: { id: true, price: true, costPrice: true } })
+    ? await db.product.findMany({
+        where: { id: { in: ids }, active: true },
+        select: { id: true, price: true, costPrice: true, fulfillment: true, name: true, category: true },
+      })
     : [];
   const byId = new Map(products.map((product) => [product.id, product]));
   const priced = lines.flatMap((line) => {
     const product = byId.get(line.productId);
-    return product ? [{ ...line, price: product.price, cost: product.costPrice }] : [];
+    return product ? [{ ...line, price: product.price, profile: profileOf(product) }] : [];
   });
 
   const count = comboItemCount(priced);
@@ -52,9 +60,9 @@ export async function computeCombo(lines: ComboLineInput[]): Promise<ComboResult
 
   if (tier) {
     for (const line of priced) {
-      if (line.price < COMBO_MIN_ITEM_PRICE || line.cost === null || unitDiscounts.has(line.productId)) continue;
-      // Tope por margen: el descuento nunca deja el producto por debajo del 15% neto.
-      const unit = Math.max(0, Math.min(toHundreds((line.price * tier.percent) / 100), toHundreds(line.price - floorPrice(line.cost))));
+      if (line.price < COMBO_MIN_ITEM_PRICE || !line.profile || unitDiscounts.has(line.productId)) continue;
+      // Tope por margen: el descuento nunca deja el producto por debajo del 15% neto real.
+      const unit = Math.max(0, Math.min(toHundreds((line.price * tier.percent) / 100), toHundreds(line.price - floorPrice(line.profile))));
       unitDiscounts.set(line.productId, unit);
     }
     for (const line of priced) discount += (unitDiscounts.get(line.productId) ?? 0) * line.quantity;
@@ -76,12 +84,12 @@ export const getComboSuggestionPool = unstable_cache(
   async () => {
     const withRoom = await db.product.findMany({
       where: { active: true, lowPriority: false, price: { gte: COMBO_MIN_ITEM_PRICE }, costPrice: { not: null }, OR: [{ stock: null }, { stock: { gt: 0 } }] },
-      select: { id: true, price: true, costPrice: true },
+      select: { id: true, price: true, costPrice: true, fulfillment: true, name: true, category: true },
     });
-    // Aguanta el 10% completo sin bajar del margen mínimo.
-    return withRoom.filter((product) => product.price * 0.9 >= floorPrice(product.costPrice!)).map((product) => product.id);
+    // Aguanta el 10% completo sin bajar del margen mínimo real.
+    return withRoom.filter((product) => product.price * 0.9 >= floorPrice(profileOf(product)!)).map((product) => product.id);
   },
-  ["combo-suggestion-pool", "v1"],
+  ["combo-suggestion-pool", "v2"],
   { tags: [PRODUCTS_TAG], revalidate: 3600 },
 );
 
@@ -136,7 +144,7 @@ export const getRecommendedCombos = unstable_cache(
     }
     return views;
   },
-  ["recommended-combos", "v1"],
+  ["recommended-combos", "v2"],
   { tags: [PRODUCTS_TAG], revalidate: 3600 },
 );
 

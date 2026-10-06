@@ -147,7 +147,10 @@ export function ProductForm({ action, values, categories, submitLabel }: { actio
             <span className="type-label text-steel">Precio de venta (COP) *</span>
             <input name="price" required inputMode="numeric" defaultValue={values.price ?? ""} placeholder="79900" className={field} />
             {values.costPrice !== null && (
-              <span className="mt-1.5 block text-xs text-steel">Mínimo con 15% neto: {formatPrice(minPrice(values.costPrice))}</span>
+              <span className="mt-1.5 block text-xs text-steel">
+                Mínimo con 15% neto real (pasarela{values.fulfillment === "STOCK" ? ", recargo de stock" : ", envío"}):{" "}
+                {formatPrice(minPrice({ wholesale: values.costPrice, fulfillment: values.fulfillment, name: values.name, category: values.category }))}
+              </span>
             )}
           </label>
           <label className="block">
