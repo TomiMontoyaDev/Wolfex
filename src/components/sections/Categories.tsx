@@ -28,7 +28,7 @@ export function Categories() {
       <div className="container-wfx">
         <SectionLabel index="03" label={t("Categories")} meta={`02 ${t("categories")}`} />
         <div className="mt-12 flex flex-col justify-between gap-6 md:mt-16 md:flex-row md:items-end">
-          <SplitReveal as="h2" text={t("Find your wolf")} className="type-display text-[clamp(3rem,9vw,8.5rem)]" />
+          <SplitReveal as="h2" text={t("Find your wolf")} className="type-display text-[clamp(2rem,10.5vw,8.5rem)]" />
           <p className="max-w-xs type-label text-steel md:pb-4 md:text-right">{t("Supplements")} / {t("Proteins")}</p>
         </div>
 

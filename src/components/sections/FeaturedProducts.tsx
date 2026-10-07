@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight, Check, Plus } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { ProductModal } from "@/components/catalog/ProductModal";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -17,19 +17,9 @@ import { cn, formatPrice, pad } from "@/lib/utils";
 
 export function FeaturedProducts({ products }: { products: Product[] }) {
   const { t } = useLanguage();
-  const rail = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState(0);
   const [category, setCategory] = useState<"TODAS" | ProductCategory>("TODAS");
   const visibleProducts = category === "TODAS" ? products : products.filter((product) => product.category === category);
   const categories: Array<"TODAS" | ProductCategory> = ["TODAS", ...Array.from(new Set(products.map((product) => product.category)))];
-
-  const onRailScroll = () => {
-    const el = rail.current;
-    if (!el) return;
-    const card = el.firstElementChild as HTMLElement | null;
-    if (!card) return;
-    setActive(Math.round(el.scrollLeft / (card.offsetWidth + 16)));
-  };
 
   return (
     <section id="drop" className="relative bg-void pb-28 pt-8 md:pb-44" aria-labelledby="drop-title">
@@ -37,7 +27,7 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
         <SectionLabel index="02" label="Catálogo WOLFEX" meta={`${pad(visibleProducts.length)} productos · COP`} />
 
         <div className="mt-12 flex flex-col gap-8 md:mt-16 md:flex-row md:items-end md:justify-between">
-          <SplitReveal as="h2" text="Catálogo" className="type-display text-[clamp(3.25rem,10vw,9.5rem)]" />
+          <SplitReveal as="h2" text="Catálogo" className="type-display text-[clamp(2.4rem,11vw,9.5rem)]" />
           <Reveal delay={0.2} className="max-w-sm md:pb-3">
             <p className="type-body text-steel">
               Productos seleccionados para entrenar más fuerte. Elige una categoría para explorar el catálogo.
@@ -58,7 +48,6 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
               aria-selected={category === item}
               onClick={() => {
                 setCategory(item);
-                setActive(0);
               }}
               className={cn(
                 "border px-4 py-3 type-label transition-colors",
@@ -71,27 +60,11 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
         </div>
       </div>
 
-      {/* Mobile: swipe rail. Desktop: staggered editorial row. */}
-      <div
-        ref={rail}
-        onScroll={onRailScroll}
-        className="no-scrollbar mt-10 flex snap-x snap-mandatory scroll-px-[var(--gutter)] gap-3 overflow-x-auto px-[var(--gutter)] sm:gap-4 md:mt-16 lg:container-wfx lg:grid lg:grid-cols-4 lg:gap-6 lg:overflow-visible xl:grid-cols-5"
-      >
+      {/* Cuadrícula igual al catálogo: 2 por fila en celular, 3 en tablet, 4–5 en escritorio. */}
+      <div className="container-wfx mt-10 grid grid-cols-2 gap-x-3 gap-y-10 sm:grid-cols-3 sm:gap-x-5 md:mt-16 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-14 xl:grid-cols-5">
         {visibleProducts.map((p, i) => (
-          <ProductCard key={p.id} product={p} index={i} />
+          <ProductCard key={p.id} product={p} index={i} layout="grid" />
         ))}
-      </div>
-
-      <div className="container-wfx mt-8 flex items-center gap-4 lg:hidden">
-        <span className="type-label text-bone">{pad(active + 1)}</span>
-        <span className="relative h-px flex-1 bg-line-strong">
-          <motion.span
-            className="absolute inset-y-0 left-0 bg-arc"
-            animate={{ width: `${((active + 1) / visibleProducts.length) * 100}%` }}
-            transition={{ duration: 0.5 }}
-          />
-        </span>
-        <span className="type-label text-steel">{pad(visibleProducts.length)}</span>
       </div>
     </section>
   );

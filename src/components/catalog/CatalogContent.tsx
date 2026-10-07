@@ -62,7 +62,7 @@ export function CatalogContent({ products, initialQuery = "", initialCategory }:
 
         <div className="mt-12 flex flex-col gap-6 md:mt-16 md:flex-row md:items-end md:justify-between">
           <div>
-            <h1 className="type-display text-[clamp(3rem,9vw,8.5rem)] leading-[0.85]">{category === ALL ? "Catálogo" : CATEGORY_LABELS[category] ?? category}</h1>
+            <h1 className="break-words type-display text-[clamp(2.2rem,9.5vw,8.5rem)] leading-[0.9]">{category === ALL ? "Catálogo" : CATEGORY_LABELS[category] ?? category}</h1>
             <p className="mt-6 max-w-xl type-body text-steel">
               {category === ALL
                 ? "Explora todos nuestros suplementos. Filtra por marca, categoría y presupuesto."
