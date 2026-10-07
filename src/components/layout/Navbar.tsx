@@ -128,7 +128,8 @@ export function Navbar() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Instagram de WOLFEX"
-                className="flex h-11 w-11 items-center justify-center text-bone/85 transition-colors hover:text-arc"
+                // Oculto en celular: el logo centrado se montaba encima (Instagram sigue en el menú ☰).
+                className="hidden h-11 w-11 items-center justify-center text-bone/85 transition-colors hover:text-arc sm:flex"
               >
                 <SocialIcon platform="instagram" className="h-[18px] w-[18px]" />
               </a>

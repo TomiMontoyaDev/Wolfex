@@ -126,9 +126,10 @@ export function CatalogContent({ products, initialQuery = "", initialCategory }:
       </div>
 
       {filteredProducts.length > 0 ? (
-        <div className="container-wfx mt-14 grid gap-x-6 gap-y-16 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="container-wfx mt-10 grid grid-cols-2 gap-x-3 gap-y-10 sm:grid-cols-3 sm:gap-x-5 md:mt-14 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-14 xl:grid-cols-5">
+          {/* 2 por fila en celular (antes 1 que ocupaba toda la pantalla), 3 en tablet, 4–5 en escritorio. */}
           {filteredProducts.map((product, index) => (
-            <ProductCard key={product.id} product={product} index={index} />
+            <ProductCard key={product.id} product={product} index={index} layout="grid" />
           ))}
         </div>
       ) : (

@@ -75,7 +75,7 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
       <div
         ref={rail}
         onScroll={onRailScroll}
-        className="no-scrollbar mt-12 flex snap-x snap-mandatory gap-4 overflow-x-auto px-[var(--gutter)] md:mt-20 lg:container-wfx lg:grid lg:grid-cols-4 lg:gap-6 lg:overflow-visible"
+        className="no-scrollbar mt-10 flex snap-x snap-mandatory scroll-px-[var(--gutter)] gap-3 overflow-x-auto px-[var(--gutter)] sm:gap-4 md:mt-16 lg:container-wfx lg:grid lg:grid-cols-4 lg:gap-6 lg:overflow-visible xl:grid-cols-5"
       >
         {visibleProducts.map((p, i) => (
           <ProductCard key={p.id} product={p} index={i} />
@@ -97,7 +97,11 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
   );
 }
 
-export function ProductCard({ product, index }: { product: Product; index: number }) {
+/**
+ * Tarjeta de producto. `rail` = fila deslizable del inicio (ancho fijo, 2 visibles en celular);
+ * `grid` = cuadrícula del catálogo (ocupa su celda).
+ */
+export function ProductCard({ product, index, layout = "rail" }: { product: Product; index: number; layout?: "rail" | "grid" }) {
   const { add } = useCart();
   const { t } = useLanguage();
   const [color, setColor] = useState(product.colors[0]);
@@ -114,44 +118,48 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
 
   return (
     <motion.article
-      className={cn("group relative w-[82vw] max-w-[380px] shrink-0 snap-start sm:w-[46vw] lg:w-auto lg:max-w-none", index % 2 === 1 && "lg:mt-24")}
+      className={cn(
+        "group relative flex min-w-0 flex-col",
+        layout === "rail" && "w-[42vw] max-w-[230px] shrink-0 snap-start sm:w-[30vw] lg:w-auto lg:max-w-none",
+        layout === "rail" && index % 2 === 1 && "lg:mt-16",
+      )}
       initial={{ opacity: 0, y: 60 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "0px 0px -10% 0px" }}
       transition={{ duration: 1.1, delay: (index % 4) * 0.12, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="mb-3 flex items-center justify-between type-label">
-        <span className="text-steel">{product.sku}</span>
+      <div className="mb-2 flex min-w-0 items-center justify-between gap-2 type-label text-[0.58rem] sm:mb-3 sm:text-[0.65rem]">
+        <span className="hidden shrink-0 text-steel sm:inline">{product.sku}</span>
         {product.badge ? (
-          <span className={cn(product.badge === "AGOTADO" ? "text-red-400" : "text-bone/70")}>{t(product.badge)}</span>
+          <span className={cn("truncate", product.badge === "AGOTADO" ? "text-red-400" : "text-bone/70")}>{t(product.badge)}</span>
         ) : product.delivery ? (
-          <span className={cn("flex items-center gap-1.5", product.delivery === "STOCK" ? "text-arc" : "text-steel")}>
-            <span className={cn("h-1.5 w-1.5 rounded-full", product.delivery === "STOCK" ? "bg-arc shadow-[0_0_8px_rgba(0,168,255,0.9)]" : "bg-steel")} aria-hidden="true" />
-            {deliveryLabel(product.delivery)}
+          <span className={cn("flex min-w-0 items-center gap-1.5", product.delivery === "STOCK" ? "text-arc" : "text-steel")}>
+            <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", product.delivery === "STOCK" ? "bg-arc shadow-[0_0_8px_rgba(0,168,255,0.9)]" : "bg-steel")} aria-hidden="true" />
+            <span className="truncate">{deliveryLabel(product.delivery)}</span>
           </span>
         ) : null}
       </div>
 
-      {/* Image stage */}
+      {/* Image stage: cuadrada (antes 4:5) para que la foto no domine la tarjeta, sobre todo en celular. */}
       <div
-        className="relative aspect-[4/5] overflow-hidden bg-ink shadow-[inset_0_0_0_1px_rgba(245,247,250,0.06)] transition-shadow duration-700 group-hover:shadow-[inset_0_0_0_1px_rgba(0,168,255,0.45),0_30px_80px_-30px_rgba(0,102,255,0.55)]"
+        className="relative aspect-square overflow-hidden bg-ink shadow-[inset_0_0_0_1px_rgba(245,247,250,0.06)] transition-shadow duration-700 group-hover:shadow-[inset_0_0_0_1px_rgba(0,168,255,0.45),0_30px_80px_-30px_rgba(0,102,255,0.55)]"
         data-cursor="view"
         data-cursor-label="Ver más"
       >
         <button type="button" onClick={() => setDetailsOpen(true)} aria-label={`Ver más de ${product.name}`} className="absolute inset-0 z-[1] cursor-pointer" />
         <div className="absolute inset-0 transition-[transform,opacity] duration-[1.2s] ease-[var(--ease-apex)] group-hover:scale-[1.06] group-hover:opacity-0">
-          <Media slot={product.images.primary} sizes="(min-width:1024px) 25vw, 82vw" />
+          <Media slot={product.images.primary} sizes="(min-width:1280px) 20vw, (min-width:1024px) 25vw, (min-width:640px) 33vw, 50vw" />
         </div>
         <div className="absolute inset-0 scale-[1.12] opacity-0 transition-[transform,opacity] duration-[1.2s] ease-[var(--ease-apex)] group-hover:scale-100 group-hover:opacity-100">
-          <Media slot={product.images.secondary} sizes="(min-width:1024px) 25vw, 82vw" />
+          <Media slot={product.images.secondary} sizes="(min-width:1280px) 20vw, (min-width:1024px) 25vw, (min-width:640px) 33vw, 50vw" />
         </div>
 
-        <span className="pointer-events-none absolute -bottom-4 -left-1 type-display text-[7rem] leading-none text-outline opacity-60 transition-[transform,opacity] duration-700 group-hover:-translate-y-2 group-hover:opacity-100 md:text-[8rem]">
+        <span className="pointer-events-none absolute -bottom-2 -left-0.5 hidden type-display text-[4.5rem] leading-none text-outline opacity-50 transition-[transform,opacity] duration-700 group-hover:-translate-y-2 group-hover:opacity-100 sm:block lg:text-[5.5rem]">
           {pad(index + 1)}
         </span>
 
         {discount && (
-          <span className="pointer-events-none absolute left-3 top-3 z-[2] bg-arc px-2 py-1 font-mono text-xs font-semibold text-void shadow-[0_0_18px_rgba(0,168,255,0.55)]">
+          <span className="pointer-events-none absolute left-2 top-2 z-[2] bg-arc px-1.5 py-0.5 font-mono text-[0.65rem] font-semibold text-void shadow-[0_0_18px_rgba(0,168,255,0.55)] sm:left-3 sm:top-3 sm:px-2 sm:py-1 sm:text-xs">
             -{discount}%
           </span>
         )}
@@ -166,59 +174,35 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
         </div>
       </div>
 
-      {/* Meta */}
-      <div className="mt-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="transition-transform duration-500 ease-[var(--ease-apex)] group-hover:translate-x-1.5">
-            <p className="type-label text-steel">{product.brand}</p>
-            <h3 className="mt-1 type-title text-lg leading-tight transition-colors duration-500 group-hover:text-arc">
-              <button type="button" onClick={() => setDetailsOpen(true)} className="text-left">
-                {t(product.name)}
-              </button>
-            </h3>
-          </div>
-          <p className="flex shrink-0 flex-col items-end pt-4 font-mono text-sm">
-            {discount && product.compareAtPrice && (
-              <s className="text-xs text-steel" aria-label={`Precio público ${formatPrice(product.compareAtPrice)}`}>
-                {formatPrice(product.compareAtPrice)}
-              </s>
-            )}
-            <span className={discount ? "text-arc" : undefined}>{formatPrice(product.price)}</span>
-          </p>
-        </div>
+      {/* Meta: el precio va debajo del nombre (antes al lado), así nunca se sale de la tarjeta con nombres largos. */}
+      <div className="mt-3 flex min-w-0 flex-1 flex-col sm:mt-4">
+        <p className="truncate type-label text-[0.6rem] text-steel sm:text-[0.65rem]">{product.brand}</p>
+        <h3 className="mt-1 line-clamp-3 break-words type-title text-[0.8rem] leading-snug transition-colors duration-500 group-hover:text-arc sm:text-sm lg:text-base">
+          <button type="button" onClick={() => setDetailsOpen(true)} className="text-left">
+            {t(product.name)}
+          </button>
+        </h3>
+        <p className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 font-mono">
+          <span className={cn("text-sm sm:text-base", discount ? "text-arc" : undefined)}>{formatPrice(product.price)}</span>
+          {discount && product.compareAtPrice && (
+            <s className="text-[0.7rem] text-steel sm:text-xs" aria-label={`Precio público ${formatPrice(product.compareAtPrice)}`}>
+              {formatPrice(product.compareAtPrice)}
+            </s>
+          )}
+        </p>
         <button
           type="button"
           onClick={() => setDetailsOpen(true)}
-          className="group/more mt-3 inline-flex items-center gap-1.5 type-label text-bone/80 transition-colors hover:text-arc"
+          className="group/more mt-2 inline-flex w-fit items-center gap-1 type-label text-[0.6rem] text-bone/80 transition-colors hover:text-arc sm:text-[0.65rem]"
           data-cursor="hover"
         >
           <span className="border-b border-line-strong pb-0.5 transition-colors group-hover/more:border-arc">Ver más</span>
-          <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover/more:-translate-y-0.5 group-hover/more:translate-x-0.5" strokeWidth={1.5} />
+          <ArrowUpRight className="h-3 w-3 transition-transform duration-300 group-hover/more:-translate-y-0.5 group-hover/more:translate-x-0.5" strokeWidth={1.5} />
         </button>
 
-        <div className="mt-4 flex items-center justify-between">
-          <div className="flex items-center gap-2" role="radiogroup" aria-label="Color">
-            {product.colors.map((c) => (
-              <button
-                key={c.name}
-                role="radio"
-                aria-checked={c.name === color.name}
-                aria-label={c.name}
-                onClick={() => setColor(c)}
-                className={cn(
-                  "h-4 w-4 rounded-full border transition-[box-shadow,border-color] duration-300",
-                  c.name === color.name ? "border-arc shadow-[0_0_0_3px_#050505,0_0_0_4px_rgba(0,168,255,0.7)]" : "border-line-strong",
-                )}
-                style={{ backgroundColor: c.hex }}
-              />
-            ))}
-            <span className="ml-2 type-label text-steel">{color.name}</span>
-          </div>
-          <span className="hidden type-label text-steel/70 xl:block">{product.spec}</span>
-        </div>
-
-        <div className="mt-5 lg:hidden">
-          <AddButton added={added} onAdd={onAdd} disabled={!product.available} />
+        {/* Botón al final de la tarjeta (mt-auto): en una fila todos quedan alineados aunque los nombres midan distinto. */}
+        <div className="mt-auto pt-3 lg:hidden">
+          <AddButton added={added} onAdd={onAdd} disabled={!product.available} compact />
         </div>
       </div>
 
@@ -227,14 +211,15 @@ export function ProductCard({ product, index }: { product: Product; index: numbe
   );
 }
 
-function AddButton({ added, onAdd, disabled = false }: { added: boolean; onAdd: () => void; disabled?: boolean }) {
+function AddButton({ added, onAdd, disabled = false, compact = false }: { added: boolean; onAdd: () => void; disabled?: boolean; compact?: boolean }) {
   const { t } = useLanguage();
   return (
     <button
       onClick={onAdd}
       disabled={disabled}
       className={cn(
-        "relative flex h-12 w-full items-center justify-between overflow-hidden border border-line-strong px-4 type-label transition-colors",
+        "relative flex w-full items-center justify-between overflow-hidden border border-line-strong type-label transition-colors",
+        compact ? "h-10 gap-2 px-3 text-[0.6rem] sm:h-11 sm:px-4 sm:text-[0.65rem]" : "h-12 px-4",
         disabled
           ? "cursor-not-allowed text-steel"
           : added
@@ -245,10 +230,20 @@ function AddButton({ added, onAdd, disabled = false }: { added: boolean; onAdd: 
     >
       <AnimatePresence mode="wait" initial={false}>
         <motion.span key={added ? "a" : "b"} initial={{ y: 14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -14, opacity: 0 }} transition={{ duration: 0.25 }}>
-          {added ? t("Added to bag") : t("Add to cart")}
+          {/* En celular el texto corto ("Añadir") cabe en media pantalla sin cortarse. */}
+          {compact ? (
+            <>
+              <span className="sm:hidden">{added ? "Agregado" : "Añadir"}</span>
+              <span className="hidden sm:inline">{added ? t("Added to bag") : t("Add to cart")}</span>
+            </>
+          ) : added ? (
+            t("Added to bag")
+          ) : (
+            t("Add to cart")
+          )}
         </motion.span>
       </AnimatePresence>
-      {added ? <Check className="h-4 w-4" strokeWidth={2} /> : <Plus className="h-4 w-4" strokeWidth={1.5} />}
+      {added ? <Check className="h-4 w-4 shrink-0" strokeWidth={2} /> : <Plus className="h-4 w-4 shrink-0" strokeWidth={1.5} />}
     </button>
   );
 }
