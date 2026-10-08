@@ -92,8 +92,18 @@ model Customer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /// Posible cliente: dejó sus datos en el checkout pero (todavía) no completó una compra.
+  isLead        Boolean   @default(false)
+  /// Token aleatorio del navegador que creó el posible cliente: solo ese navegador puede actualizarlo.
+  leadToken     String?   @unique
+  /// Carrito que tenía al dejar sus datos (productos, cantidades y precios).
+  leadCart      Json?
+  leadUpdatedAt DateTime?
+
   addresses Address[]
   orders    Order[]
+
+  @@index([isLead])
 }
 
 model Address {

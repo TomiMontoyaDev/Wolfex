@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { formatDate, money } from "@/components/admin/format";
-import { EmptyState, PageHeader, Pagination, Table, Td, Th, buildQuery, buttonClass, ghostButtonClass, inputClass } from "@/components/admin/ui";
+import { Badge, EmptyState, PageHeader, Pagination, Table, Td, Th, buildQuery, buttonClass, ghostButtonClass, inputClass } from "@/components/admin/ui";
 import { BulkDelete, RowCheckbox, SelectAllCheckbox } from "@/components/admin/DeleteControls";
 import { deleteCustomersAction } from "@/server/admin/actions";
 import { listCustomers } from "@/server/admin/queries";
@@ -17,7 +17,12 @@ export default async function AdminCustomersPage({ searchParams }: { searchParam
   await requireAdmin();
   const raw = await searchParams;
   const q = one(raw.q);
-  const { customers, total, page, pages } = await listCustomers({ q, page: one(raw.page) });
+  const view = one(raw.view) === "posibles" ? "posibles" : undefined;
+  const { customers, total, leadCount, page, pages } = await listCustomers({ q, page: one(raw.page), view });
+  const tabs = [
+    { label: "Todos", view: undefined },
+    { label: `Posibles clientes (${leadCount})`, view: "posibles" },
+  ] as const;
 
   return (
     <>
@@ -38,7 +43,22 @@ export default async function AdminCustomersPage({ searchParams }: { searchParam
         </p>
       )}
 
-      <form className="mt-8 flex max-w-xl gap-2" role="search">
+      {/* Posibles clientes: dejaron sus datos en el checkout y todavía no pagan. */}
+      <nav className="mt-8 flex flex-wrap gap-2" aria-label="Vista de clientes">
+        {tabs.map((tab) => (
+          <Link
+            key={tab.label}
+            href={buildQuery("/admin/customers", { q, view: tab.view })}
+            aria-current={view === tab.view ? "page" : undefined}
+            className={view === tab.view ? buttonClass : ghostButtonClass}
+          >
+            {tab.label}
+          </Link>
+        ))}
+      </nav>
+
+      <form className="mt-4 flex max-w-xl gap-2" role="search">
+        {view && <input type="hidden" name="view" value={view} />}
         <label className="block flex-1">
           <span className="sr-only">Buscar cliente</span>
           <input name="q" defaultValue={q} placeholder="Nombre, email o teléfono" className={inputClass} />
@@ -48,7 +68,12 @@ export default async function AdminCustomersPage({ searchParams }: { searchParam
 
       <div className="mt-6">
         {customers.length === 0 ? (
-          <EmptyState title={q ? "Ningún cliente coincide" : "Todavía no hay clientes"} description={q ? "Prueba con otra búsqueda." : "Los clientes se crean automáticamente con su primer pedido."} />
+          <EmptyState
+            title={q ? "Ningún cliente coincide" : view ? "No hay posibles clientes" : "Todavía no hay clientes"}
+            description={
+              q ? "Prueba con otra búsqueda." : view ? "Aparecen aquí cuando alguien deja su WhatsApp o correo en el checkout sin pagar." : "Los clientes se crean automáticamente con su primer pedido."
+            }
+          />
         ) : (
           <>
           <div className="mb-3">
@@ -79,20 +104,26 @@ export default async function AdminCustomersPage({ searchParams }: { searchParam
                   <Td><RowCheckbox formId={BULK_FORM} id={customer.id} label={`Seleccionar a ${customer.fullName}`} /></Td>
                   <Td>
                     <Link href={`/admin/customers/${customer.id}`} className="hover:text-arc">{customer.fullName}</Link>
+                    {customer.lead && (
+                      <span className="mt-1 flex flex-wrap items-center gap-2">
+                        <Badge tone="warn">Posible cliente</Badge>
+                        {customer.lead.cartTotal > 0 && <span className="font-mono text-xs text-steel">Carrito {money(customer.lead.cartTotal)}</span>}
+                      </span>
+                    )}
                   </Td>
                   <Td className="text-steel">{customer.email ?? "—"}</Td>
                   <Td className="text-steel">{customer.phone ?? "—"}</Td>
                   <Td align="right" className="font-mono">{customer.orders}</Td>
                   <Td align="right" className="font-mono">{money(customer.totalSpent)}</Td>
                   <Td className="whitespace-nowrap text-steel">{formatDate(customer.lastOrderAt)}</Td>
-                  <Td className="whitespace-nowrap text-steel">{formatDate(customer.createdAt)}</Td>
+                  <Td className="whitespace-nowrap text-steel">{formatDate(customer.lead ? customer.leadUpdatedAt ?? customer.createdAt : customer.createdAt)}</Td>
                 </tr>
               ))}
             </tbody>
           </Table>
           </>
         )}
-        <Pagination page={page} pages={pages} href={(p) => buildQuery("/admin/customers", { q, page: p })} />
+        <Pagination page={page} pages={pages} href={(p) => buildQuery("/admin/customers", { q, view, page: p })} />
       </div>
     </>
   );

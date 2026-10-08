@@ -2,6 +2,7 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 import { OrderStatus, PaymentStatus } from "@/generated/prisma/enums";
 import { db } from "../db";
+import { readLeadCart } from "../leads";
 import { addDays, localDayKey, parseLocalDate, startOfDay, startOfMonth } from "./time";
 
 // "Venta" = pedido con pago aprobado (los reembolsados quedan fuera), fechado por paidAt.
@@ -66,7 +67,7 @@ export async function getDashboardStats(now = new Date()) {
   // Mes anterior hasta el mismo punto transcurrido, para comparar de forma justa.
   const prevMonthCutoff = new Date(Math.min(prevMonthStart.getTime() + (now.getTime() - monthStart.getTime()), monthStart.getTime()));
 
-  const [todaySales, yesterdaySales, week, prevWeek, month, prevMonth, statusGroups, paymentGroups, customers, newCustomers, prevNewCustomers, profit, recentOrders, recentEvents, toShip] =
+  const [todaySales, yesterdaySales, week, prevWeek, month, prevMonth, statusGroups, paymentGroups, customers, newCustomers, prevNewCustomers, profit, recentOrders, recentEvents, toShip, leads] =
     await Promise.all([
       salesBetween(today, tomorrow),
       salesBetween(addDays(today, -1), today),
@@ -76,9 +77,10 @@ export async function getDashboardStats(now = new Date()) {
       salesBetween(prevMonthStart, prevMonthCutoff),
       db.order.groupBy({ by: ["status"], _count: true }),
       db.order.groupBy({ by: ["paymentStatus"], _count: true }),
-      db.customer.count(),
-      db.customer.count({ where: { createdAt: { gte: monthStart } } }),
-      db.customer.count({ where: { createdAt: { gte: prevMonthStart, lt: prevMonthCutoff } } }),
+      // Clientes reales (los posibles clientes del checkout se cuentan aparte).
+      db.customer.count({ where: { NOT: LEAD_WHERE } }),
+      db.customer.count({ where: { createdAt: { gte: monthStart }, NOT: LEAD_WHERE } }),
+      db.customer.count({ where: { createdAt: { gte: prevMonthStart, lt: prevMonthCutoff }, NOT: LEAD_WHERE } }),
       getProfitEstimate(monthStart, tomorrow),
       db.order.findMany({
         orderBy: { createdAt: "desc" },
@@ -97,6 +99,7 @@ export async function getDashboardStats(now = new Date()) {
         take: 6,
         select: { id: true, orderNumber: true, customerName: true, shippingCity: true, total: true, fulfillmentStatus: true, paidAt: true },
       }),
+      db.customer.count({ where: LEAD_WHERE }),
     ]);
 
   const byStatus = Object.fromEntries(statusGroups.map((group) => [group.status, group._count])) as Partial<Record<OrderStatus, number>>;
@@ -119,6 +122,7 @@ export async function getDashboardStats(now = new Date()) {
     customers,
     newCustomers,
     prevNewCustomers,
+    leads,
     profit,
     recentOrders,
     recentEvents,
@@ -221,21 +225,28 @@ export function getOrder(id: string) {
 
 export const CUSTOMERS_PAGE_SIZE = 25;
 
-export async function listCustomers(filters: { q?: string; page?: string }) {
+/** Posible cliente: dejó sus datos en el checkout y todavía no tiene ningún pedido pagado. */
+export const LEAD_WHERE: Prisma.CustomerWhereInput = { isLead: true, orders: { none: PAID } };
+
+export async function listCustomers(filters: { q?: string; page?: string; view?: string }) {
   const page = Math.max(1, Number(filters.page) || 1);
   const q = filters.q?.trim().slice(0, 120);
-  const where: Prisma.CustomerWhereInput = q
-    ? { OR: [{ fullName: { contains: q, mode: "insensitive" } }, { email: { contains: q, mode: "insensitive" } }, { phone: { contains: q } }] }
-    : {};
+  const leads = filters.view === "posibles";
+  const where: Prisma.CustomerWhereInput = {
+    ...(q && { OR: [{ fullName: { contains: q, mode: "insensitive" } }, { email: { contains: q, mode: "insensitive" } }, { phone: { contains: q } }] }),
+    ...(leads && LEAD_WHERE),
+  };
 
-  const [total, customers] = await Promise.all([
+  const [total, leadCount, customers] = await Promise.all([
     db.customer.count({ where }),
+    db.customer.count({ where: LEAD_WHERE }),
     db.customer.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      // Los posibles clientes, por su última actividad en el checkout.
+      orderBy: leads ? [{ leadUpdatedAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }] : { createdAt: "desc" },
       skip: (page - 1) * CUSTOMERS_PAGE_SIZE,
       take: CUSTOMERS_PAGE_SIZE,
-      select: { id: true, fullName: true, email: true, phone: true, createdAt: true, _count: { select: { orders: true } } },
+      select: { id: true, fullName: true, email: true, phone: true, createdAt: true, isLead: true, leadCart: true, leadUpdatedAt: true, _count: { select: { orders: true } } },
     }),
   ]);
 
@@ -248,13 +259,15 @@ export async function listCustomers(filters: { q?: string; page?: string }) {
   const lastOrder = new Map(last.map((row) => [row.customerId, row._max.createdAt]));
 
   return {
-    customers: customers.map((customer) => ({
+    customers: customers.map(({ leadCart, ...customer }) => ({
       ...customer,
       orders: customer._count.orders,
       totalSpent: spent.get(customer.id) ?? 0,
       lastOrderAt: lastOrder.get(customer.id) ?? null,
+      lead: customer.isLead && !spent.has(customer.id) ? { cartTotal: readLeadCart(leadCart)?.total ?? 0 } : null,
     })),
     total,
+    leadCount,
     page,
     pages: Math.max(1, Math.ceil(total / CUSTOMERS_PAGE_SIZE)),
   };
@@ -276,6 +289,8 @@ export async function getCustomer(id: string) {
   const totalSpent = paidOrders.reduce((sum, order) => sum + order.total, 0);
   return {
     customer,
+    isLead: customer.isLead && paidOrders.length === 0,
+    leadCart: readLeadCart(customer.leadCart),
     stats: {
       orders: customer.orders.length,
       paidOrders: paidOrders.length,

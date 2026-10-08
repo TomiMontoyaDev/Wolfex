@@ -30,6 +30,7 @@ export default function PrivacyPage() {
           body: [
             [
               "Los que nos das al comprar: nombre, correo, teléfono, departamento, ciudad y dirección de entrega.",
+              "Los datos de contacto y entrega que escribes en el checkout, junto con los productos de tu carrito, se guardan aunque no termines el pago, para poder ayudarte a completar tu compra.",
               "Datos del pedido: productos, valores y estado del pago. Los datos de tu tarjeta los procesa Mercado Pago; nosotros no los vemos ni los guardamos.",
               "Datos de navegación anónimos y agregados (páginas visitadas, tipo de dispositivo), para mejorar la tienda.",
               "Si solicitas factura electrónica: nombre o razón social, tipo y número de documento (cédula o NIT), correo de facturación, dirección y ciudad.",
@@ -41,7 +42,7 @@ export default function PrivacyPage() {
           body: [
             [
               "Procesar, despachar y hacer seguimiento a tus pedidos.",
-              "Contactarte sobre tu compra (confirmaciones, envío, cambios).",
+              "Contactarte sobre tu compra (confirmaciones, envío, cambios) o, si la dejaste a mitad de camino, para ayudarte a completarla.",
               "Cumplir obligaciones legales, contables y tributarias.",
               "Expedir la factura electrónica cuando la solicites.",
               "Enviarte ofertas solo si lo autorizas; puedes darte de baja cuando quieras.",

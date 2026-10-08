@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ORDER_STATUS, PAYMENT_STATUS, formatDate, formatDateTime, money } from "@/components/admin/format";
-import { DefinitionList, EmptyState, KpiCard, PageHeader, Panel, StatusBadge, Table, Td, Th, buttonClass, ghostButtonClass } from "@/components/admin/ui";
+import { Badge, DefinitionList, EmptyState, KpiCard, PageHeader, Panel, StatusBadge, Table, Td, Th, buttonClass, ghostButtonClass } from "@/components/admin/ui";
 import { DangerAction } from "@/components/admin/DeleteControls";
 import { deleteCustomersAction } from "@/server/admin/actions";
 import { getCustomer } from "@/server/admin/queries";
@@ -10,12 +10,26 @@ import { requireAdmin } from "@/server/auth";
 
 export const metadata: Metadata = { title: "Cliente" };
 
+/** WhatsApp directo al cliente (número colombiano de 10 dígitos o con indicativo), con un saludo ya escrito. */
+function customerWhatsapp(phone: string | null, firstName: string, products: string[]) {
+  const digits = phone?.replace(/\D/g, "") ?? "";
+  const number = digits.length === 10 ? `57${digits}` : digits.length >= 11 ? digits : null;
+  if (!number) return null;
+  const items = products.length ? ` con ${products.slice(0, 3).join(", ")}${products.length > 3 ? " y más" : ""}` : "";
+  const message = `¡Hola ${firstName}! Te escribimos de WOLFEX. Vimos que dejaste tu pedido${items} a mitad de camino. ¿Te ayudamos a completarlo?`;
+  return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+}
+
 export default async function AdminCustomerDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await requireAdmin();
   const { id } = await params;
   const data = await getCustomer(id);
   if (!data) notFound();
-  const { customer, stats } = data;
+  const { customer, stats, isLead, leadCart } = data;
+  // El carrito solo importa si quedó sin comprar (posterior a su último pedido).
+  const lastOrderAt = customer.orders[0]?.createdAt;
+  const showCart = !!leadCart?.items.length && !!customer.leadUpdatedAt && (isLead || !lastOrderAt || customer.leadUpdatedAt > lastOrderAt);
+  const chatUrl =customerWhatsapp(customer.phone, customer.firstName, leadCart?.items.map((item) => item.name) ?? []);
 
   return (
     <>
@@ -42,6 +56,39 @@ export default async function AdminCustomerDetailPage({ params, searchParams }: 
         <p role="status" className="mt-6 rounded-sm border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200">
           Cliente guardado.
         </p>
+      )}
+
+      {showCart && leadCart && (
+        <section className="mt-8 rounded-sm border border-amber-400/30 bg-amber-400/5 p-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                {isLead && <Badge tone="warn">Posible cliente</Badge>}
+                <h2 className="type-title text-lg">Carrito que dejó en el checkout</h2>
+              </div>
+              <p className="mt-1 text-sm text-steel">Última actividad: {formatDateTime(customer.leadUpdatedAt)}</p>
+            </div>
+            {chatUrl && (
+              <a href={chatUrl} target="_blank" rel="noopener noreferrer" className={buttonClass}>
+                Escribir por WhatsApp
+              </a>
+            )}
+          </div>
+          <ul className="mt-4 divide-y divide-line text-sm">
+            {leadCart.items.map((item) => (
+              <li key={item.productId} className="flex items-center justify-between gap-4 py-2">
+                <span>
+                  {item.name} <span className="text-steel">× {item.quantity}</span>
+                </span>
+                <span className="font-mono">{money(item.price * item.quantity)}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 flex justify-between border-t border-line pt-3 type-title">
+            <span>Total sin descuentos ni envío</span>
+            <span className="font-mono text-arc">{money(leadCart.total)}</span>
+          </p>
+        </section>
       )}
 
       <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

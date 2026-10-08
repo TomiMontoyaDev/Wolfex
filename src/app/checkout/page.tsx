@@ -2,10 +2,12 @@
 
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ShippingNotice } from "@/components/cart/ShippingNotice";
 import { EMPTY_INVOICE, InvoiceFields, type InvoiceData } from "@/components/checkout/InvoiceFields";
+import { useLeadCapture } from "@/components/checkout/useLeadCapture";
 import { ComboUpsell } from "@/components/combo/ComboUpsell";
 import { useComboQuote } from "@/components/combo/useComboQuote";
 import { useCart } from "@/components/providers/CartProvider";
@@ -15,10 +17,11 @@ import { hasFreeShipping } from "@/config/shipping";
 import { track } from "@/lib/meta-pixel";
 import { formatPrice } from "@/lib/utils";
 
+// Contacto primero: si la persona no termina, al menos queda cómo ayudarle a completar la compra.
 const fields = [
-  { key: "name", label: "Nombre completo", type: "text" },
-  { key: "email", label: "Correo electrónico", type: "email" },
-  { key: "phone", label: "Teléfono", type: "tel" },
+  { key: "phone", label: "WhatsApp / teléfono", type: "tel", autoComplete: "tel" },
+  { key: "email", label: "Correo electrónico", type: "email", autoComplete: "email" },
+  { key: "name", label: "Nombre completo", type: "text", autoComplete: "name" },
 ] as const;
 
 const inputClass =
@@ -40,6 +43,15 @@ export default function CheckoutPage() {
   const quoteLines = useMemo(() => lines.map((line) => ({ productId: line.product.id, quantity: line.quantity })), [lines]);
   const { quote } = useComboQuote(quoteLines, { suggest: true });
   const total = subtotal - quote.discount;
+  const saveLead = useLeadCapture({
+    name: form.name,
+    email: form.email,
+    phone: form.phone,
+    department: form.department,
+    city: deliveryCity,
+    address: form.address,
+    lines: quoteLines,
+  });
 
   // Meta: una vez por visita al checkout, con lo que hay en el carrito.
   const checkoutTracked = useRef(false);
@@ -80,6 +92,8 @@ export default function CheckoutPage() {
     setError("");
     setLoading(true);
     try {
+      // Los datos del posible cliente quedan guardados antes del pedido (el pedido luego usa ese mismo cliente).
+      await saveLead();
       const response = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
@@ -130,7 +144,7 @@ export default function CheckoutPage() {
               {fields.map((field) => (
                 <label key={field.key} className={field.key === "name" ? "block sm:col-span-2" : "block"}>
                   <span className="type-label text-steel">{field.label}</span>
-                  <input required type={field.type} value={form[field.key]} onChange={(event) => setForm({ ...form, [field.key]: event.target.value })} className={inputClass} />
+                  <input required type={field.type} autoComplete={field.autoComplete} value={form[field.key]} onChange={(event) => setForm({ ...form, [field.key]: event.target.value })} className={inputClass} />
                 </label>
               ))}
               <label className="block">
@@ -180,6 +194,10 @@ export default function CheckoutPage() {
                 <input required type="text" value={form.address} placeholder="Calle, número, barrio, apto…" onChange={(event) => setForm({ ...form, address: event.target.value })} className={inputClass} />
               </label>
             </div>
+            <p className="mt-4 text-xs leading-5 text-steel/80">
+              Guardamos tus datos de contacto para ayudarte a completar tu compra.{" "}
+              <Link href="/privacidad" className="underline underline-offset-2 transition-colors hover:text-arc">Política de privacidad</Link>
+            </p>
             <InvoiceFields enabled={invoiceOn} onToggle={toggleInvoice} value={invoice} onChange={setInvoice} inputClass={inputClass} />
             {error && <p role="alert" className="mt-5 text-sm text-red-400">{error}</p>}
             <button disabled={loading} className="group relative mt-8 flex h-16 w-full items-center justify-between overflow-hidden bg-volt px-5 type-title text-sm text-bone transition-shadow hover:shadow-[0_0_35px_rgba(0,102,255,0.38)] disabled:opacity-50">

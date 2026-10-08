@@ -71,6 +71,7 @@ export default async function AdminDashboardPage() {
           hint={`${s.newCustomers} nuevos este mes`}
           footer={<DeltaBadge value={delta(s.newCustomers, s.prevNewCustomers)} label="nuevos vs mes anterior" />}
         />
+        <KpiCard highlight={s.leads > 0} label="Posibles clientes" value={s.leads} hint="Dejaron sus datos en el checkout sin pagar" href="/admin/customers?view=posibles" />
         <KpiCard
           label="Utilidad estimada (mes)"
           value={s.profit.hasAnyCost ? money(s.profit.profit) : "—"}
