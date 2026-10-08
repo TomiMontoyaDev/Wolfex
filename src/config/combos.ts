@@ -57,14 +57,14 @@ export const RECOMMENDED_COMBOS: RecommendedCombo[] = [
   {
     id: "rendimiento",
     name: "Combo Rendimiento Total",
-    goal: "Todo en uno · Entrega HOY",
-    description: "Proteína, creatina, pre-entreno y omega 3: el stack completo, todo en stock en Pereira.",
+    goal: "Todo en uno",
+    description: "Proteína, creatina, pre-entreno y omega 3: el stack completo para entrenar y cuidar tu salud.",
     skus: ["PN-014", "PN-681", "PN-166", "PN-640"],
   },
   {
     id: "inicio",
     name: "Combo Inicio",
-    goal: "Masa muscular · Entrega HOY",
+    goal: "Masa muscular",
     description: "Lo básico para arrancar: proteína para recuperar, creatina para fuerza y omega 3 para tu salud.",
     skus: ["PN-014", "PN-632", "PN-640"],
   },

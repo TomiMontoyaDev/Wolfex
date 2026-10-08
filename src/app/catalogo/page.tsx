@@ -3,7 +3,10 @@ import { CATEGORY_SLUGS, type CategorySlug } from "@/data/site";
 import { findUnavailableProduct, getCatalogProducts } from "@/lib/commerce";
 
 export default async function CatalogPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const [products, params] = await Promise.all([getCatalogProducts(), searchParams]);
+  const [catalog, params] = await Promise.all([getCatalogProducts(), searchParams]);
+  // Primero la entrega inmediata en Pereira, luego el resto y al final los agotados (cada grupo en el orden de la tienda).
+  const rank = (product: (typeof catalog)[number]) => (!product.available ? 2 : product.delivery === "STOCK" ? 0 : 1);
+  const products = [...catalog].sort((a, b) => rank(a) - rank(b));
   const q = typeof params.q === "string" ? params.q.slice(0, 80) : "";
   const slug = typeof params.categoria === "string" ? params.categoria.toLowerCase() : "";
   const category = slug in CATEGORY_SLUGS ? CATEGORY_SLUGS[slug as CategorySlug] : undefined;
