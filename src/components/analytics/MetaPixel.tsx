@@ -3,6 +3,7 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef } from "react";
 import { trackPageView } from "@/lib/meta-pixel";
+import { ensureVisitorId } from "@/lib/visitor";
 
 /**
  * PageView en las navegaciones internas: Next cambia de página sin recargar, así que el código base
@@ -21,6 +22,11 @@ function RouteChangePageView() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const firstRender = useRef(true);
+
+  // Crea el id anónimo del visitante en la primera visita (lo usan los eventos de la API de Conversiones).
+  useEffect(() => {
+    ensureVisitorId();
+  }, []);
 
   useEffect(() => {
     if (firstRender.current) {

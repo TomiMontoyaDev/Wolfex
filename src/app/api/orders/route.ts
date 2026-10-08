@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { siteUrl } from "@/server/mercadopago";
+import { trackingFromRequest } from "@/server/meta-purchase";
 import { CheckoutError, createMercadoPagoCheckout, createOrder } from "@/server/orders";
 import { checkoutSchema, firstIssue, idempotencyKeySchema } from "@/server/validation";
 
@@ -11,7 +12,8 @@ export async function POST(request: Request) {
   const key = idempotencyKeySchema.safeParse(request.headers.get("idempotency-key"));
 
   try {
-    const { order } = await createOrder(parsed.data, key.success ? key.data : undefined);
+    // Señales de Meta (cookies del Pixel, IP, navegador) para atribuir la compra aunque el cliente no vuelva.
+    const { order } = await createOrder(parsed.data, key.success ? key.data : undefined, trackingFromRequest(request));
     const checkoutUrl = await createMercadoPagoCheckout(order, siteUrl(request));
     return NextResponse.json({ orderNumber: order.orderNumber, checkoutUrl });
   } catch (error) {

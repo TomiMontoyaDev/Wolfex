@@ -31,6 +31,8 @@ export interface CapiRequestContext {
   userAgent?: string | null;
   fbp?: string | null;
   fbc?: string | null;
+  /** Id anónimo del visitante (cookie wfx_vid): se envía en SHA-256 como external_id. */
+  visitorId?: string | null;
 }
 
 const sha256 = (value: string) => createHash("sha256").update(value).digest("hex");
@@ -58,6 +60,7 @@ function buildUserData(customer: CapiCustomer | undefined, context: CapiRequestC
     client_user_agent: context.userAgent || undefined,
     fbp: context.fbp || undefined,
     fbc: context.fbc || undefined,
+    external_id: hashed(context.visitorId),
     em: hashed(email),
     ph: hashed(customer?.phone ? normalizePhone(customer.phone) : null),
     fn: hashed(first ? compact(first) : null),
@@ -71,7 +74,7 @@ function buildUserData(customer: CapiCustomer | undefined, context: CapiRequestC
 
 /**
  * Envía un evento a la API de Conversiones. Nunca lanza: si Meta falla, se registra en consola
- * y la compra o navegación del cliente sigue normal.
+ * y la compra o navegación del cliente sigue normal. Devuelve true si Meta lo recibió.
  */
 export async function sendMetaEvent(input: {
   eventName: MetaServerEvent;
@@ -81,17 +84,19 @@ export async function sendMetaEvent(input: {
   value?: number;
   customer?: CapiCustomer;
   context: CapiRequestContext;
-}): Promise<void> {
+  /** Momento real del evento (p. ej. la hora del pago); por defecto, ahora. */
+  eventTime?: Date;
+}): Promise<boolean> {
   const token = process.env.META_CAPI_TOKEN;
   if (!token) {
     console.warn("[meta-capi] META_CAPI_TOKEN no está configurado; evento omitido", input.eventName);
-    return;
+    return false;
   }
 
   const value = input.value ?? input.contents.reduce((sum, item) => sum + item.item_price * item.quantity, 0);
   const event = {
     event_name: input.eventName,
-    event_time: Math.floor(Date.now() / 1000),
+    event_time: Math.floor((input.eventTime ?? new Date()).getTime() / 1000),
     event_id: input.eventId,
     action_source: "website",
     event_source_url: input.eventSourceUrl,
@@ -118,10 +123,12 @@ export async function sendMetaEvent(input: {
     const result = (await response.json().catch(() => null)) as { events_received?: number; fbtrace_id?: string; error?: { message?: string; code?: number } } | null;
     if (!response.ok) {
       console.error("[meta-capi] Meta rechazó el evento", { event: input.eventName, eventId: input.eventId, status: response.status, error: result?.error });
-      return;
+      return false;
     }
     console.log("[meta-capi] evento enviado", { event: input.eventName, eventId: input.eventId, received: result?.events_received, test: !!testCode, fbtrace_id: result?.fbtrace_id });
+    return true;
   } catch (error) {
     console.error("[meta-capi] no se pudo contactar a Meta", { event: input.eventName, eventId: input.eventId, error: error instanceof Error ? error.message : error });
+    return false;
   }
 }

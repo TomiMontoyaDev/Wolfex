@@ -2,7 +2,9 @@ import { after, NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { getCatalogProducts } from "@/lib/commerce";
 import { db } from "@/server/db";
+import { parseVisitorId, VISITOR_COOKIE } from "@/lib/visitor";
 import { sendMetaEvent, type CapiContent, type CapiCustomer, type CapiRequestContext } from "@/server/meta-capi";
+import { sendOrderPurchase } from "@/server/meta-purchase";
 
 /**
  * Recibe los eventos del navegador y los reenvía a la API de Conversiones de Meta con el mismo event_id.
@@ -66,35 +68,20 @@ async function handle(request: NextRequest) {
     userAgent: request.headers.get("user-agent"),
     fbp: request.cookies.get("_fbp")?.value ?? null,
     fbc: clickId(request, event.event_source_url),
+    visitorId: parseVisitorId(request.cookies.get(VISITOR_COOKIE)?.value),
   };
 
   let contents: CapiContent[];
-  let value: number | undefined;
   let customer: CapiCustomer | undefined;
-  let eventId = event.event_id;
 
   if (event.event_name === "Purchase") {
-    // Purchase: solo con el pedido CONFIRMADO, y con su valor, productos y datos reales.
+    // Purchase: un solo envío por pedido, con valor, productos y datos reales del pedido aprobado.
+    // Si el webhook de Mercado Pago ya lo envió, aquí no se repite.
     if (!event.order_ref) return NextResponse.json({ error: "Falta el pedido." }, { status: 400 });
-    const order = await db.order.findUnique({
-      where: { externalReference: event.order_ref },
-      select: {
-        orderNumber: true,
-        paymentStatus: true,
-        total: true,
-        customerEmail: true,
-        customerPhone: true,
-        customerName: true,
-        shippingCity: true,
-        shippingDepartment: true,
-        items: { select: { sku: true, quantity: true, unitPrice: true } },
-      },
-    });
+    const order = await db.order.findUnique({ where: { externalReference: event.order_ref }, select: { id: true, paymentStatus: true } });
     if (!order || order.paymentStatus !== "APPROVED") return NextResponse.json({ skipped: true }, { status: 202 });
-    eventId = order.orderNumber;
-    contents = order.items.map((item) => ({ id: item.sku, quantity: item.quantity, item_price: item.unitPrice }));
-    value = order.total;
-    customer = { email: order.customerEmail, phone: order.customerPhone, name: order.customerName, city: order.shippingCity, department: order.shippingDepartment };
+    after(() => sendOrderPurchase(order.id, context));
+    return NextResponse.json({ ok: true }, { status: 202 });
   } else {
     // Resto de eventos: precios del catálogo real (en caché), por SKU. Productos desconocidos se ignoran.
     const catalog = new Map((await getCatalogProducts()).map((product) => [product.sku, product]));
@@ -108,7 +95,7 @@ async function handle(request: NextRequest) {
 
   // Se responde de inmediato; el envío a Meta corre después y no hace esperar al cliente.
   after(() =>
-    sendMetaEvent({ eventName: event.event_name, eventId, eventSourceUrl: event.event_source_url, contents, value, customer, context }),
+    sendMetaEvent({ eventName: event.event_name, eventId: event.event_id, eventSourceUrl: event.event_source_url, contents, customer, context }),
   );
   return NextResponse.json({ ok: true }, { status: 202 });
 }

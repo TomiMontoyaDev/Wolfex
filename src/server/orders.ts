@@ -4,6 +4,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { computeCombo } from "./combo";
 import { db } from "./db";
 import { mpPreferences } from "./mercadopago";
+import type { OrderTracking } from "./meta-purchase";
 import type { CheckoutInput } from "./validation";
 
 /** Error con mensaje seguro para mostrar al cliente. */
@@ -46,7 +47,7 @@ function mergeLines(lines: CheckoutInput["lines"]) {
  * Los precios salen SIEMPRE de la base de datos, nunca del navegador.
  * Con la misma idempotencyKey devuelve la orden ya creada en vez de duplicarla.
  */
-export async function createOrder(input: CheckoutInput, idempotencyKey?: string) {
+export async function createOrder(input: CheckoutInput, idempotencyKey?: string, tracking?: OrderTracking) {
   if (idempotencyKey) {
     const existing = await db.order.findUnique({ where: { idempotencyKey } });
     if (existing) return { order: existing, reused: true };
@@ -140,6 +141,7 @@ export async function createOrder(input: CheckoutInput, idempotencyKey?: string)
             recipientName: addressData.recipientName ?? customer.name,
             recipientPhone: addressData.recipientPhone ?? customer.phone,
             customerNotes: customer.notes,
+            ...(tracking && { tracking: JSON.parse(JSON.stringify(tracking)) }),
             // Solicitud de factura electrónica: queda "pendiente" para gestionarla en /admin/facturas.
             ...(input.invoice && {
               requiresInvoice: true,

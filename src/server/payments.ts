@@ -1,8 +1,10 @@
 import "server-only";
 import type { PaymentResponse } from "mercadopago/dist/clients/payment/commonTypes";
 import type { OrderEventType, PaymentStatus, Prisma } from "@/generated/prisma/client";
+import { after } from "next/server";
 import { db } from "./db";
 import { mpPayments } from "./mercadopago";
+import { sendOrderPurchase } from "./meta-purchase";
 
 const STATUS_MAP: Record<string, PaymentStatus> = {
   approved: "APPROVED",
@@ -68,7 +70,7 @@ export async function processMercadoPagoPayment(paymentId: string, actor: "webho
   const feeAmount = sellerFees.length ? Math.round(sellerFees.reduce((sum, fee) => sum + (fee.amount ?? 0), 0)) : null;
   const raw = sanitize(mp);
 
-  return db.$transaction(async (tx) => {
+  const outcome: ProcessResult = await db.$transaction(async (tx) => {
     await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${order.id} FOR UPDATE`;
 
     const existing = await tx.payment.findUnique({
@@ -148,4 +150,15 @@ export async function processMercadoPagoPayment(paymentId: string, actor: "webho
 
     return { result: "processed", status } as const;
   });
+
+  // Pago recién aprobado: Purchase a Meta desde el servidor (llega aunque el cliente no vuelva a la tienda).
+  if (outcome.result === "processed" && outcome.status === "APPROVED") {
+    try {
+      after(() => sendOrderPurchase(order.id));
+    } catch {
+      // Fuera de un request de Next (scripts): se envía directo.
+      await sendOrderPurchase(order.id);
+    }
+  }
+  return outcome;
 }

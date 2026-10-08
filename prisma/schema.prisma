@@ -342,6 +342,12 @@ model Order {
   invoiceIssuedAt   DateTime?
   /// Consecutivo del comprobante de venta (WFX-C-000001). Se asigna al imprimirlo por primera vez.
   receiptNumber     String?         @unique
+
+  /// Datos de medición capturados al crear el pedido (cookies _fbp/_fbc, IP, navegador, visitante).
+  /// Permiten enviar el Purchase a Meta desde el webhook aunque el cliente no vuelva a la tienda.
+  tracking           Json?
+  /// Cuándo se envió el Purchase a la API de Conversiones (garantiza un solo envío).
+  metaPurchaseSentAt DateTime?
   invoiceRequest    InvoiceRequest?
 
   @@index([customerId])
