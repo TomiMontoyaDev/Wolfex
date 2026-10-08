@@ -29,7 +29,7 @@ export default async function EditProductPage({ params, searchParams }: { params
           actions={
             <>
               {product.active ? <Badge tone="good">Visible</Badge> : <Badge tone="muted">Oculto</Badge>}
-              {product.stock === 0 && <Badge tone="warn">Agotado</Badge>}
+              {(product.stock === 0 || product.soldOut) && <Badge tone="warn">{product.soldOut ? "Agotado en el proveedor" : "Agotado"}</Badge>}
             </>
           }
         />
@@ -64,6 +64,7 @@ export default async function EditProductPage({ params, searchParams }: { params
             sortOrder: product.sortOrder,
             active: product.active,
             lowPriority: product.lowPriority,
+            soldOut: product.soldOut,
             image: product.image,
           }}
         />

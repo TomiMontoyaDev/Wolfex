@@ -64,6 +64,7 @@ const productSchema = z.object({
     .refine((value) => value === null || (Number.isInteger(value) && value >= 0 && value < 100_000), "Posición inválida."),
   active: z.boolean(),
   lowPriority: z.boolean(),
+  soldOut: z.boolean(),
 });
 
 function readProductForm(formData: FormData) {
@@ -82,6 +83,7 @@ function readProductForm(formData: FormData) {
     sortOrder: field("sortOrder"),
     active: formData.get("active") === "on",
     lowPriority: formData.get("lowPriority") === "on",
+    soldOut: formData.get("soldOut") === "on",
   });
 }
 
@@ -184,6 +186,7 @@ export async function createProductAction(_prev: ActionState, formData: FormData
         stock: data.stock,
         active: data.active,
         lowPriority: data.lowPriority,
+        soldOut: data.soldOut,
         image: imageUrl,
       },
     });
@@ -233,6 +236,7 @@ export async function updateProductDetailsAction(_prev: ActionState, formData: F
         stock: data.stock,
         active: data.active,
         lowPriority: data.lowPriority,
+        soldOut: data.soldOut,
         image: imageUrl,
       },
     });

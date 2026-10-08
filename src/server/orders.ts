@@ -63,6 +63,7 @@ export async function createOrder(input: CheckoutInput, idempotencyKey?: string,
   const items = lines.map((line) => {
     const product = byId.get(line.productId);
     if (!product || !product.active) throw new CheckoutError("Uno de los productos ya no está disponible.");
+    if (product.soldOut) throw new CheckoutError(`${product.name} está agotado.`);
     if (product.stock !== null && (quantityByProduct.get(product.id) ?? 0) > product.stock) {
       throw new CheckoutError(`No hay suficiente stock de ${product.name}.`);
     }

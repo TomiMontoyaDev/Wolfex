@@ -24,6 +24,7 @@ export interface ProductFormValues {
   sortOrder: number | null;
   active: boolean;
   lowPriority: boolean;
+  soldOut: boolean;
   image: string | null;
 }
 
@@ -192,6 +193,13 @@ export function ProductForm({ action, values, categories, submitLabel }: { actio
             <span className="text-sm text-bone">Visible en la tienda</span>
           </label>
         </div>
+        <label className="flex items-start gap-3">
+          <input type="checkbox" name="soldOut" defaultChecked={values.soldOut} className="mt-0.5 h-5 w-5 shrink-0 accent-[#0066ff]" />
+          <span className="text-sm text-bone">
+            Agotado en el proveedor
+            <span className="mt-0.5 block text-xs text-steel">Se sigue viendo en la tienda con &quot;Agotado&quot;, pero no se puede comprar ni sale en combos ni destacados.</span>
+          </span>
+        </label>
         <label className="flex items-start gap-3">
           <input type="checkbox" name="lowPriority" defaultChecked={values.lowPriority} className="mt-0.5 h-5 w-5 shrink-0 accent-[#0066ff]" />
           <span className="text-sm text-bone">

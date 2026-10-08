@@ -107,6 +107,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
                   </Td>
                   <Td>
                     {product.active ? <Badge tone="good">Visible</Badge> : <Badge tone="muted">Oculto</Badge>}
+                    {product.soldOut && <div className="mt-2"><Badge tone="warn">Agotado proveedor</Badge></div>}
                     {product.stock !== null && product.stock <= 5 && <div className="mt-2"><Badge tone="warn">{product.stock === 0 ? "Agotado" : `Stock ${product.stock}`}</Badge></div>}
                   </Td>
                   <Td>

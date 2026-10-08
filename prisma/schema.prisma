@@ -167,6 +167,8 @@ model Product {
   sortOrder      Int?
   /// Productos donde no se compite en precio (la competencia vende casi al costo): fuera de destacados, candidatos a salir del catálogo.
   lowPriority    Boolean      @default(false)
+  /// Agotado en el proveedor: se sigue viendo en la tienda (con "Agotado") pero no se puede comprar.
+  soldOut        Boolean      @default(false)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 

@@ -21,7 +21,18 @@ const CATEGORY_LABELS: Record<string, string> = {
   AMINOACIDOS: "Aminoácidos",
 };
 
-export function CatalogContent({ products, initialQuery = "", initialCategory }: { products: Product[]; initialQuery?: string; initialCategory?: string }) {
+export function CatalogContent({
+  products,
+  initialQuery = "",
+  initialCategory,
+  unavailable,
+}: {
+  products: Product[];
+  initialQuery?: string;
+  initialCategory?: string;
+  /** Llegó por un enlace a un producto desactivado: aviso + productos parecidos. */
+  unavailable?: { name: string; suggestions: Product[] } | null;
+}) {
   const { t } = useLanguage();
   const [query, setQuery] = useState(initialQuery);
   const [brand, setBrand] = useState(ALL);
@@ -59,6 +70,21 @@ export function CatalogContent({ products, initialQuery = "", initialCategory }:
     <main className="min-h-screen bg-void pb-24 pt-[calc(var(--nav-h)+3rem)] md:pt-[calc(var(--nav-h)+5rem)]">
       <div className="container-wfx">
         <SectionLabel index="02" label="Catálogo completo WOLFEX" meta={`${pad(filteredProducts.length)} resultados · COP`} />
+
+        {unavailable && (
+          <section role="status" className="mt-10 border border-line-strong bg-ink/70 p-5 md:p-8">
+            <p className="type-label text-arc">Producto no disponible</p>
+            <h2 className="mt-3 type-title text-xl text-bone md:text-2xl">{unavailable.name}</h2>
+            <p className="mt-2 text-sm text-steel">Este producto ya no está disponible en WOLFEX. Te pueden interesar estos:</p>
+            {unavailable.suggestions.length > 0 && (
+              <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
+                {unavailable.suggestions.map((product, index) => (
+                  <ProductCard key={product.id} product={product} index={index} layout="grid" />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
 
         <div className="mt-12 flex flex-col gap-6 md:mt-16 md:flex-row md:items-end md:justify-between">
           <div>
