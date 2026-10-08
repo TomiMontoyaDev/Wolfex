@@ -5,6 +5,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import { CartDrawer } from "@/components/layout/CartDrawer";
+import { ExitIntent } from "@/components/cart/ExitIntent";
 import { Footer } from "@/components/layout/Footer";
 import { Loader } from "@/components/layout/Loader";
 import { Navbar } from "@/components/layout/Navbar";
@@ -98,6 +99,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <Loader />
             <Navbar />
             <CartDrawer />
+            <ExitIntent />
           </StorefrontOnly>
           {children}
           <StorefrontOnly>
