@@ -2,7 +2,7 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 import { COMBO_MIN_ITEM_PRICE, COMBO_MIN_NET_MARGIN, RECOMMENDED_COMBOS } from "@/config/combos";
 import type { Product } from "@/data/products";
-import { comboItemCount, comboTier, nextComboTier } from "@/lib/combo";
+import { comboItemCount, comboTier, linePercent, nextComboTier } from "@/lib/combo";
 import { getCatalogProducts, PRODUCTS_TAG } from "@/lib/commerce";
 import { breakEvenPrice, MIN_NET_MARGIN, type CostProfile } from "@/lib/pricing";
 import { db } from "./db";
@@ -26,6 +26,8 @@ export interface ComboResult {
   discount: number;
   /** Descuento por unidad de cada producto (entero, múltiplo de $100). */
   unitDiscounts: Map<string, number>;
+  /** true si alguna proteína de 2 lb o más recibió menos que el nivel del combo (tope de 5%). */
+  capped: boolean;
   next: { percent: number; missing: number } | null;
 }
 
@@ -58,22 +60,26 @@ export async function computeCombo(lines: ComboLineInput[]): Promise<ComboResult
   const unitDiscounts = new Map<string, number>();
   let discount = 0;
 
+  let capped = false;
   if (tier) {
     for (const line of priced) {
       if (line.price < COMBO_MIN_ITEM_PRICE || !line.profile || unitDiscounts.has(line.productId)) continue;
+      // Proteínas de 2 lb o más: cuentan para el nivel, pero su descuento llega como máximo al 5%.
+      const percent = linePercent(tier.percent, line.profile);
+      if (percent < tier.percent) capped = true;
       // Tope por margen: el descuento nunca deja el producto por debajo del 15% neto real.
-      const unit = Math.max(0, Math.min(toHundreds((line.price * tier.percent) / 100), toHundreds(line.price - floorPrice(line.profile))));
+      const unit = Math.max(0, Math.min(toHundreds((line.price * percent) / 100), toHundreds(line.price - floorPrice(line.profile))));
       unitDiscounts.set(line.productId, unit);
     }
     for (const line of priced) discount += (unitDiscounts.get(line.productId) ?? 0) * line.quantity;
   }
 
-  return { count, percent: tier?.percent ?? 0, discount, unitDiscounts, next: next ? { percent: next.tier.percent, missing: next.missing } : null };
+  return { count, percent: tier?.percent ?? 0, discount, unitDiscounts, capped, next: next ? { percent: next.tier.percent, missing: next.missing } : null };
 }
 
-/** Datos públicos de una cotización (lo que ve el navegador: sin costos ni topes por producto). */
+/** Datos públicos de una cotización (lo que ve el navegador: sin costos ni topes por margen). */
 export function publicQuote(result: ComboResult) {
-  return { count: result.count, percent: result.percent, discount: result.discount, next: result.next };
+  return { count: result.count, percent: result.percent, discount: result.discount, capped: result.capped, next: result.next };
 }
 
 /**
@@ -144,7 +150,7 @@ export const getRecommendedCombos = unstable_cache(
     }
     return views;
   },
-  ["recommended-combos", "v3"],
+  ["recommended-combos", "v4"],
   { tags: [PRODUCTS_TAG], revalidate: 3600 },
 );
 

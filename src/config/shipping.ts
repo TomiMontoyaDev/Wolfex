@@ -10,7 +10,7 @@ export const FREE_SHIPPING_PEREIRA_MIN = 50_000;
  * Resto de Colombia: gratis desde este subtotal (COP). Los precios de los productos de envío nacional
  * ya incluyen el costo estimado del envío por kilo (ver src/lib/pricing.ts).
  */
-export const FREE_SHIPPING_NATIONAL_MIN = 120_000;
+export const FREE_SHIPPING_NATIONAL_MIN = 150_000;
 
 /** Ciudad con entrega local (mismo día para productos en stock físico). */
 export const LOCAL_CITY = "Pereira";

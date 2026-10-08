@@ -7,11 +7,13 @@ export interface ComboQuote {
   count: number;
   percent: number;
   discount: number;
+  /** Alguna proteína de 2 lb o más quedó con el tope de 5%. */
+  capped: boolean;
   next: { percent: number; missing: number } | null;
   suggestions: Product[];
 }
 
-const EMPTY: ComboQuote = { count: 0, percent: 0, discount: 0, next: { percent: 5, missing: 2 }, suggestions: [] };
+const EMPTY: ComboQuote = { count: 0, percent: 0, discount: 0, capped: false, next: { percent: 5, missing: 2 }, suggestions: [] };
 
 /** Cotiza el combo en el servidor cada vez que cambian los productos (con una pequeña espera para agrupar cambios). */
 export function useComboQuote(lines: Array<{ productId: string; quantity: number }>, { suggest = false } = {}) {

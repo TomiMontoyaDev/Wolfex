@@ -8,6 +8,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ShippingNotice } from "@/components/cart/ShippingNotice";
 import { EMPTY_INVOICE, InvoiceFields, type InvoiceData } from "@/components/checkout/InvoiceFields";
 import { useLeadCapture } from "@/components/checkout/useLeadCapture";
+import { ProteinCapNote } from "@/components/combo/ComboSection";
 import { ComboUpsell } from "@/components/combo/ComboUpsell";
 import { useComboQuote } from "@/components/combo/useComboQuote";
 import { useCart } from "@/components/providers/CartProvider";
@@ -231,6 +232,7 @@ export default function CheckoutPage() {
                   <span className="font-mono">− {formatPrice(quote.discount)}</span>
                 </div>
               )}
+              {quote.capped && <ProteinCapNote />}
               <div className="flex justify-between gap-4 text-steel">
                 <span>Envío</span>
                 {hasFreeShipping(total, deliveryCity || null) ? (

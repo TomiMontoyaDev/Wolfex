@@ -20,6 +20,12 @@ export const COMBO_MIN_NET_MARGIN = 0.15;
 /** Solo cuentan (y se descuentan) productos desde este precio: evita armar combos con sobres sueltos. */
 export const COMBO_MIN_ITEM_PRICE = 40_000;
 
+/**
+ * Proteínas grandes (categoría PROTEINAS desde 2 libras, incluye ganadores de masa): cuentan para subir de nivel,
+ * pero su descuento tiene este tope aunque el combo esté en −8% o −10%.
+ */
+export const COMBO_LARGE_PROTEIN = { category: "PROTEINAS", minPounds: 2, maxPercent: 5 } as const;
+
 export interface RecommendedCombo {
   id: string;
   name: string;

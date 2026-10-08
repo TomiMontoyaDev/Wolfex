@@ -21,6 +21,6 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("[combo] no se pudo cotizar", error instanceof Error ? error.message : error);
     // Sin cotización la tienda sigue funcionando: el pedido igual calcula el descuento al crearse.
-    return NextResponse.json({ count: 0, percent: 0, discount: 0, next: null, suggestions: [] });
+    return NextResponse.json({ count: 0, percent: 0, discount: 0, capped: false, next: null, suggestions: [] });
   }
 }

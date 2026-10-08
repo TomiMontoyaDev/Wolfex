@@ -8,7 +8,7 @@ import { Media } from "@/components/ui/Media";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { SplitReveal } from "@/components/ui/SplitReveal";
-import { COMBO_BUILDER_SLOTS, COMBO_MIN_ITEM_PRICE, COMBO_TIERS } from "@/config/combos";
+import { COMBO_BUILDER_SLOTS, COMBO_LARGE_PROTEIN, COMBO_MIN_ITEM_PRICE, COMBO_TIERS } from "@/config/combos";
 import { deliveryLabel } from "@/config/shipping";
 import type { Product } from "@/data/products";
 import { MAX_COMBO_PERCENT, comboStatus } from "@/lib/combo";
@@ -255,6 +255,7 @@ function ComboBuilder({ options }: { options: Record<string, Product[]> }) {
             <dd className={cn("font-mono transition-opacity", loading && "opacity-50")}>{formatPrice(total)}</dd>
           </div>
         </dl>
+        {quote.capped && <ProteinCapNote className="mt-2" />}
         <button
           type="button"
           disabled={!selected.length}
@@ -311,6 +312,15 @@ function ScrollRow({ label, children }: { label: string; children: React.ReactNo
       {/* Degradado al borde: indica que hay más productos hacia ese lado. */}
       {!edges.end && <span className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-void to-transparent" aria-hidden="true" />}
     </div>
+  );
+}
+
+/** Nota cuando una proteína de 2 lb o más quedó con el tope de 5% del combo. */
+export function ProteinCapNote({ className }: { className?: string }) {
+  return (
+    <p className={cn("text-[0.625rem] leading-snug text-steel/80", className)}>
+      Las proteínas de {COMBO_LARGE_PROTEIN.minPounds} lb o más tienen un descuento máximo de {COMBO_LARGE_PROTEIN.maxPercent}% en combos
+    </p>
   );
 }
 

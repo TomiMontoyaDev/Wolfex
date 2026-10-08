@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect, useMemo } from "react";
-import { ComboProgress } from "@/components/combo/ComboSection";
+import { ComboProgress, ProteinCapNote } from "@/components/combo/ComboSection";
 import { useComboQuote } from "@/components/combo/useComboQuote";
 import { comboStatus } from "@/lib/combo";
 import { useRouter } from "next/navigation";
@@ -105,6 +105,7 @@ export function CartDrawer() {
                   <span className="font-mono">− {formatPrice(quote.discount)}</span>
                 </div>
               )}
+              {quote.capped && <ProteinCapNote className="mt-1" />}
               <div className="mt-2 flex justify-between border-t border-line pt-2 type-title text-sm">
                 <span>Total</span>
                 <AnimatedPrice value={subtotal - quote.discount} className="font-mono" />

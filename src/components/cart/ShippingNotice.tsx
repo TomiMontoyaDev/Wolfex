@@ -32,11 +32,15 @@ export function ShippingNotice({ subtotal, city }: { subtotal: number; city?: st
       ) : (
         <motion.div key="paid" className="space-y-2.5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
           {city ? (
-            <Progress subtotal={subtotal} min={freeShippingMin(city)} label={isLocalCity(city) ? `en ${LOCAL_CITY}` : ""} />
+            isLocalCity(city) ? (
+              <Progress subtotal={subtotal} min={freeShippingMin(city)} label={`en ${LOCAL_CITY}`} />
+            ) : (
+              <Progress subtotal={subtotal} min={FREE_SHIPPING_NATIONAL_MIN} national />
+            )
           ) : (
             <>
               <Progress subtotal={subtotal} min={FREE_SHIPPING_PEREIRA_MIN} label={`en ${LOCAL_CITY}`} />
-              <Progress subtotal={subtotal} min={FREE_SHIPPING_NATIONAL_MIN} label="al resto del país" />
+              <Progress subtotal={subtotal} min={FREE_SHIPPING_NATIONAL_MIN} national />
             </>
           )}
           <p className="text-[0.625rem] leading-snug text-steel/70">El envío se cobra dependiendo del producto y la localidad.</p>
@@ -46,18 +50,18 @@ export function ShippingNotice({ subtotal, city }: { subtotal: number; city?: st
   );
 }
 
-function Progress({ subtotal, min, label }: { subtotal: number; min: number; label: string }) {
+function Progress({ subtotal, min, label = "", national = false }: { subtotal: number; min: number; label?: string; national?: boolean }) {
   const reached = subtotal >= min;
   return (
     <div>
       <div className="flex items-center justify-between gap-3 text-[0.7rem] text-steel">
         {reached ? (
           <span className="flex items-center gap-1 text-arc">
-            <Check className="h-3 w-3" strokeWidth={2} aria-hidden="true" /> Envío gratis {label}
+            <Check className="h-3 w-3" strokeWidth={2} aria-hidden="true" /> {national ? "Envío nacional GRATIS" : `Envío gratis ${label}`}
           </span>
         ) : (
           <span>
-            Te faltan <span className="font-mono text-bone">{formatPrice(min - subtotal)}</span> para envío gratis {label}
+            Te faltan <span className="font-mono text-bone">{formatPrice(min - subtotal)}</span> {national ? "para envío nacional GRATIS" : `para envío gratis ${label}`}
           </span>
         )}
         <span className="shrink-0 font-mono">{formatPrice(min)}</span>
