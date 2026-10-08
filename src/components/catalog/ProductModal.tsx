@@ -46,6 +46,8 @@ export function ProductModal({ product, open, onClose }: { product: Product; ope
   function onAdd() {
     add(product);
     setAdded(true);
+    // La ficha se cierra para que se vea el producto volar al carrito y el carrito abrirse.
+    setTimeout(onClose, 120);
     setTimeout(() => setAdded(false), 1600);
   }
 

@@ -134,7 +134,10 @@ export function Navbar() {
                 <SocialIcon platform="instagram" className="h-[18px] w-[18px]" />
               </a>
               <IconButton label={`Cart, ${cart.count} items`} onClick={cart.open}>
-                <ShoppingBag className="h-[18px] w-[18px]" strokeWidth={1.5} />
+                {/* Destino de la animación "vuela al carrito" (src/lib/fly-to-cart.ts). */}
+                <span data-cart-target className="flex">
+                  <ShoppingBag className="h-[18px] w-[18px]" strokeWidth={1.5} />
+                </span>
                 <AnimatePresence>
                   {cart.count > 0 && (
                     <motion.span

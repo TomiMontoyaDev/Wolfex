@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { ShippingNotice } from "@/components/cart/ShippingNotice";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { AnimatedPrice, QuantityStepper } from "@/components/cart/QuantityStepper";
 import { Media } from "@/components/ui/Media";
 import { formatPrice } from "@/lib/utils";
 
@@ -17,7 +18,7 @@ import { formatPrice } from "@/lib/utils";
 export function CartDrawer() {
   const router = useRouter();
   const { t } = useLanguage();
-  const { isOpen, close, lines, subtotal, remove, count } = useCart();
+  const { isOpen, close, lines, subtotal, remove, setQuantity, count } = useCart();
   const quoteLines = useMemo(() => lines.map((line) => ({ productId: line.product.id, quantity: line.quantity })), [lines]);
   const { quote } = useComboQuote(quoteLines);
 
@@ -46,32 +47,45 @@ export function CartDrawer() {
               <button onClick={close} aria-label={t("Close bag")} className="-mr-2 flex h-11 w-11 items-center justify-center"><X className="h-5 w-5" strokeWidth={1.5} /></button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6">
-              {lines.length === 0 ? (
-                <div className="flex h-full flex-col items-center justify-center text-center">
+            <div className="relative flex-1 overflow-y-auto px-6">
+              {lines.length === 0 && (
+                // Aparece después de que la última línea termina de salir.
+                <motion.div className="absolute inset-0 flex flex-col items-center justify-center text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25, duration: 0.3 }}>
                   <p className="type-headline text-3xl">{t("No comfort.")}<br />{t("No items.")}</p>
                   <p className="mt-4 type-label text-steel">{t("Your bag is empty")}</p>
-                </div>
-              ) : (
-                <ul className="divide-y divide-line">
-                  {lines.map((l) => (
-                    <li key={l.key} className="flex gap-4 py-5">
-                      <div className="relative aspect-[4/5] w-20 shrink-0">
-                        <Media slot={l.product.images.primary} sizes="80px" />
-                      </div>
-                      <div className="flex flex-1 flex-col">
-                        <p className="type-label text-steel">{l.product.sku}</p>
-                        <p className="mt-1 type-title text-sm">WOLFEX {l.product.name}</p>
-                        <p className="mt-1 text-xs text-steel">{l.color} · {t("Qty")} {l.quantity}</p>
-                        <div className="mt-auto flex items-center justify-between">
-                          <span className="font-mono text-sm">{formatPrice(l.product.price * l.quantity)}</span>
-                          <button onClick={() => remove(l.key)} className="type-label text-steel hover:text-arc">{t("Remove")}</button>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                </motion.div>
               )}
+                <ul>
+                  {/* initial={false}: al abrir el carrito las líneas ya están; solo se animan las que entran o salen. */}
+                  <AnimatePresence initial={false}>
+                    {lines.map((l) => (
+                      <motion.li
+                        key={l.key}
+                        className="overflow-hidden border-b border-line last:border-b-0"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0, x: 40 }}
+                        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                      >
+                        <div className="flex gap-4 py-5">
+                          <div className="relative aspect-[4/5] w-20 shrink-0">
+                            <Media slot={l.product.images.primary} sizes="80px" />
+                          </div>
+                          <div className="flex min-w-0 flex-1 flex-col">
+                            <p className="type-label text-steel">{l.product.sku}</p>
+                            <p className="mt-1 type-title text-sm">WOLFEX {l.product.name}</p>
+                            <p className="mt-1 text-xs text-steel">{l.color}</p>
+                            <div className="mt-3 flex items-center justify-between gap-3">
+                              <QuantityStepper value={l.quantity} label={l.product.name} onChange={(quantity) => setQuantity(l.key, quantity)} />
+                              <AnimatedPrice value={l.product.price * l.quantity} />
+                            </div>
+                            <button onClick={() => remove(l.key)} className="mt-3 self-end type-label text-steel transition-colors hover:text-arc">{t("Remove")}</button>
+                          </div>
+                        </div>
+                      </motion.li>
+                    ))}
+                  </AnimatePresence>
+                </ul>
             </div>
 
             <div className="border-t border-line p-6">
@@ -93,7 +107,7 @@ export function CartDrawer() {
               )}
               <div className="mt-2 flex justify-between border-t border-line pt-2 type-title text-sm">
                 <span>Total</span>
-                <span className="font-mono">{formatPrice(subtotal - quote.discount)}</span>
+                <AnimatedPrice value={subtotal - quote.discount} className="font-mono" />
               </div>
               <button
                 disabled={!lines.length}

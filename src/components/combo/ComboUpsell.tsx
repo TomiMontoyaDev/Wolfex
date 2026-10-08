@@ -53,7 +53,8 @@ export function ComboUpsell({ quote }: { quote: ComboQuote }) {
               </div>
               <button
                 type="button"
-                onClick={() => add(product)}
+                // En el checkout no se abre el carrito: el resumen ya está a la vista.
+                onClick={() => add(product, undefined, { open: false })}
                 aria-label={`Agregar ${product.name}`}
                 className="flex h-10 shrink-0 items-center gap-1.5 border border-volt/60 px-3 type-label text-bone transition-colors hover:bg-volt"
               >

@@ -69,12 +69,12 @@ function TierPills({ className, active }: { className?: string; active?: number 
 }
 
 function useAddAll() {
-  const { add, open } = useCart();
+  const { add } = useCart();
   const [added, setAdded] = useState(false);
   const addAll = (products: Product[]) => {
+    // Cada producto vuela al carrito; el carrito se abre una sola vez al terminar.
     for (const product of products) add(product);
     setAdded(true);
-    open();
     setTimeout(() => setAdded(false), 1800);
   };
   return { added, addAll };
