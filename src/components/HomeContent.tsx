@@ -31,12 +31,13 @@ export function HomeContent({
 
   return (
     <main>
-      <Hero />
-      <Marquee items={mantras.map(t)} className="bg-void type-headline text-[clamp(1.1rem,2.2vw,1.75rem)] text-bone/90" />
-      <BrandStatement />
-      <ComboSection combos={combos} options={comboOptions} />
+      <Hero products={products} />
+      {/* Orden pensado para vender: el catálogo apenas termina el hero, luego combos, la marca y las reseñas. */}
       <FeaturedProducts products={products} />
+      <ComboSection combos={combos} options={comboOptions} />
+      <BrandStatement />
       <Reviews reviews={reviews} />
+      <Marquee items={mantras.map(t)} className="bg-void type-headline text-[clamp(1.1rem,2.2vw,1.75rem)] text-bone/90" />
       <CampaignSection />
       <Categories />
       <Marquee items={["Fuel", "Build", "Recover", "Repeat"].map(t)} reverse className="bg-ink type-display text-[clamp(1.5rem,3vw,2.5rem)] text-outline-volt" />

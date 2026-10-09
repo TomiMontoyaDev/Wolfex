@@ -25,7 +25,7 @@ export type MetaEvent = "ViewContent" | "AddToCart" | "InitiateCheckout" | "AddP
 
 declare global {
   interface Window {
-    fbq?: (command: "track" | "init", event: string, params?: Record<string, unknown>, options?: { eventID?: string }) => void;
+    fbq?: (command: "track" | "trackCustom" | "init", event: string, params?: Record<string, unknown>, options?: { eventID?: string }) => void;
   }
 }
 
@@ -47,6 +47,11 @@ export interface TrackParams {
 }
 
 export const newEventId = () => crypto.randomUUID();
+
+/** Evento propio de la tienda (solo Pixel del navegador): sirve para medir modales y botones. */
+export function trackCustom(eventName: string, params: Record<string, unknown> = {}) {
+  if (typeof window !== "undefined") window.fbq?.("trackCustom", eventName, params);
+}
 
 /** PageView del Pixel (solo navegador). Si el script no cargó (bloqueador, admin), no hace nada. */
 export function trackPageView() {

@@ -79,7 +79,7 @@ export function BrandStatement() {
       <div className="pointer-events-none absolute -left-40 top-1/3 h-[520px] w-[520px] rounded-full bg-volt/[0.07] blur-[140px]" />
 
       <div className="container-wfx">
-        <SectionLabel index="01" label={t("The WOLFEX Code")} meta={t("Manifesto — WFX/M-01")} />
+        <SectionLabel index="03" label={t("The WOLFEX Code")} meta={t("Manifesto — WFX/M-01")} />
 
         <div className="mt-16 grid gap-16 md:mt-24 lg:grid-cols-12">
           <div className="lg:col-span-3">

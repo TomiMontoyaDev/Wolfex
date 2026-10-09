@@ -24,7 +24,7 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
   return (
     <section id="drop" className="relative bg-void pb-28 pt-8 md:pb-44" aria-labelledby="drop-title">
       <div className="container-wfx">
-        <SectionLabel index="02" label="Catálogo WOLFEX" meta={`${pad(visibleProducts.length)} productos · COP`} />
+        <SectionLabel index="01" label="Catálogo WOLFEX" meta={`${pad(visibleProducts.length)} productos · COP`} />
 
         <div className="mt-12 flex flex-col gap-8 md:mt-16 md:flex-row md:items-end md:justify-between">
           <SplitReveal as="h2" text="Catálogo" className="type-display text-[clamp(2.4rem,11vw,9.5rem)]" />

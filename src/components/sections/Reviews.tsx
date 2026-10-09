@@ -68,7 +68,7 @@ export function Reviews({ reviews }: { reviews: PublicReview[] }) {
   return (
     <section className="relative overflow-hidden bg-void py-24 md:py-36" aria-label="Reseñas">
       <div className="container-wfx">
-        <SectionLabel index="05" label="Reseñas" meta={`${pad(reviews.length)} opiniones`} />
+        <SectionLabel index="04" label="Reseñas" meta={`${pad(reviews.length)} opiniones`} />
 
         <div className="mt-12 flex flex-col gap-8 md:mt-16 md:flex-row md:items-end md:justify-between">
           <SplitReveal as="h2" text="La manada opina" className="type-display text-[clamp(2.75rem,8vw,7.5rem)]" />
