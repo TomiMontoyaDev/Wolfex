@@ -4,7 +4,7 @@ import { motion, type MotionValue } from "framer-motion";
 import Image from "next/image";
 import { HERO_SKUS } from "@/config/hero";
 import type { Product } from "@/data/products";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -15,15 +15,15 @@ const ease = [0.16, 1, 0.3, 1] as const;
  */
 // Posición de cada producto de HERO_SKUS (src/config/hero.ts), en el mismo orden.
 const SLOTS = [
-  { side: "left", className: "left-[6%] top-[17%] w-[clamp(120px,12vw,200px)] -rotate-[8deg]", mobile: true, float: 0 },
-  { side: "right", className: "right-[6%] top-[16%] w-[clamp(130px,13vw,215px)] rotate-[7deg]", mobile: true, float: 1.2 },
+  { side: "left", className: "left-[6%] top-[17%] w-[clamp(100px,9.5vw,160px)] -rotate-[8deg]", mobile: true, float: 0 },
+  { side: "right", className: "right-[6%] top-[16%] w-[clamp(105px,10vw,170px)] rotate-[7deg]", mobile: true, float: 1.2 },
   // Las de abajo, solo en pantallas con alto suficiente (si no, chocan con la palabra WOLFEX).
-  { side: "left", className: "left-[19%] top-[33%] w-[clamp(95px,8vw,140px)] rotate-[6deg] [@media(max-height:760px)]:hidden", mobile: false, float: 0.6 },
-  { side: "right", className: "right-[19%] top-[32%] w-[clamp(85px,7vw,125px)] -rotate-[6deg] [@media(max-height:760px)]:hidden", mobile: false, float: 1.8 },
+  { side: "left", className: "left-[19%] top-[33%] w-[clamp(80px,6.5vw,112px)] rotate-[6deg] [@media(max-height:760px)]:hidden", mobile: false, float: 0.6 },
+  { side: "right", className: "right-[19%] top-[32%] w-[clamp(72px,5.5vw,100px)] -rotate-[6deg] [@media(max-height:760px)]:hidden", mobile: false, float: 1.8 },
 ] as const;
 
 // En celular: arriba en las esquinas, sin tapar el lobo ni los textos.
-const MOBILE = { left: "max-md:left-[2%] max-md:top-[14%] max-md:w-[24vw]", right: "max-md:right-[2%] max-md:top-[14%] max-md:w-[26vw]" };
+const MOBILE = { left: "max-md:left-[2%] max-md:top-[14%] max-md:w-[20vw]", right: "max-md:right-[2%] max-md:top-[14%] max-md:w-[22vw]" };
 
 export function HeroProducts({ products, ready, x, y }: { products: Product[]; ready: boolean; x: MotionValue<number>; y: MotionValue<number> }) {
   const shown = HERO_SKUS.flatMap((sku, index) => {
@@ -56,11 +56,10 @@ export function HeroProducts({ products, ready, x, y }: { products: Product[]; r
               alt={product.name}
               width={520}
               height={520}
-              sizes="(max-width: 768px) 26vw, 215px"
+              sizes="(max-width: 768px) 22vw, 170px"
               priority={index < 2}
               className="relative h-auto w-full drop-shadow-[0_18px_30px_rgba(0,0,0,0.6)] transition-transform duration-500 group-hover:scale-105"
             />
-            <span className="relative mt-1 hidden text-center font-mono text-[0.65rem] text-bone/80 md:block">{formatPrice(product.price)}</span>
           </motion.span>
         </motion.a>
       ))}
