@@ -92,7 +92,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </noscript>
         {/* End Meta Pixel Code */}
       </head>
-      <body>
+      {/* suppressHydrationWarning: extensiones del navegador (ColorZilla, Grammarly…) agregan atributos al body. */}
+      <body suppressHydrationWarning>
         <noscript>
           <style>{`#wfx-loader{display:none!important}`}</style>
         </noscript>
