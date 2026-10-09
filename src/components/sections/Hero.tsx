@@ -4,19 +4,17 @@ import { motion, useMotionValue, useScroll, useSpring, useTransform } from "fram
 import { useEffect, useRef } from "react";
 import { useIntro } from "@/components/providers/IntroProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import { HeroProducts } from "@/components/sections/HeroProducts";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { Media } from "@/components/ui/Media";
 import { SplitReveal } from "@/components/ui/SplitReveal";
 import { Particles } from "@/components/visuals/Particles";
 import { WolfMark, Wordmark } from "@/components/visuals/WolfMark";
 import { MEDIA } from "@/data/media";
-import type { Product } from "@/data/products";
 import { SITE } from "@/data/site";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
-export function Hero({ products = [] }: { products?: Product[] }) {
+export function Hero() {
   const { t } = useLanguage();
   const ref = useRef<HTMLElement>(null);
   const { ready } = useIntro();
@@ -88,10 +86,6 @@ export function Hero({ products = [] }: { products?: Product[] }) {
       </motion.div>
 
       <Particles className="pointer-events-none absolute inset-0 h-full w-full" />
-
-      {/* Productos reales a los lados: que se entienda al instante que es una tienda de suplementos. */}
-      <HeroProducts products={products} ready={ready} x={farX} y={farY} />
-
       {/* Bottom fade into next section */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-void via-void/70 to-transparent" />
 

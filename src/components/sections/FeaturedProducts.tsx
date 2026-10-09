@@ -2,8 +2,8 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight, Check, Plus } from "lucide-react";
-import { useCallback, useState } from "react";
-import { ProductModal } from "@/components/catalog/ProductModal";
+import Link from "next/link";
+import { useState } from "react";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Media } from "@/components/ui/Media";
@@ -79,8 +79,8 @@ export function ProductCard({ product, index, layout = "rail" }: { product: Prod
   const { t } = useLanguage();
   const [color, setColor] = useState(product.colors[0]);
   const [added, setAdded] = useState(false);
-  const [detailsOpen, setDetailsOpen] = useState(false);
-  const closeDetails = useCallback(() => setDetailsOpen(false), []);
+  // Cada producto tiene su página (tipo tienda): foto grande, cantidad, descripción y relacionados.
+  const href = `/producto/${product.handle}`;
   const discount = visibleDiscount(product.price, product.compareAtPrice);
 
   const onAdd = () => {
@@ -119,7 +119,7 @@ export function ProductCard({ product, index, layout = "rail" }: { product: Prod
         data-cursor="view"
         data-cursor-label="Ver más"
       >
-        <button type="button" onClick={() => setDetailsOpen(true)} aria-label={`Ver más de ${product.name}`} className="absolute inset-0 z-[1] cursor-pointer" />
+        <Link href={href} aria-label={`Ver ${product.name}`} className="absolute inset-0 z-[1] cursor-pointer" />
         <div className="absolute inset-0 transition-[transform,opacity] duration-[1.2s] ease-[var(--ease-apex)] group-hover:scale-[1.06] group-hover:opacity-0">
           <Media slot={product.images.primary} sizes="(min-width:1280px) 20vw, (min-width:1024px) 25vw, (min-width:640px) 33vw, 50vw" />
         </div>
@@ -151,9 +151,9 @@ export function ProductCard({ product, index, layout = "rail" }: { product: Prod
       <div className="mt-3 flex min-w-0 flex-1 flex-col sm:mt-4">
         <p className="truncate type-label text-[0.6rem] text-steel sm:text-[0.65rem]">{product.brand}</p>
         <h3 className="mt-1 line-clamp-3 break-words type-title text-[0.8rem] leading-snug transition-colors duration-500 group-hover:text-arc sm:text-sm lg:text-base">
-          <button type="button" onClick={() => setDetailsOpen(true)} className="text-left">
+          <Link href={href} className="text-left">
             {t(product.name)}
-          </button>
+          </Link>
         </h3>
         <p className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 font-mono">
           <span className={cn("text-sm sm:text-base", discount ? "text-arc" : undefined)}>{formatPrice(product.price)}</span>
@@ -163,15 +163,14 @@ export function ProductCard({ product, index, layout = "rail" }: { product: Prod
             </s>
           )}
         </p>
-        <button
-          type="button"
-          onClick={() => setDetailsOpen(true)}
+        <Link
+          href={href}
           className="group/more mt-2 inline-flex w-fit items-center gap-1 type-label text-[0.6rem] text-bone/80 transition-colors hover:text-arc sm:text-[0.65rem]"
           data-cursor="hover"
         >
           <span className="border-b border-line-strong pb-0.5 transition-colors group-hover/more:border-arc">Ver más</span>
           <ArrowUpRight className="h-3 w-3 transition-transform duration-300 group-hover/more:-translate-y-0.5 group-hover/more:translate-x-0.5" strokeWidth={1.5} />
-        </button>
+        </Link>
 
         {/* Botón al final de la tarjeta (mt-auto): en una fila todos quedan alineados aunque los nombres midan distinto. */}
         <div className="mt-auto pt-3 lg:hidden">
@@ -179,7 +178,6 @@ export function ProductCard({ product, index, layout = "rail" }: { product: Prod
         </div>
       </div>
 
-      <ProductModal product={product} open={detailsOpen} onClose={closeDetails} />
     </motion.article>
   );
 }

@@ -6,6 +6,7 @@ import { CampaignSection } from "@/components/sections/CampaignSection";
 import { Categories } from "@/components/sections/Categories";
 import { FeaturedProducts } from "@/components/sections/FeaturedProducts";
 import { Hero } from "@/components/sections/Hero";
+import { NeonPromo } from "@/components/promo/NeonPromo";
 import { Newsletter } from "@/components/sections/Newsletter";
 import { PerformanceSection } from "@/components/sections/PerformanceSection";
 import { Reviews } from "@/components/sections/Reviews";
@@ -17,13 +18,11 @@ import type { PublicReview } from "@/server/reviews";
 
 export function HomeContent({
   products,
-  heroProducts,
   reviews,
   combos,
   comboOptions,
 }: {
   products: Product[];
-  heroProducts: Product[];
   reviews: PublicReview[];
   combos: RecommendedComboView[];
   comboOptions: Record<string, Product[]>;
@@ -33,12 +32,13 @@ export function HomeContent({
 
   return (
     <main>
-      <Hero products={heroProducts} />
+      <Hero />
       {/* Orden pensado para vender: el catálogo apenas termina el hero, luego combos, la marca y las reseñas. */}
       <FeaturedProducts products={products} />
       <ComboSection combos={combos} options={comboOptions} />
       <BrandStatement />
       <Reviews reviews={reviews} />
+      <NeonPromo />
       <Marquee items={mantras.map(t)} className="bg-void type-headline text-[clamp(1.1rem,2.2vw,1.75rem)] text-bone/90" />
       <CampaignSection />
       <Categories />

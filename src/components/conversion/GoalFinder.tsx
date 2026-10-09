@@ -5,6 +5,7 @@ import { ArrowRight, X } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/components/providers/CartProvider";
+import { NEON_SESSION_KEY } from "@/components/promo/NeonPromoModal";
 import { FREE_SHIPPING_NATIONAL_MIN, FREE_SHIPPING_PEREIRA_MIN, LOCAL_CITY } from "@/config/shipping";
 import { MAX_COMBO_PERCENT } from "@/lib/combo";
 import { trackCustom } from "@/lib/meta-pixel";
@@ -26,6 +27,14 @@ const seen = () => {
     return localStorage.getItem(SEEN_KEY) === "1";
   } catch {
     return true; // sin almacenamiento no se puede recordar: mejor no molestar
+  }
+};
+// Un solo pop-up por visita: si ya salió el de la campaña neón, este espera a la próxima.
+const neonShownThisSession = () => {
+  try {
+    return !!sessionStorage.getItem(NEON_SESSION_KEY);
+  } catch {
+    return false;
   }
 };
 const markSeen = () => {
@@ -54,7 +63,7 @@ export function GoalFinder() {
     if (pathname !== "/" || seen()) return;
     let done = false;
     const show = () => {
-      if (done || state.current.count > 0 || state.current.drawerOpen || document.querySelector('[role="dialog"]')) return;
+      if (done || state.current.count > 0 || state.current.drawerOpen || document.querySelector('[role="dialog"]') || neonShownThisSession()) return;
       done = true;
       markSeen();
       setOpen(true);

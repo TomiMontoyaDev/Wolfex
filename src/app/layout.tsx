@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { ExitIntent } from "@/components/cart/ExitIntent";
 import { GoalFinder } from "@/components/conversion/GoalFinder";
+import { NeonPromoModal } from "@/components/promo/NeonPromoModal";
 import { WhatsAppButton } from "@/components/conversion/WhatsAppButton";
 import { Footer } from "@/components/layout/Footer";
 import { Loader } from "@/components/layout/Loader";
@@ -102,6 +103,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <Navbar />
             <CartDrawer />
             <ExitIntent />
+            <NeonPromoModal />
             <GoalFinder />
             <WhatsAppButton />
           </StorefrontOnly>

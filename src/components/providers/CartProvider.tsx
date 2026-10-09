@@ -15,6 +15,8 @@ export interface CartLine {
 export interface AddOptions {
   /** Abre el carrito cuando la animación llega al ícono (por defecto sí; no en el checkout). */
   open?: boolean;
+  /** Unidades a agregar (por defecto 1). */
+  quantity?: number;
 }
 
 const MAX_QUANTITY = 99;
@@ -48,14 +50,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const add = useCallback((product: Product, color = product.colors[0]?.name ?? "Default", options: AddOptions = {}) => {
     const key = `${product.id}:${color}`;
+    const units = Math.max(1, Math.min(MAX_QUANTITY, Math.round(options.quantity ?? 1)));
     setLines((prev) => {
       const hit = prev.find((l) => l.key === key);
-      if (hit) return prev.map((l) => (l.key === key ? { ...l, quantity: Math.min(MAX_QUANTITY, l.quantity + 1) } : l));
-      return [...prev, { key, product, color, quantity: 1 }];
+      if (hit) return prev.map((l) => (l.key === key ? { ...l, quantity: Math.min(MAX_QUANTITY, l.quantity + units) } : l));
+      return [...prev, { key, product, color, quantity: units }];
     });
     setPulse((p) => p + 1);
-    // Cada clic en "Agregar al carrito" suma 1 unidad.
-    track("AddToCart", { contents: [{ id: product.sku, quantity: 1, item_price: product.price }] });
+    // Cada clic en "Agregar al carrito" suma las unidades elegidas (1 por defecto).
+    track("AddToCart", { contents: [{ id: product.sku, quantity: units, item_price: product.price }] });
 
     // La miniatura vuela al ícono y, al llegar, se abre el carrito (varios agregados seguidos: una sola apertura).
     const flight = flyToCart(product.images.primary.src);

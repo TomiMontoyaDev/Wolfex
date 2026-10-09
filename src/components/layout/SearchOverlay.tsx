@@ -158,7 +158,14 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
                     <ul className="mt-3 divide-y divide-line">
                       {results.map((product) => (
                         <li key={product.id} className="flex items-center gap-4 py-3">
-                          <button type="button" onClick={() => goToCatalog(product.name)} className="group flex min-w-0 flex-1 items-center gap-4 text-left">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onClose();
+                              router.push(`/producto/${product.handle}`);
+                            }}
+                            className="group flex min-w-0 flex-1 items-center gap-4 text-left"
+                          >
                             <span className="relative h-16 w-14 shrink-0 overflow-hidden bg-void ring-1 ring-inset ring-line-strong">
                               <Media slot={product.images.primary} sizes="56px" />
                             </span>
