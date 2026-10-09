@@ -150,7 +150,7 @@ export const getRecommendedCombos = unstable_cache(
     }
     return views;
   },
-  ["recommended-combos", "v5"],
+  ["recommended-combos", "v6"],
   { tags: [PRODUCTS_TAG], revalidate: 3600 },
 );
 
