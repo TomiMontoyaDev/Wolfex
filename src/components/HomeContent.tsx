@@ -17,11 +17,13 @@ import type { PublicReview } from "@/server/reviews";
 
 export function HomeContent({
   products,
+  heroProducts,
   reviews,
   combos,
   comboOptions,
 }: {
   products: Product[];
+  heroProducts: Product[];
   reviews: PublicReview[];
   combos: RecommendedComboView[];
   comboOptions: Record<string, Product[]>;
@@ -31,7 +33,7 @@ export function HomeContent({
 
   return (
     <main>
-      <Hero products={products} />
+      <Hero products={heroProducts} />
       {/* Orden pensado para vender: el catálogo apenas termina el hero, luego combos, la marca y las reseñas. */}
       <FeaturedProducts products={products} />
       <ComboSection combos={combos} options={comboOptions} />
