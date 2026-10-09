@@ -3,6 +3,7 @@ import { MetaPixelPageViews } from "@/components/analytics/MetaPixel";
 import { META_PIXEL_BASE_CODE, META_PIXEL_NOSCRIPT_SRC } from "@/lib/meta-pixel";
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import Script from "next/script";
 import type { ReactNode } from "react";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { ExitIntent } from "@/components/cart/ExitIntent";
@@ -85,7 +86,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="es" className={`${archivo.variable} ${jetbrains.variable}`} suppressHydrationWarning>
       <head>
         {/* Meta Pixel Code — en el <head>, como indica Meta (el propio código se salta el /admin). */}
-        <script id="meta-pixel" dangerouslySetInnerHTML={{ __html: META_PIXEL_BASE_CODE }} />
+        {/* <Script beforeInteractive>: sale en el HTML inicial igual que antes, sin el aviso de React por <script> en componentes. */}
+        <Script id="meta-pixel" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: META_PIXEL_BASE_CODE }} />
         <noscript>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img height="1" width="1" style={{ display: "none" }} alt="" src={META_PIXEL_NOSCRIPT_SRC} />
