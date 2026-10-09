@@ -35,11 +35,15 @@ export function GlitchTitle({ text, className }: { text: string; className?: str
   );
 }
 
-/** Sección de campaña en el inicio: escena neón + misiones (niveles reales del combo) + envío gratis. */
-export function NeonPromo() {
+/**
+ * Campaña neón: escena + misiones (niveles reales del combo) + envío gratis.
+ * `section` = bloque del inicio (lleva a /promo) · `page` = encabezado de la página /promo (h1).
+ */
+export function NeonPromo({ variant = "section" }: { variant?: "section" | "page" }) {
   if (!NEON_PROMO.active) return null;
+  const Title = variant === "page" ? motion.h1 : motion.h2;
   return (
-    <section id="nueva-era" className="relative isolate overflow-hidden bg-[#12002b]" aria-labelledby="neon-title">
+    <section id="nueva-era" className={`relative isolate overflow-hidden bg-[#12002b] ${variant === "page" ? "pt-[var(--nav-h)]" : ""}`} aria-labelledby="neon-title">
       <div className="relative">
         <NeonScene />
         <div className="container-wfx relative z-10 flex flex-col items-center pt-16 text-center md:pt-20">
@@ -51,7 +55,7 @@ export function NeonPromo() {
           >
             {NEON_PROMO.eyebrow}
           </motion.p>
-          <motion.h2
+          <Title
             id="neon-title"
             className="mt-5 type-display italic leading-[0.85] tracking-tight text-[clamp(3.6rem,13vw,10rem)]"
             initial={{ opacity: 0, scale: 1.25, filter: "blur(14px)" }}
@@ -60,7 +64,7 @@ export function NeonPromo() {
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
           >
             <GlitchTitle text={NEON_PROMO.title} />
-          </motion.h2>
+          </Title>
           <motion.p
             className="mt-2 bg-black/40 px-3 py-1 font-mono text-sm uppercase tracking-[0.5em] text-[#00e1ff] [text-shadow:0_0_12px_rgba(0,225,255,0.9)] md:text-base"
             initial={{ opacity: 0, letterSpacing: "1.2em" }}
@@ -97,17 +101,25 @@ export function NeonPromo() {
           <p className="mt-3 max-w-xl bg-black/45 px-3 py-1.5 text-xs text-white/85 backdrop-blur-sm">
             🚚 Envío GRATIS en {LOCAL_CITY} desde {formatPrice(FREE_SHIPPING_PEREIRA_MIN)} y a toda Colombia desde {formatPrice(FREE_SHIPPING_NATIONAL_MIN)}. El descuento se aplica solo en el carrito.
           </p>
-          <motion.a
-            href="#combos"
-            onClick={() => trackCustom("NeonPromoClick", { place: "section" })}
-            className="pointer-events-auto mt-6 inline-flex items-center gap-3 bg-[linear-gradient(90deg,#ff2e88,#ff8a3d)] px-6 py-4 type-title text-sm text-white shadow-[0_0_40px_rgba(255,46,136,0.6)]"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.97 }}
-            animate={{ boxShadow: ["0 0 25px rgba(255,46,136,0.45)", "0 0 55px rgba(255,46,136,0.85)", "0 0 25px rgba(255,46,136,0.45)"] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            Aceptar misión: armar mi combo <ArrowRight className="h-4 w-4" />
-          </motion.a>
+          <div className="mt-6 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row">
+            <motion.a
+              href={variant === "page" ? "#ofertas" : NEON_PROMO.href}
+              onClick={() => trackCustom("NeonPromoClick", { place: variant })}
+              className="pointer-events-auto inline-flex w-full items-center justify-center gap-3 bg-[linear-gradient(90deg,#ff2e88,#ff8a3d)] px-6 py-4 type-title text-sm text-white sm:w-auto"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.97 }}
+              animate={{ boxShadow: ["0 0 25px rgba(255,46,136,0.45)", "0 0 55px rgba(255,46,136,0.85)", "0 0 25px rgba(255,46,136,0.45)"] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              {variant === "page" ? "Ver las ofertas" : "Ver toda la promo"} <ArrowRight className="h-4 w-4" />
+            </motion.a>
+            <a
+              href="/#combos"
+              className="pointer-events-auto inline-flex w-full items-center justify-center gap-2 border border-[#00e1ff]/70 bg-black/40 px-6 py-4 type-title text-sm text-[#00e1ff] backdrop-blur-sm transition-colors hover:bg-[#00e1ff] hover:text-black sm:w-auto"
+            >
+              Aceptar misión: armar combo
+            </a>
+          </div>
 
           {/* Productos flotando sobre el horizonte (debajo del botón: nunca tapan el texto). */}
           <div className="mt-8 flex items-end justify-center gap-[3vw] pb-[6vh] md:gap-8">

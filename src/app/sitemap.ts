@@ -3,7 +3,7 @@ import { SITE } from "@/data/site";
 import { getCatalogProducts } from "@/lib/commerce";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const pages = ["/catalogo", "/envios", "/devoluciones", "/preguntas-frecuentes", "/contacto", "/privacidad"];
+  const pages = ["/promo", "/catalogo", "/envios", "/devoluciones", "/preguntas-frecuentes", "/contacto", "/privacidad"];
   // Cada producto activo tiene su página: Google puede mostrarlos uno a uno.
   const products = await getCatalogProducts().catch(() => []);
   return [

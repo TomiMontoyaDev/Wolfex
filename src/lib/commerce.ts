@@ -62,7 +62,7 @@ const loadCatalogData = unstable_cache(
     return { products: storefront, lowPriorityIds: products.filter((p) => p.lowPriority).map((p) => p.id) };
   },
   // Subir la versión de la clave invalida la caché al desplegar (útil tras cambios masivos hechos directo en la base).
-  ["storefront-catalog", "v10"],
+  ["storefront-catalog", "v11"],
   { tags: [PRODUCTS_TAG], revalidate: 3600 },
 );
 

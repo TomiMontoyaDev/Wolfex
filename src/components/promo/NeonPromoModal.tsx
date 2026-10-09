@@ -96,14 +96,14 @@ export function NeonPromoModal() {
                 </p>
                 <a
                   ref={cta}
-                  href="#nueva-era"
+                  href={NEON_PROMO.href}
                   onClick={() => {
                     trackCustom("NeonPromoClick", { place: "modal" });
                     setOpen(false);
                   }}
                   className="mt-auto mb-[24%] inline-flex items-center gap-2 bg-[linear-gradient(90deg,#ff2e88,#ff8a3d)] px-5 py-3.5 type-title text-sm text-white shadow-[0_0_35px_rgba(255,46,136,0.7)]"
                 >
-                  Aceptar misión <ArrowRight className="h-4 w-4" />
+                  Ver la promo <ArrowRight className="h-4 w-4" />
                 </a>
               </div>
             </div>

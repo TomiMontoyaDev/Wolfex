@@ -1,0 +1,23 @@
+[
+ {
+  "sku": "PN-632",
+  "id": "632-creatina-raw-72-servicios-360-gramos",
+  "price": 72900,
+  "compareAtPrice": 81000,
+  "promoPrice": 65900
+ },
+ {
+  "sku": "PN-147",
+  "id": "147-calcio-citrate-73-servicios",
+  "price": 107900,
+  "compareAtPrice": 120000,
+  "promoPrice": 97900
+ },
+ {
+  "sku": "PN-512",
+  "id": "512-creatine-ns-80-servicios",
+  "price": 71900,
+  "compareAtPrice": 79000,
+  "promoPrice": 68900
+ }
+]

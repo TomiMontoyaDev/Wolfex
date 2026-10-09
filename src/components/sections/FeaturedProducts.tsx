@@ -10,6 +10,7 @@ import { Media } from "@/components/ui/Media";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { SplitReveal } from "@/components/ui/SplitReveal";
+import { NEON_PROMO } from "@/config/promo";
 import { deliveryLabel } from "@/config/shipping";
 import type { Product, ProductCategory } from "@/data/products";
 import { visibleDiscount } from "@/lib/pricing";
@@ -32,10 +33,25 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
             <p className="type-body text-steel">
               Productos seleccionados para entrenar más fuerte. Elige una categoría para explorar el catálogo.
             </p>
-            <a href="/catalogo" className="group mt-5 inline-flex items-center gap-2 type-title text-xs text-bone">
-              <span className="border-b border-line-strong pb-1 transition-colors group-hover:border-arc">Ver catálogo completo</span>
-              <ArrowUpRight className="h-4 w-4 transition-transform duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" strokeWidth={1.5} />
-            </a>
+            {/* Botones grandes: el catálogo completo y la promo (antes era un enlace pequeño que casi no se veía). */}
+            <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
+              <a
+                href="/catalogo"
+                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden bg-volt px-6 py-4 type-title text-sm text-bone shadow-[0_0_30px_rgba(0,102,255,0.45)] transition-shadow hover:shadow-[0_0_45px_rgba(0,168,255,0.7)]"
+              >
+                <span className="absolute inset-y-0 left-0 w-1/3 animate-sweep bg-gradient-to-r from-transparent via-white/35 to-transparent" aria-hidden="true" />
+                <span className="relative">Ver catálogo completo</span>
+                <ArrowUpRight className="relative h-4 w-4 transition-transform duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" strokeWidth={1.75} />
+              </a>
+              {NEON_PROMO.active && (
+                <a
+                  href={NEON_PROMO.href}
+                  className="inline-flex items-center justify-center gap-2 border border-[#ff2e88] bg-[#ff2e88]/10 px-5 py-4 type-title text-sm text-[#ff7ab3] transition-colors hover:bg-[#ff2e88] hover:text-white"
+                >
+                  🔥 Ver ofertas
+                </a>
+              )}
+            </div>
           </Reveal>
         </div>
 

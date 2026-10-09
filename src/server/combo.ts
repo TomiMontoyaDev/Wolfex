@@ -95,7 +95,7 @@ export const getComboSuggestionPool = unstable_cache(
     // Aguanta el 10% completo sin bajar del margen mínimo real.
     return withRoom.filter((product) => product.price * 0.9 >= floorPrice(profileOf(product)!)).map((product) => product.id);
   },
-  ["combo-suggestion-pool", "v3"],
+  ["combo-suggestion-pool", "v4"],
   { tags: [PRODUCTS_TAG], revalidate: 3600 },
 );
 
@@ -150,7 +150,7 @@ export const getRecommendedCombos = unstable_cache(
     }
     return views;
   },
-  ["recommended-combos", "v6"],
+  ["recommended-combos", "v7"],
   { tags: [PRODUCTS_TAG], revalidate: 3600 },
 );
 
