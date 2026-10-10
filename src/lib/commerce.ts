@@ -11,6 +11,7 @@ import { unstable_cache } from "next/cache";
 import type { Product, ProductCategory } from "@/data/products";
 import type { Product as DbProduct } from "@/generated/prisma/client";
 import { normalize } from "@/lib/search";
+import { productWeightKg } from "@/lib/weight";
 import { db } from "@/server/db";
 
 export const PRODUCTS_TAG = "products";
@@ -38,6 +39,7 @@ function toStorefront(product: DbProduct): Product {
     category: (product.category ?? "SUPLEMENTOS") as ProductCategory,
     price: product.price,
     available,
+    weightKg: productWeightKg(product),
     colors: [{ name: "", hex: "#0066FF" }],
     ...(!available && { badge: "AGOTADO" as const }),
     ...(product.compareAtPrice && product.compareAtPrice > product.price && { compareAtPrice: product.compareAtPrice }),
@@ -62,7 +64,7 @@ const loadCatalogData = unstable_cache(
     return { products: storefront, lowPriorityIds: products.filter((p) => p.lowPriority).map((p) => p.id) };
   },
   // Subir la versión de la clave invalida la caché al desplegar (útil tras cambios masivos hechos directo en la base).
-  ["storefront-catalog", "v11"],
+  ["storefront-catalog", "v12"],
   { tags: [PRODUCTS_TAG], revalidate: 3600 },
 );
 

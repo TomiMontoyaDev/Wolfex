@@ -1,6 +1,9 @@
 import "server-only";
 import { randomInt, randomUUID } from "node:crypto";
+import { PICKUP_CITY } from "@/config/payments";
+import { quoteShipping } from "@/config/shipping";
 import { Prisma } from "@/generated/prisma/client";
+import { productWeightKg } from "@/lib/weight";
 import { computeCombo } from "./combo";
 import { db } from "./db";
 import { mpPreferences } from "./mercadopago";
@@ -10,8 +13,6 @@ import type { CheckoutInput } from "./validation";
 /** Error con mensaje seguro para mostrar al cliente. */
 export class CheckoutError extends Error {}
 
-// No se cobra en línea: desde los mínimos de src/config/shipping.ts es gratis y por debajo se cobra aparte según producto y localidad.
-const SHIPPING_COST = 0;
 const ORDER_CODE_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"; // sin 0/O ni 1/I
 
 export function generateOrderNumber(now = new Date()) {
@@ -19,6 +20,8 @@ export function generateOrderNumber(now = new Date()) {
   const code = Array.from({ length: 5 }, () => ORDER_CODE_ALPHABET[randomInt(ORDER_CODE_ALPHABET.length)]).join("");
   return `WFX-${date}-${code}`;
 }
+
+const normalizeCity = (value: string) => value.normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase();
 
 function splitName(fullName: string) {
   const [firstName, ...rest] = fullName.split(" ");
@@ -87,8 +90,19 @@ export async function createOrder(input: CheckoutInput, idempotencyKey?: string,
   const subtotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
   const discount = combo.discount;
   const tax = 0; // Precios con IVA incluido.
-  const total = subtotal - discount + SHIPPING_COST + tax;
-  const { customer } = input;
+  const { customer, paymentMethod } = input;
+
+  // Envío: lo calcula y lo cobra el servidor (tarifa por zona + recargo por peso). Recoger en Pereira = sin envío.
+  if (paymentMethod === "PICKUP" && !(customer.city && normalizeCity(customer.city) === normalizeCity(PICKUP_CITY))) {
+    throw new CheckoutError(`La opción de recoger solo está disponible en ${PICKUP_CITY}.`);
+  }
+  const weightKg = items.reduce((sum, item) => sum + productWeightKg(byId.get(item.productId)!) * item.quantity, 0);
+  const shipping = quoteShipping({ subtotal: subtotal - discount, weightKg, city: customer.city, department: customer.department });
+  if (paymentMethod !== "PICKUP" && shipping.cost === null) {
+    throw new CheckoutError("El envío a tu departamento se cotiza por WhatsApp: escríbenos y te ayudamos a terminar la compra.");
+  }
+  const shippingCost = paymentMethod === "PICKUP" ? 0 : (shipping.cost ?? 0);
+  const total = subtotal - discount + shippingCost + tax;
   const { firstName, lastName } = splitName(customer.name);
 
   for (let attempt = 0; attempt < 3; attempt++) {
@@ -105,7 +119,7 @@ export async function createOrder(input: CheckoutInput, idempotencyKey?: string,
           department: customer.department ?? null,
           city: customer.city ?? null,
           neighborhood: customer.neighborhood ?? null,
-          address: customer.address,
+          address: customer.address || `Recoge en ${PICKUP_CITY}`,
           addressComplement: customer.addressComplement ?? null,
           postalCode: customer.postalCode ?? null,
           recipientName: customer.recipientName ?? null,
@@ -124,7 +138,9 @@ export async function createOrder(input: CheckoutInput, idempotencyKey?: string,
             customerId: savedCustomer.id,
             addressId: address.id,
             subtotal,
-            shippingCost: SHIPPING_COST,
+            shippingCost,
+            // Mercado Pago (pago en línea) · TRANSFER y PICKUP quedan pendientes de pago hasta que el admin los marque pagados.
+            paymentProvider: paymentMethod,
             discount,
             tax,
             total,
@@ -150,7 +166,7 @@ export async function createOrder(input: CheckoutInput, idempotencyKey?: string,
               invoiceRequest: { create: input.invoice },
             }),
             items: { create: items },
-            events: { create: { type: "ORDER_CREATED", actor: "checkout", metadata: { items: items.length, total, ...(discount && { comboDiscount: discount, comboPercent: combo.percent }) } } },
+            events: { create: { type: "ORDER_CREATED", actor: "checkout", metadata: { items: items.length, total, paymentMethod, shippingCost, weightKg: Math.round(weightKg * 100) / 100, ...(discount && { comboDiscount: discount, comboPercent: combo.percent }) } } },
           },
         });
       });
@@ -173,6 +189,7 @@ type OrderForCheckout = Awaited<ReturnType<typeof createOrder>>["order"];
 /** Crea (o reutiliza) la preferencia de Checkout Pro para una orden y devuelve la URL de pago. */
 export async function createMercadoPagoCheckout(order: OrderForCheckout, baseUrl: string) {
   if (order.paymentStatus === "APPROVED") throw new CheckoutError("Este pedido ya fue pagado.");
+  if (order.paymentProvider !== "MERCADOPAGO") throw new CheckoutError("Este pedido se paga por transferencia o al recoger.");
   if (order.checkoutUrl) return order.checkoutUrl;
 
   const items = await db.orderItem.findMany({ where: { orderId: order.id }, orderBy: { createdAt: "asc" } });
@@ -186,7 +203,8 @@ export async function createMercadoPagoCheckout(order: OrderForCheckout, baseUrl
   try {
     const preference = await mpPreferences().create({
       body: {
-        items: items.map((item) => ({
+        items: [
+          ...items.map((item) => ({
           id: item.sku,
           title: item.variant ? `${item.productName} · ${item.variant}` : item.productName,
           description: item.productName,
@@ -196,8 +214,12 @@ export async function createMercadoPagoCheckout(order: OrderForCheckout, baseUrl
           // Precio con el descuento de combo por unidad: la suma de ítems es exactamente order.total.
           unit_price: item.unitPrice - item.unitDiscount,
           currency_id: order.currency,
-        })),
-        ...(order.shippingCost > 0 && { shipments: { cost: order.shippingCost, mode: "not_specified" } }),
+          })),
+          // El envío va como ítem: así lo cobrado por Mercado Pago es exactamente order.total (el webhook lo compara).
+          ...(order.shippingCost > 0
+            ? [{ id: "ENVIO", title: "Envío", description: "Envío del pedido", category_id: "others", quantity: 1, unit_price: order.shippingCost, currency_id: order.currency }]
+            : []),
+        ],
         payer: {
           name: firstName,
           ...(lastName && { surname: lastName }),

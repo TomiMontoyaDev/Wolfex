@@ -7,11 +7,18 @@ import { OrderStatusActions, ShippingForm } from "@/components/admin/OrderAction
 import { deleteOrdersAction } from "@/server/admin/actions";
 import { DefinitionList, PageHeader, Panel, StatusBadge, Table, Td, Th, buttonClass } from "@/components/admin/ui";
 import { salesChannelLabel } from "@/config/sales";
-import { hasFreeShipping } from "@/config/shipping";
 import { getOrder } from "@/server/admin/queries";
 import { requireAdmin } from "@/server/auth";
 
 export const metadata: Metadata = { title: "Pedido" };
+
+/** Cómo se paga el pedido. */
+const PROVIDER_LABEL: Record<string, string> = {
+  MERCADOPAGO: "Mercado Pago",
+  MANUAL: "Registrada a mano",
+  TRANSFER: "Transferencia o llave",
+  PICKUP: "Recoge y paga en Pereira",
+};
 
 export default async function AdminOrderDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await requireAdmin();
@@ -88,7 +95,7 @@ export default async function AdminOrderDetailPage({ params, searchParams }: { p
               {[
                 ["Subtotal", money(order.subtotal)],
                 [manual ? "Descuento" : "Descuento combo", order.discount ? `− ${money(order.discount)}` : money(0)],
-                ["Envío", order.shippingCost ? money(order.shippingCost) : hasFreeShipping(order.subtotal - order.discount, order.shippingCity) ? "Gratis" : "Se cobra aparte (según producto y localidad)"],
+                ["Envío", order.paymentProvider === "PICKUP" ? "Recoge en Pereira" : order.shippingCost ? money(order.shippingCost) : "Gratis"],
                 ["Impuestos", order.tax ? money(order.tax) : "Incluidos"],
               ].map(([label, value]) => (
                 <div key={label} className="flex justify-between text-steel">
@@ -248,7 +255,7 @@ export default async function AdminOrderDetailPage({ params, searchParams }: { p
             <DefinitionList
               items={[
                 ["Canal de venta", salesChannelLabel(order.salesChannel)],
-                ["Proveedor", manual ? "Registrada a mano" : "Mercado Pago"],
+                ["Proveedor", PROVIDER_LABEL[order.paymentProvider] ?? order.paymentProvider],
                 ["ID de pago", order.paymentId ? <span key="p" className="font-mono text-xs">{order.paymentId}</span> : null],
                 ["Estado", <StatusBadge key="s" map={PAYMENT_STATUS} value={order.paymentStatus} />],
                 ["Método", paymentMethodLabel(order.paymentMethod)],

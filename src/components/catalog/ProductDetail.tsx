@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { QuantityStepper } from "@/components/cart/QuantityStepper";
 import { useCart } from "@/components/providers/CartProvider";
 import { Media } from "@/components/ui/Media";
-import { FREE_SHIPPING_NATIONAL_MIN, FREE_SHIPPING_PEREIRA_MIN, LOCAL_CITY, deliveryLabel } from "@/config/shipping";
+import { FREE_SHIPPING_NATIONAL_MIN, FREE_SHIPPING_PEREIRA_MIN, LOCAL_ZONE_LABEL, SHIPPING_SUMMARY, deliveryLabel } from "@/config/shipping";
 import type { Product } from "@/data/products";
 import { CATEGORY_SLUGS } from "@/data/site";
 import { MAX_COMBO_PERCENT } from "@/lib/combo";
@@ -105,7 +105,7 @@ export function ProductDetail({ product }: { product: Product }) {
               </s>
             )}
           </div>
-          <p className="mt-2 text-xs text-steel">Los gastos de envío se calculan en el checkout. Pago seguro con Mercado Pago.</p>
+          <p className="mt-2 text-xs text-steel">Envío: {SHIPPING_SUMMARY}</p>
 
           {product.delivery && (
             <p className={cn("mt-5 flex items-center gap-2 text-sm", stock ? "text-arc" : "text-steel")}>
@@ -159,7 +159,7 @@ export function ProductDetail({ product }: { product: Product }) {
           <ul className="mt-6 grid gap-2.5 border-y border-line py-5 text-sm text-bone/85">
             <li className="flex items-start gap-3">
               <Truck className="mt-0.5 h-4 w-4 shrink-0 text-arc" strokeWidth={1.5} />
-              Envío GRATIS en {LOCAL_CITY} desde {formatPrice(FREE_SHIPPING_PEREIRA_MIN)} y a toda Colombia desde {formatPrice(FREE_SHIPPING_NATIONAL_MIN)}
+              Envío GRATIS en {LOCAL_ZONE_LABEL} desde {formatPrice(FREE_SHIPPING_PEREIRA_MIN)} y a toda Colombia desde {formatPrice(FREE_SHIPPING_NATIONAL_MIN)}
             </li>
             <li className="flex items-start gap-3">
               <Package className="mt-0.5 h-4 w-4 shrink-0 text-arc" strokeWidth={1.5} />

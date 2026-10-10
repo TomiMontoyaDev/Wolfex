@@ -49,7 +49,8 @@ export const checkoutSchema = z.object({
       name: required(120, "Ingresa tu nombre completo.").pipe(z.string().min(3, "Ingresa tu nombre completo.")),
       email: clean(160, "Ingresa tu correo electrónico.").pipe(z.email("Correo electrónico inválido.")).transform((email) => email.toLowerCase()),
       phone: required(40, "Ingresa tu teléfono.").pipe(z.string().regex(/^[+\d\s()-]{7,20}$/, "Teléfono inválido.")),
-      address: required(240, "Ingresa la dirección de entrega."),
+      // Obligatoria salvo al recoger en Pereira (se valida abajo).
+      address: optional(240),
       department: required(80, "Selecciona el departamento.").refine((value) => Object.hasOwn(COLOMBIA, value), "Departamento inválido."),
       city: required(80, "Selecciona la ciudad o municipio.").pipe(z.string().min(2, "Selecciona la ciudad o municipio.")),
       // Campos preparados para crecer; hoy el formulario no los envía.
@@ -73,7 +74,11 @@ export const checkoutSchema = z.object({
     .min(1, "El carrito está vacío.")
     .max(50, "Demasiados productos en un solo pedido."),
   invoice: invoiceSchema.optional(),
-});
+  paymentMethod: z.enum(["MERCADOPAGO", "TRANSFER", "PICKUP"]).default("MERCADOPAGO"),
+})
+  .superRefine((input, ctx) => {
+    if (input.paymentMethod !== "PICKUP" && !input.customer.address) ctx.addIssue({ code: "custom", path: ["customer", "address"], message: "Ingresa la dirección de entrega." });
+  });
 
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 

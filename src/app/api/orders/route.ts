@@ -14,6 +14,10 @@ export async function POST(request: Request) {
   try {
     // Señales de Meta (cookies del Pixel, IP, navegador) para atribuir la compra aunque el cliente no vuelva.
     const { order } = await createOrder(parsed.data, key.success ? key.data : undefined, trackingFromRequest(request));
+    // Transferencia o recoger: el pedido queda pendiente de pago y el cliente ve los datos en /pedido/<referencia privada>.
+    if (order.paymentProvider !== "MERCADOPAGO") {
+      return NextResponse.json({ orderNumber: order.orderNumber, redirectUrl: `/pedido/${order.externalReference}` });
+    }
     const checkoutUrl = await createMercadoPagoCheckout(order, siteUrl(request));
     return NextResponse.json({ orderNumber: order.orderNumber, checkoutUrl });
   } catch (error) {

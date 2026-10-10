@@ -1,12 +1,20 @@
 import type { Metadata } from "next";
 import { InfoLink, InfoPage } from "@/components/info/InfoPage";
-import { FREE_SHIPPING_NATIONAL_MIN, FREE_SHIPPING_PEREIRA_MIN } from "@/config/shipping";
+import {
+  FREE_SHIPPING_NATIONAL_MIN,
+  FREE_SHIPPING_PEREIRA_MIN,
+  LOCAL_ZONE_LABEL,
+  QUOTE_ONLY_DEPARTMENTS,
+  SHIPPING_RATE_LOCAL,
+  SHIPPING_RATE_NATIONAL,
+  WEIGHT_SURCHARGE,
+} from "@/config/shipping";
 import { CONTACT } from "@/lib/site-config";
 import { formatPrice } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Envíos",
-  description: `Envío gratis en Pereira desde ${formatPrice(FREE_SHIPPING_PEREIRA_MIN)} y al resto de Colombia desde ${formatPrice(FREE_SHIPPING_NATIONAL_MIN)}. Entrega el mismo día en Pereira.`,
+  description: `Envío gratis en Pereira y Dosquebradas desde ${formatPrice(FREE_SHIPPING_PEREIRA_MIN)} y al resto de Colombia desde ${formatPrice(FREE_SHIPPING_NATIONAL_MIN)}. Entrega el mismo día en Pereira.`,
   alternates: { canonical: "/envios" },
 };
 
@@ -21,12 +29,14 @@ export default function ShippingPage() {
       intro="Despachamos a toda Colombia. En Pereira entregamos el mismo día los productos que tenemos en stock físico."
       sections={[
         {
-          title: "Envío gratis",
+          title: "Costo del envío",
           body: [
+            "El envío se paga junto con tu pedido y lo ves en el carrito y en el checkout antes de pagar.",
             [
-              `Pereira: gratis en compras desde ${formatPrice(FREE_SHIPPING_PEREIRA_MIN)}.`,
-              `Resto de Colombia: gratis en compras desde ${formatPrice(FREE_SHIPPING_NATIONAL_MIN)}.`,
-              <>Por debajo de esos montos, el envío se cobra según el producto y la ciudad de destino. Antes de despachar te escribimos por {whatsapp} para confirmarte el valor del envío y coordinar la entrega.</>,
+              `${LOCAL_ZONE_LABEL}: ${formatPrice(SHIPPING_RATE_LOCAL)}. Gratis en compras desde ${formatPrice(FREE_SHIPPING_PEREIRA_MIN)}.`,
+              `Resto de Colombia: ${formatPrice(SHIPPING_RATE_NATIONAL)}. Gratis en compras desde ${formatPrice(FREE_SHIPPING_NATIONAL_MIN)}.`,
+              `Pedidos de más de ${WEIGHT_SURCHARGE.includedKg} kg: ${formatPrice(WEIGHT_SURCHARGE.perKg)} por cada kg adicional (también con envío gratis).`,
+              <>{QUOTE_ONLY_DEPARTMENTS.join(", ")}: el envío se cotiza según la dirección; escríbenos por {whatsapp} y te ayudamos con la compra.</>,
             ],
           ],
         },
@@ -64,7 +74,7 @@ export default function ShippingPage() {
         },
         {
           title: "¿Prefieres recoger?",
-          body: [<>Puedes recoger tu pedido en Pereira coordinándolo previamente por {whatsapp}.</>],
+          body: [<>Si tu ciudad es Pereira, en el checkout puedes elegir “Recoger y pagar en Pereira” y coordinamos la hora y el lugar por {whatsapp}.</>],
         },
       ]}
     />

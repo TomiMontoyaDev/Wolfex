@@ -8,6 +8,7 @@ import { useComboQuote } from "@/components/combo/useComboQuote";
 import { comboStatus } from "@/lib/combo";
 import { useRouter } from "next/navigation";
 import { ShippingNotice } from "@/components/cart/ShippingNotice";
+import { TrustBlock } from "@/components/checkout/TrustBlock";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { AnimatedPrice, QuantityStepper } from "@/components/cart/QuantityStepper";
@@ -21,6 +22,8 @@ export function CartDrawer() {
   const { isOpen, close, lines, subtotal, remove, setQuantity, count } = useCart();
   const quoteLines = useMemo(() => lines.map((line) => ({ productId: line.product.id, quantity: line.quantity })), [lines]);
   const { quote } = useComboQuote(quoteLines);
+  // Peso total del pedido (para el recargo por peso del envío).
+  const weightKg = lines.reduce((sum, line) => sum + (line.product.weightKg ?? 1) * line.quantity, 0);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
@@ -92,7 +95,7 @@ export function CartDrawer() {
               {lines.length > 0 && (
                 <div className="mb-5 space-y-4">
                   <ComboProgress {...comboStatus(lines.map((line) => ({ productId: line.product.id, price: line.product.price })))} />
-                  <ShippingNotice subtotal={subtotal - quote.discount} />
+                  <ShippingNotice subtotal={subtotal - quote.discount} weightKg={weightKg} />
                 </div>
               )}
               <div className="flex justify-between text-sm text-steel">
@@ -107,9 +110,10 @@ export function CartDrawer() {
               )}
               {quote.capped && <ProteinCapNote className="mt-1" />}
               <div className="mt-2 flex justify-between border-t border-line pt-2 type-title text-sm">
-                <span>Total</span>
+                <span>Total productos</span>
                 <AnimatedPrice value={subtotal - quote.discount} className="font-mono" />
               </div>
+              {lines.length > 0 && <p className="mt-1 text-[0.68rem] text-steel">+ envío según tu ciudad (tarifa arriba).</p>}
               <button
                 disabled={!lines.length}
                 onClick={() => {
@@ -120,7 +124,7 @@ export function CartDrawer() {
               >
                 {t("Checkout")}
               </button>
-              <p className="mt-3 text-center type-label text-steel/70">Pago seguro con Mercado Pago</p>
+              <TrustBlock className="mt-4" />
             </div>
           </motion.aside>
         </>

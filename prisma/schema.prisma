@@ -44,6 +44,10 @@ enum PaymentProvider {
   MERCADOPAGO
   /// Venta registrada a mano en el admin (transferencia, efectivo, Nequi…).
   MANUAL
+  /// Checkout web: transferencia o llave (Bancolombia / Nequi / Bre-B); el cliente envía el comprobante por WhatsApp.
+  TRANSFER
+  /// Checkout web: recoge y paga en Pereira (se coordina por WhatsApp).
+  PICKUP
 }
 
 /// Por dónde llegó la venta.
@@ -169,6 +173,8 @@ model Product {
   lowPriority    Boolean      @default(false)
   /// Agotado en el proveedor: se sigue viendo en la tienda (con "Agotado") pero no se puede comprar.
   soldOut        Boolean      @default(false)
+  /// Peso de envío en kg (con empaque). Vacío = se estima por el nombre (1 kg si no se puede).
+  weightKg       Float?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 

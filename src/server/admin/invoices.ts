@@ -1,6 +1,5 @@
 import "server-only";
 import { formatDateTime, paymentMethodLabel } from "@/components/admin/format";
-import { hasFreeShipping } from "@/config/shipping";
 import type { InvoiceStatus, Prisma } from "@/generated/prisma/client";
 import { formatPrice } from "@/lib/utils";
 import { db } from "../db";
@@ -116,15 +115,16 @@ export function billingParty(order: InvoiceOrder) {
   };
 }
 
-/** Valor del envío para mostrar: el pedido no cobra envío en línea (gratis o se cobra aparte). */
+/** Valor del envío para mostrar (el envío se cobra dentro del pedido). */
 export function shippingLabel(order: Pick<InvoiceOrder, "shippingCost" | "subtotal" | "discount" | "shippingCity">) {
-  if (order.shippingCost > 0) return formatPrice(order.shippingCost);
-  return hasFreeShipping(order.subtotal - order.discount, order.shippingCity) ? "Gratis" : "Se cobra aparte";
+  return order.shippingCost > 0 ? formatPrice(order.shippingCost) : "Gratis";
 }
 
 /** Medio de pago legible: "Mercado Pago · Visa" (web) o "Transferencia bancaria" (venta manual). */
 export function paymentLabel(order: Pick<InvoiceOrder, "paymentProvider" | "paymentMethod">) {
   if (order.paymentProvider === "MANUAL") return paymentMethodLabel(order.paymentMethod);
+  if (order.paymentProvider === "TRANSFER") return "Transferencia o llave";
+  if (order.paymentProvider === "PICKUP") return "Pago al recoger en Pereira";
   return `Mercado Pago${order.paymentMethod ? ` · ${paymentMethodLabel(order.paymentMethod)}` : ""}`;
 }
 
