@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 
 export type Language = "en" | "es";
 
@@ -44,29 +44,14 @@ const translations: Record<string, string> = {
   "CORE": "ESENCIAL", "NEW": "NUEVO",
 };
 
-type LanguageContextValue = { language: Language; setLanguage: (language: Language) => void; t: (value: string) => string };
+type LanguageContextValue = { language: Language; t: (value: string) => string };
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
+/** El sitio es solo en español: `t()` traduce los textos que aún están escritos en inglés en el código. */
+const VALUE: LanguageContextValue = { language: "es", t: (value: string) => translations[value] ?? value };
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>("es");
-
-  useEffect(() => {
-    const stored = window.localStorage.getItem("wfx-language");
-    if (stored === "en" || stored === "es") setLanguage(stored);
-  }, []);
-
-  useEffect(() => {
-    window.localStorage.setItem("wfx-language", language);
-    document.documentElement.lang = language;
-  }, [language]);
-
-  const value = useMemo(() => ({
-    language,
-    setLanguage,
-    t: (value: string) => language === "es" ? translations[value] ?? value : value,
-  }), [language]);
-
-  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
+  return <LanguageContext.Provider value={VALUE}>{children}</LanguageContext.Provider>;
 }
 
 export function useLanguage() {

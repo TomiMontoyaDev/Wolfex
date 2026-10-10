@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { MARK_PATH, MARK_VIEWBOX, WORDMARK_PATH, WORDMARK_VIEWBOX } from "@/components/visuals/logo-paths";
 
-export const alt = "WOLFEX — Hunt Your Apex";
+export const alt = "WOLFEX — Suplementos deportivos en Colombia";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -26,8 +26,8 @@ export default function OpengraphImage() {
         <svg viewBox={WORDMARK_VIEWBOX} width={680} height={103} style={{ marginTop: 28 }}>
           <path d={WORDMARK_PATH} fill="#F5F7FA" fillRule="evenodd" />
         </svg>
-        <div style={{ marginTop: 12, fontSize: 40, color: "#00A8FF", letterSpacing: 10 }}>HUNT YOUR APEX.</div>
-        <div style={{ position: "absolute", bottom: 40, fontSize: 20, color: "#70757D", letterSpacing: 6 }}>EST. 2026 · PERFORMANCE SYSTEM</div>
+        <div style={{ marginTop: 12, fontSize: 40, color: "#00A8FF", letterSpacing: 10 }}>ALCANZA TU CIMA.</div>
+        <div style={{ position: "absolute", bottom: 40, fontSize: 20, color: "#70757D", letterSpacing: 6 }}>DESDE 2026 · ENTREGA HOY EN PEREIRA</div>
       </div>
     ),
     size,

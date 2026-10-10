@@ -113,7 +113,7 @@ export function Loader() {
           </div>
 
           <div className="absolute bottom-6 left-0 right-0 flex justify-between px-[var(--gutter)] type-label text-steel/70">
-            <span>EST. {SITE.established}</span>
+            <span>DESDE {SITE.established}</span>
             <span>SISTEMA DE RENDIMIENTO</span>
           </div>
         </motion.div>

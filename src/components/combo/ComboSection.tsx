@@ -7,7 +7,6 @@ import { useCart } from "@/components/providers/CartProvider";
 import { Media } from "@/components/ui/Media";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionLabel } from "@/components/ui/SectionLabel";
-import { SplitReveal } from "@/components/ui/SplitReveal";
 import { COMBO_BUILDER_SLOTS, COMBO_LARGE_PROTEIN, COMBO_MIN_ITEM_PRICE, COMBO_TIERS } from "@/config/combos";
 import { deliveryLabel } from "@/config/shipping";
 import type { Product } from "@/data/products";
@@ -16,14 +15,15 @@ import { cn, formatPrice } from "@/lib/utils";
 import type { RecommendedComboView } from "@/server/combo";
 import { useComboQuote } from "./useComboQuote";
 
-/** Sección "Arma tu combo": combos recomendados + armador propio con precio de combo en vivo. */
-export function ComboSection({ combos, options }: { combos: RecommendedComboView[]; options: Record<string, Product[]> }) {
+/** Combos recomendados (con su precio de combo real). */
+export function RecommendedCombos({ combos }: { combos: RecommendedComboView[] }) {
+  if (!combos.length) return null;
   return (
-    <section id="combos" className="relative scroll-mt-28 bg-ink py-24 md:py-36" aria-label="Combos">
+    <section id="combos" className="relative scroll-mt-28 bg-ink py-16 md:py-28" aria-labelledby="combos-title">
       <div className="container-wfx">
         <SectionLabel index="02" label="Combos" meta={`Hasta ${MAX_COMBO_PERCENT}% de descuento`} />
-        <div className="mt-12 flex flex-col gap-8 md:mt-16 md:flex-row md:items-end md:justify-between">
-          <SplitReveal as="h2" text="Arma tu combo" className="type-display text-[clamp(3rem,9vw,8.5rem)]" />
+        <div className="mt-10 flex flex-col gap-6 md:mt-14 md:flex-row md:items-end md:justify-between">
+          <h2 id="combos-title" className="type-display text-[clamp(2.4rem,8vw,7rem)] leading-[0.9]">Combos recomendados</h2>
           <Reveal delay={0.2} className="max-w-md md:pb-3">
             <p className="type-body text-steel">
               Entre más productos distintos lleves, más ahorras. El descuento se aplica solo en el carrito, sin códigos.
@@ -31,18 +31,22 @@ export function ComboSection({ combos, options }: { combos: RecommendedComboView
             <TierPills className="mt-5" />
           </Reveal>
         </div>
+        <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {combos.map((combo, i) => (
+            <RecommendedCard key={combo.id} combo={combo} index={i} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
-        {combos.length > 0 && (
-          <>
-            <p className="mt-16 type-label text-steel">Combos recomendados</p>
-            <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {combos.map((combo, i) => (
-                <RecommendedCard key={combo.id} combo={combo} index={i} />
-              ))}
-            </div>
-          </>
-        )}
-
+/** "Arma tu combo": armador propio con precio de combo en vivo. */
+export function ComboBuilderSection({ options }: { options: Record<string, Product[]> }) {
+  return (
+    <section id="arma-tu-combo" className="relative scroll-mt-28 bg-ink py-16 md:py-28" aria-labelledby="builder-title">
+      <div className="container-wfx">
+        <h2 id="builder-title" className="type-display text-[clamp(2.4rem,8vw,7rem)] leading-[0.9]">Arma tu combo</h2>
         <ComboBuilder options={options} />
       </div>
     </section>
@@ -152,7 +156,7 @@ function ComboBuilder({ options }: { options: Record<string, Product[]> }) {
   const total = subtotal - quote.discount;
 
   return (
-    <div className="mt-20 grid gap-8 border border-line-strong bg-void p-6 md:p-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(300px,1fr)] lg:gap-12">
+    <div className="mt-8 grid gap-8 border border-line-strong bg-void p-4 sm:p-6 md:mt-12 md:p-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(300px,1fr)] lg:gap-12">
       {/* min-w-0: sin esto la columna se estira al ancho de todas las tarjetas y la fila no se puede deslizar. */}
       <div className="min-w-0">
         <p className="flex items-center gap-2 type-label text-arc">

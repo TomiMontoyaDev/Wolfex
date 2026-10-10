@@ -7,9 +7,7 @@ import { useState } from "react";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Media } from "@/components/ui/Media";
-import { Reveal } from "@/components/ui/Reveal";
 import { SectionLabel } from "@/components/ui/SectionLabel";
-import { SplitReveal } from "@/components/ui/SplitReveal";
 import { NEON_PROMO } from "@/config/promo";
 import { deliveryLabel } from "@/config/shipping";
 import type { Product, ProductCategory } from "@/data/products";
@@ -25,19 +23,20 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
   return (
     <section id="drop" className="relative bg-void pb-28 pt-8 md:pb-44" aria-labelledby="drop-title">
       <div className="container-wfx">
-        <SectionLabel index="01" label="Catálogo WOLFEX" meta={`${pad(visibleProducts.length)} productos · COP`} />
+        <SectionLabel index="01" label="Más vendidos" meta={`${pad(visibleProducts.length)} productos · COP`} />
 
-        <div className="mt-12 flex flex-col gap-8 md:mt-16 md:flex-row md:items-end md:justify-between">
-          <SplitReveal as="h2" text="Catálogo" className="type-display text-[clamp(2.4rem,11vw,9.5rem)]" />
-          <Reveal delay={0.2} className="max-w-sm md:pb-3">
-            <p className="type-body text-steel">
+        <div className="mt-6 flex flex-col gap-5 md:mt-14 md:flex-row md:items-end md:justify-between">
+          <h2 id="drop-title" className="type-display text-[clamp(2.2rem,9vw,8rem)] leading-[0.9]">Más vendidos</h2>
+          {/* Sin animación de entrada: está en la primera pantalla del celular y debe pintarse con el HTML. */}
+          <div className="max-w-sm md:pb-3">
+            <p className="hidden type-body text-steel md:block">
               Productos seleccionados para entrenar más fuerte. Elige una categoría para explorar el catálogo.
             </p>
             {/* Botones grandes: el catálogo completo y la promo (antes era un enlace pequeño que casi no se veía). */}
-            <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
+            <div className="mt-1 grid grid-cols-2 gap-2.5 sm:flex md:mt-6">
               <a
                 href="/catalogo"
-                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden bg-volt px-6 py-4 type-title text-sm text-bone shadow-[0_0_30px_rgba(0,102,255,0.45)] transition-shadow hover:shadow-[0_0_45px_rgba(0,168,255,0.7)]"
+                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden bg-volt px-3 py-3.5 type-title text-xs text-bone sm:px-6 sm:py-4 sm:text-sm shadow-[0_0_30px_rgba(0,102,255,0.45)] transition-shadow hover:shadow-[0_0_45px_rgba(0,168,255,0.7)]"
               >
                 <span className="absolute inset-y-0 left-0 w-1/3 animate-sweep bg-gradient-to-r from-transparent via-white/35 to-transparent" aria-hidden="true" />
                 <span className="relative">Ver catálogo completo</span>
@@ -46,16 +45,16 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
               {NEON_PROMO.active && (
                 <a
                   href={NEON_PROMO.href}
-                  className="inline-flex items-center justify-center gap-2 border border-[#ff2e88] bg-[#ff2e88]/10 px-5 py-4 type-title text-sm text-[#ff7ab3] transition-colors hover:bg-[#ff2e88] hover:text-white"
+                  className="inline-flex items-center justify-center gap-2 border border-[#ff2e88] bg-[#ff2e88]/10 px-3 py-3.5 type-title text-xs sm:px-5 sm:py-4 sm:text-sm text-[#ff7ab3] transition-colors hover:bg-[#ff2e88] hover:text-white"
                 >
                   🔥 Ver ofertas
                 </a>
               )}
             </div>
-          </Reveal>
+          </div>
         </div>
 
-        <div className="mt-10 flex flex-wrap gap-2" role="tablist" aria-label="Categorías del catálogo">
+        <div className="mt-6 flex flex-wrap gap-2 md:mt-10" role="tablist" aria-label="Categorías del catálogo">
           {categories.map((item) => (
             <button
               key={item}
@@ -112,8 +111,9 @@ export function ProductCard({ product, index, layout = "rail" }: { product: Prod
         layout === "rail" && "w-[42vw] max-w-[230px] shrink-0 snap-start sm:w-[30vw] lg:w-auto lg:max-w-none",
         layout === "rail" && index % 2 === 1 && "lg:mt-16",
       )}
-      initial={{ opacity: 0, y: 60 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      // Solo se desliza (sin opacidad 0): la tarjeta se pinta con el HTML y no retrasa la carga visible.
+      initial={{ y: 40 }}
+      whileInView={{ y: 0 }}
       viewport={{ once: true, margin: "0px 0px -10% 0px" }}
       transition={{ duration: 1.1, delay: (index % 4) * 0.12, ease: [0.16, 1, 0.3, 1] }}
     >

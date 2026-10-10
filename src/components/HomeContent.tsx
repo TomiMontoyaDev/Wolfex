@@ -1,20 +1,21 @@
 "use client";
 
-import { ComboSection } from "@/components/combo/ComboSection";
+import { ComboBuilderSection, RecommendedCombos } from "@/components/combo/ComboSection";
+import { NeonPromo } from "@/components/promo/NeonPromo";
 import { BrandStatement } from "@/components/sections/BrandStatement";
 import { CampaignSection } from "@/components/sections/CampaignSection";
 import { Categories } from "@/components/sections/Categories";
 import { FeaturedProducts } from "@/components/sections/FeaturedProducts";
 import { Hero } from "@/components/sections/Hero";
-import { NeonPromo } from "@/components/promo/NeonPromo";
 import { Newsletter } from "@/components/sections/Newsletter";
 import { PerformanceSection } from "@/components/sections/PerformanceSection";
 import { Reviews } from "@/components/sections/Reviews";
-import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Marquee } from "@/components/ui/Marquee";
 import type { Product } from "@/data/products";
 import type { RecommendedComboView } from "@/server/combo";
 import type { PublicReview } from "@/server/reviews";
+
+const MANTRAS = ["NACIDOS PARA CAZAR.", "SIN EXCUSAS.", "MÁS ALLÁ DE TUS LÍMITES.", "ENCUENTRA TU LOBO.", "ALCANZA TU CIMA."];
 
 export function HomeContent({
   products,
@@ -27,22 +28,19 @@ export function HomeContent({
   combos: RecommendedComboView[];
   comboOptions: Record<string, Product[]>;
 }) {
-  const { t } = useLanguage();
-  const mantras = ["BUILT TO HUNT.", "NO COMFORT.", "BEYOND YOUR LIMITS.", "FIND YOUR WOLF.", "HUNT YOUR APEX."];
-
   return (
     <main>
+      {/* Orden para vender en celular: oferta → más vendidos → combos → confianza → armador → marca. */}
       <Hero />
-      {/* Orden pensado para vender: el catálogo apenas termina el hero, luego combos, la marca y las reseñas. */}
       <FeaturedProducts products={products} />
-      <ComboSection combos={combos} options={comboOptions} />
-      <BrandStatement />
+      <RecommendedCombos combos={combos} />
       <Reviews reviews={reviews} />
-      <NeonPromo />
-      <Marquee items={mantras.map(t)} className="bg-void type-headline text-[clamp(1.1rem,2.2vw,1.75rem)] text-bone/90" />
+      <ComboBuilderSection options={comboOptions} />
+      <BrandStatement />
       <CampaignSection />
+      <NeonPromo />
+      <Marquee items={MANTRAS} className="bg-void type-headline text-[clamp(1.1rem,2.2vw,1.75rem)] text-bone/90" />
       <Categories />
-      <Marquee items={["Fuel", "Build", "Recover", "Repeat"].map(t)} reverse className="bg-ink type-display text-[clamp(1.5rem,3vw,2.5rem)] text-outline-volt" />
       <PerformanceSection />
       <Newsletter />
     </main>

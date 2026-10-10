@@ -142,7 +142,7 @@ function Garment({ id, kind, back }: { id: string; kind: keyof typeof GARMENTS; 
           </g>
           {kind !== "shorts" && (
             <text x="200" y="300" textAnchor="middle" fill="#F5F7FA" fillOpacity="0.55" fontSize="11" letterSpacing="4" fontFamily="var(--font-mono)">
-              HUNT YOUR APEX
+              ALCANZA TU CIMA
             </text>
           )}
         </g>

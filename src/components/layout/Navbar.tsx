@@ -23,7 +23,7 @@ export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { ready } = useIntro();
   const cart = useCart();
-  const { language, setLanguage, t } = useLanguage();
+  const { t } = useLanguage();
   const [searchOpen, setSearchOpen] = useState(false);
   const openSearch = useCallback(() => {
     setMenuOpen(false);
@@ -151,14 +151,6 @@ export function Navbar() {
                   )}
                 </AnimatePresence>
               </IconButton>
-              <button
-                type="button"
-                onClick={() => setLanguage(language === "en" ? "es" : "en")}
-                className="ml-1 h-11 min-w-11 border-l border-line px-2 type-label text-[0.65rem] text-bone/80 transition-colors hover:text-arc"
-                aria-label={language === "en" ? "Cambiar a español" : "Switch to English"}
-              >
-                {language === "en" ? "ES" : "EN"}
-              </button>
             </div>
           </nav>
         </div>

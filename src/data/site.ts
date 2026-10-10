@@ -3,7 +3,7 @@ import { MEDIA } from "./media";
 
 export const SITE = {
   name: "WOLFEX",
-  tagline: "HUNT YOUR APEX.",
+  tagline: "ALCANZA TU CIMA.",
   description:
     "WOLFEX es tu tienda de suplementos deportivos en Colombia: proteínas, creatinas, pre-entrenos y vitaminas para entrenar más fuerte y recuperarte mejor. Disciplina sobre comodidad. Alcanza tu cima.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://wolfex.xyz",
@@ -11,11 +11,11 @@ export const SITE = {
   locale: "es-CO",
   currency: "COP",
   mantras: [
-    "BUILT TO HUNT.",
-    "NO COMFORT.",
-    "BEYOND YOUR LIMITS.",
-    "FIND YOUR WOLF.",
-    "HUNT YOUR APEX.",
+    "NACIDOS PARA CAZAR.",
+    "SIN EXCUSAS.",
+    "MÁS ALLÁ DE TUS LÍMITES.",
+    "ENCUENTRA TU LOBO.",
+    "ALCANZA TU CIMA.",
   ],
 } as const;
 
@@ -103,16 +103,16 @@ export const CATEGORIES = [
   {
     id: "supplements",
     index: "01",
-    title: "Supplements",
-    caption: "Fuel your hunt",
+    title: "Suplementos",
+    caption: "Energía para tu cacería",
     href: "/catalogo?categoria=suplementos",
     media: MEDIA.categories.performance,
   },
   {
     id: "proteins",
     index: "02",
-    title: "Proteins",
-    caption: "Build your strength",
+    title: "Proteínas",
+    caption: "Construye tu fuerza",
     href: "/catalogo?categoria=proteinas",
     // Ilustración abstracta (no muestra accesorios): sirve para cualquier categoría.
     media: MEDIA.categories.accessories,
@@ -121,19 +121,19 @@ export const CATEGORIES = [
 
 export const PERFORMANCE_PILLARS = [
   {
-    word: "Fuel",
+    word: "Energía",
     index: "01",
     line: "La constancia empieza con el combustible correcto para cada sesión.",
     metric: { value: 100, suffix: "%", label: "Enfoque diario" },
   },
   {
-    word: "Build",
+    word: "Construye",
     index: "02",
     line: "Proteínas y nutrientes para acompañar tu progreso todos los días.",
     metric: { value: 24, suffix: "H", label: "Ritmo constante" },
   },
   {
-    word: "Recover",
+    word: "Recupera",
     index: "03",
     line: "Recupera mejor, vuelve más fuerte y repite: un sistema simple para cada semana.",
     metric: { value: 7, suffix: "DÍAS", label: "Cada semana" },

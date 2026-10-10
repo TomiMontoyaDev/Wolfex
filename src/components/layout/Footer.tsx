@@ -17,7 +17,7 @@ export function Footer() {
               <WolfMark outline className="h-11 w-auto text-bone" />
               <div>
                 <p className="type-title text-sm">{SITE.tagline}</p>
-                <p className="mt-1 type-label text-steel">EST. {SITE.established} · Performance system</p>
+                <p className="mt-1 type-label text-steel">Desde {SITE.established} · Sistema de rendimiento</p>
               </div>
             </div>
             <p className="mt-8 max-w-sm type-body text-sm text-steel">{t(SITE.description)}</p>
@@ -61,7 +61,7 @@ export function Footer() {
       </div>
 
       <div className="container-wfx flex flex-col-reverse items-start justify-between gap-6 border-t border-line py-6 sm:flex-row sm:items-center">
-        <p className="type-label text-steel">© {SITE.established} {SITE.name}. All rights reserved.</p>
+        <p className="type-label text-steel">© {SITE.established} {SITE.name}. Todos los derechos reservados.</p>
         <div className="flex items-center gap-8 type-label text-steel">
           <span className="hidden md:inline">WFX-SYS / v1.0</span>
           <a href="#top" className="group flex items-center gap-2 text-bone/80 hover:text-arc">

@@ -30,6 +30,9 @@ export function CampaignSection() {
     return () => ctx.revert();
   }, []);
 
+  // Sin foto/video de campaña cargado, la sección no se muestra (nada de cuadros de relleno).
+  if (!MEDIA.campaign.ready) return null;
+
   return (
     <section ref={root} className="relative h-[115svh] min-h-[680px] overflow-hidden bg-void" aria-labelledby="campaign-title">
       <div className="campaign-media absolute inset-0 will-change-transform">
