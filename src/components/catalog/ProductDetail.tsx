@@ -17,7 +17,10 @@ import { visibleDiscount } from "@/lib/pricing";
 import { productSize } from "@/lib/product-size";
 import { cn, formatPrice } from "@/lib/utils";
 
-const EASE = [0.16, 1, 0.3, 1] as const;
+/** Consulta pública de registros sanitarios del INVIMA. */
+export const INVIMA_LOOKUP_URL = "https://consultaregistro.invima.gov.co/";
+
+const EASE =[0.16, 1, 0.3, 1] as const;
 const CATEGORY_LABELS: Record<string, string> = {
   SUPLEMENTOS: "Suplementos",
   PROTEINAS: "Proteínas",
@@ -240,7 +243,24 @@ export function ProductDetail({ product, url }: { product: Product; /** URL abso
               <p className="mt-2 whitespace-pre-line text-[0.95rem] leading-relaxed text-bone/90">{product.usage}</p>
             </div>
           )}
-          {product.invima && <p className="mt-4 text-xs text-steel">Registro INVIMA: <span className="font-mono text-bone/85">{product.invima}</span></p>}
+          {/* Registro sanitario: si está cargado se muestra; siempre se explica cómo verificarlo en la consulta pública del INVIMA. */}
+          <div className="mt-6 border border-line-strong p-4">
+            <h2 className="flex items-center gap-2 type-label text-steel">
+              <ShieldCheck className="h-4 w-4 text-arc" strokeWidth={1.75} aria-hidden="true" /> Registro sanitario INVIMA
+            </h2>
+            {product.invima && <p className="mt-2 text-sm text-bone">Registro: <span className="font-mono">{product.invima}</span></p>}
+            <p className="mt-2 text-sm leading-relaxed text-bone/85">
+              Puedes verificarlo tú mismo: entra a la consulta pública del INVIMA y busca por el nombre del producto (<span className="text-bone">{product.name}</span>) o por la marca ({product.brand}).
+            </p>
+            <a
+              href={INVIMA_LOOKUP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex min-h-11 items-center gap-2 border border-arc/60 px-4 type-label text-[0.65rem] text-arc transition-colors hover:bg-arc hover:text-void"
+            >
+              Consultar en el INVIMA ↗
+            </a>
+          </div>
           <p className="mt-4 text-xs text-steel/80">Suplemento dietario. No reemplaza una alimentación balanceada.</p>
 
           {/* Compartir */}
