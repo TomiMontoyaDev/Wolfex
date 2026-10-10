@@ -175,6 +175,17 @@ model Product {
   soldOut        Boolean      @default(false)
   /// Peso de envío en kg (con empaque). Vacío = se estima por el nombre (1 kg si no se puede).
   weightKg       Float?
+  /// Ficha del producto (todo opcional: la página muestra solo lo que exista).
+  /// Hasta 3 beneficios cortos.
+  benefits       String[]     @default([])
+  /// Modo de uso.
+  usage          String?
+  /// Sabores o presentaciones disponibles.
+  flavors        String[]     @default([])
+  /// Servicios por envase (para el precio por servicio). Vacío = se lee del nombre si dice "N SERVICIOS".
+  servings       Int?
+  /// Registro sanitario INVIMA (solo el real; no inventar).
+  invima         String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 

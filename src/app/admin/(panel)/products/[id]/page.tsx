@@ -65,6 +65,11 @@ export default async function EditProductPage({ params, searchParams }: { params
             active: product.active,
             lowPriority: product.lowPriority,
             soldOut: product.soldOut,
+            benefits: product.benefits,
+            usage: product.usage,
+            flavors: product.flavors,
+            servings: product.servings,
+            invima: product.invima,
             image: product.image,
           }}
         />

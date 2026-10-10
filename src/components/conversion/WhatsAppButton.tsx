@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { trackCustom } from "@/lib/meta-pixel";
 import { whatsappLink } from "@/lib/site-config";
+import { cn } from "@/lib/utils";
 
 /**
  * Botón flotante de WhatsApp (abajo a la izquierda, para no chocar con el "subir" del catálogo).
@@ -31,7 +32,11 @@ export function WhatsAppButton() {
       rel="noopener noreferrer"
       onClick={() => trackCustom("WhatsAppClick", { page: pathname })}
       aria-label="Asesoría gratis por WhatsApp"
-      className="fixed bottom-5 left-4 z-40 flex h-12 items-center gap-2 rounded-full bg-[#25D366] px-3 text-sm font-semibold text-[#062b14] shadow-[0_10px_30px_-8px_rgba(37,211,102,0.6)] md:bottom-6 md:left-6 md:px-4"
+      // En la ficha de producto (celular) sube por encima de la barra fija de compra.
+      className={cn(
+        "fixed left-4 z-40 flex h-12 items-center gap-2 rounded-full bg-[#25D366] px-3 text-sm font-semibold text-[#062b14] shadow-[0_10px_30px_-8px_rgba(37,211,102,0.6)] md:bottom-6 md:left-6 md:px-4",
+        pathname.startsWith("/producto/") ? "bottom-24" : "bottom-5",
+      )}
       initial={false}
       animate={visible ? { opacity: 1, y: 0, pointerEvents: "auto" } : { opacity: 0, y: 16, pointerEvents: "none" }}
       transition={{ duration: 0.3 }}

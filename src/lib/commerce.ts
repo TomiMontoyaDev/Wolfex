@@ -11,7 +11,7 @@ import { unstable_cache } from "next/cache";
 import type { Product, ProductCategory } from "@/data/products";
 import type { Product as DbProduct } from "@/generated/prisma/client";
 import { normalize } from "@/lib/search";
-import { productWeightKg } from "@/lib/weight";
+import { productWeightKg, servingsFromName } from "@/lib/weight";
 import { db } from "@/server/db";
 
 export const PRODUCTS_TAG = "products";
@@ -40,6 +40,12 @@ function toStorefront(product: DbProduct): Product {
     price: product.price,
     available,
     weightKg: productWeightKg(product),
+    // Ficha: solo viaja lo que exista (el catálogo completo va al navegador).
+    ...(product.benefits?.length && { benefits: product.benefits.slice(0, 3) }),
+    ...(product.usage && { usage: product.usage }),
+    ...(product.flavors?.length && { flavors: product.flavors }),
+    ...((product.servings ?? servingsFromName(product.name)) && { servings: product.servings ?? servingsFromName(product.name)! }),
+    ...(product.invima && { invima: product.invima }),
     colors: [{ name: "", hex: "#0066FF" }],
     ...(!available && { badge: "AGOTADO" as const }),
     ...(product.compareAtPrice && product.compareAtPrice > product.price && { compareAtPrice: product.compareAtPrice }),

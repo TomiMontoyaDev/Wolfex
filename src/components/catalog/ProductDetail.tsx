@@ -1,10 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check, ChevronRight, Home, Link2, Package, ShieldCheck, ShoppingBag, Truck, Zap } from "lucide-react";
+import { CalendarCheck, Check, ChevronRight, Home, Link2, MessageCircle, Package, PackageCheck, RefreshCcw, ShieldCheck, ShoppingBag, Truck, Zap } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { QuantityStepper } from "@/components/cart/QuantityStepper";
+import { PaymentIcons } from "@/components/checkout/TrustBlock";
 import { useCart } from "@/components/providers/CartProvider";
 import { Media } from "@/components/ui/Media";
 import { FREE_SHIPPING_NATIONAL_MIN, FREE_SHIPPING_PEREIRA_MIN, LOCAL_ZONE_LABEL, SHIPPING_SUMMARY, deliveryLabel } from "@/config/shipping";
@@ -31,18 +32,28 @@ const categoryHref = (category: string) => {
 };
 
 /** Ficha de producto: foto grande, precio, cantidad, agregar al carrito, beneficios, descripción y compartir. */
-export function ProductDetail({ product }: { product: Product }) {
+export function ProductDetail({ product, url }: { product: Product; /** URL absoluta del producto (para compartir). */ url: string }) {
   const { add } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [url, setUrl] = useState("");
+  // Barra fija de compra (celular): aparece cuando el botón principal sale de la pantalla hacia arriba.
+  const buyRef = useRef<HTMLDivElement>(null);
+  const [showBar, setShowBar] = useState(false);
+  const perServing = product.servings ? Math.round(product.price / product.servings) : null;
   const discount = visibleDiscount(product.price, product.compareAtPrice);
   const sizes = productSize(product.name);
   const stock = product.delivery === "STOCK";
 
   useEffect(() => {
-    setUrl(window.location.href);
+    const el = buyRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => setShowBar(!entry.isIntersecting && entry.boundingClientRect.top < 0));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
     // La página de producto es la vista de producto para Meta.
     track("ViewContent", { contents: [{ id: product.sku, quantity: 1, item_price: product.price }] });
   }, [product.sku, product.price]);
@@ -95,7 +106,6 @@ export function ProductDetail({ product }: { product: Product }) {
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1, ease: EASE }}>
           <p className="type-label text-arc">Marca: {product.brand}</p>
           <h1 className="mt-3 type-title text-[clamp(1.6rem,3.4vw,2.6rem)] leading-tight text-bone">{product.name}</h1>
-          <p className="mt-1 font-mono text-xs text-steel">{product.sku}</p>
 
           <div className="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <span className={cn("font-mono text-3xl md:text-4xl", discount ? "text-arc" : "text-bone")}>{formatPrice(product.price)}</span>
@@ -105,6 +115,11 @@ export function ProductDetail({ product }: { product: Product }) {
               </s>
             )}
           </div>
+          {perServing && (
+            <p className="mt-1 text-sm text-steel">
+              <span className="font-mono text-bone">{formatPrice(perServing)}</span> por servicio · {product.servings} servicios
+            </p>
+          )}
           <p className="mt-2 text-xs text-steel">Envío: {SHIPPING_SUMMARY}</p>
 
           {product.delivery && (
@@ -128,8 +143,19 @@ export function ProductDetail({ product }: { product: Product }) {
             </div>
           )}
 
+          {product.flavors && product.flavors.length > 0 && (
+            <div className="mt-6">
+              <p className="type-label text-steel">Sabores / presentaciones</p>
+              <ul className="mt-2 flex flex-wrap gap-2">
+                {product.flavors.map((flavor) => (
+                  <li key={flavor} className="border border-line-strong px-3 py-2 text-xs text-bone">{flavor}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {/* Cantidad + agregar */}
-          <div className="mt-8">
+          <div ref={buyRef} className="mt-8">
             {product.available ? (
               <>
                 <p className="type-label text-steel">Cantidad</p>
@@ -155,7 +181,22 @@ export function ProductDetail({ product }: { product: Product }) {
             )}
           </div>
 
-          {/* Beneficios reales de la tienda */}
+          {/* Confianza */}
+          <ul className="mt-5 grid grid-cols-2 gap-x-3 gap-y-2.5 text-xs text-bone/85">
+            {[
+              { icon: PackageCheck, text: "Producto 100% original y sellado" },
+              { icon: CalendarCheck, text: "Vencimiento mínimo 6 meses" },
+              { icon: RefreshCcw, text: "Cambios en 5 días" },
+              { icon: MessageCircle, text: "Asesoría por WhatsApp" },
+            ].map((item) => (
+              <li key={item.text} className="flex items-start gap-2">
+                <item.icon className="mt-px h-4 w-4 shrink-0 text-arc" strokeWidth={1.75} aria-hidden="true" />
+                {item.text}
+              </li>
+            ))}
+          </ul>
+          <PaymentIcons className="mt-4" />
+
           <ul className="mt-6 grid gap-2.5 border-y border-line py-5 text-sm text-bone/85">
             <li className="flex items-start gap-3">
               <Truck className="mt-0.5 h-4 w-4 shrink-0 text-arc" strokeWidth={1.5} />
@@ -170,16 +211,36 @@ export function ProductDetail({ product }: { product: Product }) {
             </li>
             <li className="flex items-start gap-3">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-arc" strokeWidth={1.5} />
-              Producto original · pago seguro con Mercado Pago
+              Pago protegido por Mercado Pago o por transferencia
             </li>
           </ul>
 
+          {product.benefits && product.benefits.length > 0 && (
+            <div className="mt-6">
+              <h2 className="type-label text-steel">Beneficios</h2>
+              <ul className="mt-2 space-y-1.5 text-[0.95rem] text-bone/90">
+                {product.benefits.map((benefit) => (
+                  <li key={benefit} className="flex items-start gap-2">
+                    <Check className="mt-1 h-4 w-4 shrink-0 text-arc" strokeWidth={2} aria-hidden="true" />
+                    {benefit}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {product.descriptor && (
             <div className="mt-6">
               <h2 className="type-label text-steel">¿Para qué sirve?</h2>
               <p className="mt-2 text-[0.95rem] leading-relaxed text-bone/90">{product.descriptor}</p>
             </div>
           )}
+          {product.usage && (
+            <div className="mt-6">
+              <h2 className="type-label text-steel">Modo de uso</h2>
+              <p className="mt-2 whitespace-pre-line text-[0.95rem] leading-relaxed text-bone/90">{product.usage}</p>
+            </div>
+          )}
+          {product.invima && <p className="mt-4 text-xs text-steel">Registro INVIMA: <span className="font-mono text-bone/85">{product.invima}</span></p>}
           <p className="mt-4 text-xs text-steel/80">Suplemento dietario. No reemplaza una alimentación balanceada.</p>
 
           {/* Compartir */}
@@ -187,7 +248,7 @@ export function ProductDetail({ product }: { product: Product }) {
             <p className="type-label text-steel">Comparte</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {shares.map((share) => (
-                <a key={share.label} href={share.href} target="_blank" rel="noopener noreferrer" className={cn("flex h-10 items-center px-4 text-xs font-semibold transition-opacity hover:opacity-85", share.className)}>
+                <a key={share.label} href={share.href} target="_blank" rel="noopener noreferrer" className={cn("flex h-11 items-center px-4 text-xs font-semibold transition-opacity hover:opacity-85", share.className)}>
                   {share.label}
                 </a>
               ))}
@@ -200,7 +261,7 @@ export function ProductDetail({ product }: { product: Product }) {
                     setTimeout(() => setCopied(false), 1600);
                   } catch {}
                 }}
-                className="flex h-10 items-center gap-2 border border-line-strong px-4 text-xs text-bone transition-colors hover:border-arc hover:text-arc"
+                className="flex h-11 items-center gap-2 border border-line-strong px-4 text-xs text-bone transition-colors hover:border-arc hover:text-arc"
               >
                 {copied ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" strokeWidth={1.5} />}
                 {copied ? "Enlace copiado" : "Copiar enlace"}
@@ -209,6 +270,34 @@ export function ProductDetail({ product }: { product: Product }) {
           </div>
         </motion.div>
       </div>
+
+      {/* Barra fija de compra (celular): precio + agregar, cuando el botón principal ya quedó arriba. */}
+      {product.available && (
+        <div
+          className={cn(
+            "fixed inset-x-0 bottom-0 z-40 border-t border-line-strong bg-ink/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md transition-transform duration-300 md:hidden",
+            showBar ? "translate-y-0" : "translate-y-full",
+          )}
+          aria-hidden={!showBar}
+          data-buy-bar
+        >
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs text-steel">{product.name}</p>
+              <p className="whitespace-nowrap font-mono text-lg text-bone">{formatPrice(product.price)}</p>
+            </div>
+            <button
+              type="button"
+              tabIndex={showBar ? 0 : -1}
+              onClick={onAdd}
+              className={cn("flex h-12 shrink-0 items-center gap-2 px-5 type-title text-sm", added ? "bg-bone text-void" : "bg-volt text-bone")}
+            >
+              {added ? <Check className="h-5 w-5" strokeWidth={2} /> : <ShoppingBag className="h-5 w-5" strokeWidth={1.5} />}
+              {added ? "Agregado" : "Agregar"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

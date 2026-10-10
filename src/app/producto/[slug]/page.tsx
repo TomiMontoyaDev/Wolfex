@@ -74,7 +74,7 @@ export default async function ProductPage({ params }: { params: Params }) {
   return (
     <main className="min-h-screen pb-24 pt-[calc(var(--nav-h)+2rem)] md:pt-[calc(var(--nav-h)+3rem)]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <ProductDetail product={product} />
+      <ProductDetail product={product} url={`${SITE.url}/producto/${product.handle}`} />
       {related.length > 0 && (
         <section className="container-wfx mt-20 md:mt-28" aria-labelledby="related-title">
           <h2 id="related-title" className="type-title text-xl text-bone md:text-2xl">

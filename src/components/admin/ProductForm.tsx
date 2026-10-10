@@ -25,6 +25,11 @@ export interface ProductFormValues {
   active: boolean;
   lowPriority: boolean;
   soldOut: boolean;
+  benefits: string[];
+  usage: string | null;
+  flavors: string[];
+  servings: number | null;
+  invima: string | null;
   image: string | null;
 }
 
@@ -211,6 +216,32 @@ export function ProductForm({ action, values, categories, submitLabel }: { actio
           <span className="type-label text-steel">Descripción</span>
           <textarea name="description" rows={4} maxLength={2000} defaultValue={values.description ?? ""} className={`${field} h-auto py-3`} />
         </label>
+        {/* Ficha del producto: todo opcional; la página solo muestra lo que se llene. */}
+        <fieldset className="space-y-4 border-t border-line pt-5">
+          <legend className="type-label text-arc">Ficha del producto (opcional)</legend>
+          <label className="block">
+            <span className="type-label text-steel">Beneficios (uno por línea, máximo 3)</span>
+            <textarea name="benefits" rows={3} maxLength={600} defaultValue={values.benefits.join("\n")} placeholder={"Aumenta la fuerza\nMejora la recuperación"} className={`${field} h-auto py-3`} />
+          </label>
+          <label className="block">
+            <span className="type-label text-steel">Modo de uso</span>
+            <textarea name="usage" rows={3} maxLength={1000} defaultValue={values.usage ?? ""} className={`${field} h-auto py-3`} />
+          </label>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <label className="block sm:col-span-2">
+              <span className="type-label text-steel">Sabores / presentaciones (separados por coma)</span>
+              <input name="flavors" maxLength={400} defaultValue={values.flavors.join(", ")} placeholder="Vainilla, Chocolate" className={field} />
+            </label>
+            <label className="block">
+              <span className="type-label text-steel">Servicios por envase</span>
+              <input name="servings" inputMode="numeric" defaultValue={values.servings ?? ""} placeholder="Del nombre si se deja vacío" className={field} />
+            </label>
+          </div>
+          <label className="block">
+            <span className="type-label text-steel">Registro INVIMA</span>
+            <input name="invima" maxLength={60} defaultValue={values.invima ?? ""} placeholder="Solo el registro real del producto" className={field} />
+          </label>
+        </fieldset>
       </div>
 
       <div className="space-y-4">

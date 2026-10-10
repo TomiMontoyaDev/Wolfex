@@ -118,7 +118,6 @@ export function ProductCard({ product, index, layout = "rail" }: { product: Prod
       transition={{ duration: 1.1, delay: (index % 4) * 0.12, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="mb-2 flex min-w-0 items-center justify-between gap-2 type-label text-[0.58rem] sm:mb-3 sm:text-[0.65rem]">
-        <span className="hidden shrink-0 text-steel sm:inline">{product.sku}</span>
         {product.badge ? (
           <span className={cn("truncate", product.badge === "AGOTADO" ? "text-red-400" : "text-bone/70")}>{t(product.badge)}</span>
         ) : product.delivery ? (
@@ -136,12 +135,15 @@ export function ProductCard({ product, index, layout = "rail" }: { product: Prod
         data-cursor-label="Ver más"
       >
         <Link href={href} aria-label={`Ver ${product.name}`} className="absolute inset-0 z-[1] cursor-pointer" />
-        <div className="absolute inset-0 transition-[transform,opacity] duration-[1.2s] ease-[var(--ease-apex)] group-hover:scale-[1.06] group-hover:opacity-0">
+        <div className={cn("absolute inset-0 transition-[transform,opacity] duration-[1.2s] ease-[var(--ease-apex)] group-hover:scale-[1.06]", product.images.secondary.src !== product.images.primary.src && "group-hover:opacity-0")}>
           <Media slot={product.images.primary} sizes="(min-width:1280px) 20vw, (min-width:1024px) 25vw, (min-width:640px) 33vw, 50vw" />
         </div>
-        <div className="absolute inset-0 scale-[1.12] opacity-0 transition-[transform,opacity] duration-[1.2s] ease-[var(--ease-apex)] group-hover:scale-100 group-hover:opacity-100">
-          <Media slot={product.images.secondary} sizes="(min-width:1280px) 20vw, (min-width:1024px) 25vw, (min-width:640px) 33vw, 50vw" />
-        </div>
+        {/* Foto de detalle al pasar el mouse: solo si es distinta de la principal. */}
+        {product.images.secondary.src !== product.images.primary.src && (
+          <div className="absolute inset-0 scale-[1.12] opacity-0 transition-[transform,opacity] duration-[1.2s] ease-[var(--ease-apex)] group-hover:scale-100 group-hover:opacity-100">
+            <Media slot={product.images.secondary} sizes="(min-width:1280px) 20vw, (min-width:1024px) 25vw, (min-width:640px) 33vw, 50vw" />
+          </div>
+        )}
 
         <span className="pointer-events-none absolute -bottom-2 -left-0.5 hidden type-display text-[4.5rem] leading-none text-outline opacity-50 transition-[transform,opacity] duration-700 group-hover:-translate-y-2 group-hover:opacity-100 sm:block lg:text-[5.5rem]">
           {pad(index + 1)}
@@ -181,7 +183,7 @@ export function ProductCard({ product, index, layout = "rail" }: { product: Prod
         </p>
         <Link
           href={href}
-          className="group/more mt-2 inline-flex w-fit items-center gap-1 type-label text-[0.6rem] text-bone/80 transition-colors hover:text-arc sm:text-[0.65rem]"
+          className="group/more inline-flex min-h-11 w-fit items-center gap-1 type-label text-[0.6rem] text-bone/80 transition-colors hover:text-arc sm:text-[0.65rem]"
           data-cursor="hover"
         >
           <span className="border-b border-line-strong pb-0.5 transition-colors group-hover/more:border-arc">Ver más</span>
@@ -206,7 +208,7 @@ function AddButton({ added, onAdd, disabled = false, compact = false }: { added:
       disabled={disabled}
       className={cn(
         "relative flex w-full items-center justify-between overflow-hidden border border-line-strong type-label transition-colors",
-        compact ? "h-10 gap-2 px-3 text-[0.6rem] sm:h-11 sm:px-4 sm:text-[0.65rem]" : "h-12 px-4",
+        compact ? "h-11 gap-2 px-3 text-[0.6rem] sm:px-4 sm:text-[0.65rem]" : "h-12 px-4",
         disabled
           ? "cursor-not-allowed text-steel"
           : added

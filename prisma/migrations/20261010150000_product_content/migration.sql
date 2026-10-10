@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "Product" ADD COLUMN "benefits" TEXT[] DEFAULT ARRAY[]::TEXT[],
+ADD COLUMN "usage" TEXT,
+ADD COLUMN "flavors" TEXT[] DEFAULT ARRAY[]::TEXT[],
+ADD COLUMN "servings" INTEGER,
+ADD COLUMN "invima" TEXT;

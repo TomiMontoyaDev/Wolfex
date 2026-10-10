@@ -65,6 +65,16 @@ const productSchema = z.object({
   active: z.boolean(),
   lowPriority: z.boolean(),
   soldOut: z.boolean(),
+  // Ficha (opcional)
+  benefits: z.string().max(600).transform((value) => value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).slice(0, 3)),
+  usage: z.string().trim().max(1000).transform((value) => value || null),
+  flavors: z.string().max(400).transform((value) => value.split(",").map((item) => item.trim()).filter(Boolean).slice(0, 20)),
+  servings: z
+    .string()
+    .trim()
+    .transform((value) => (value === "" ? null : Number(value)))
+    .refine((value) => value === null || (Number.isInteger(value) && value > 0 && value < 10_000), "Servicios inválidos."),
+  invima: z.string().trim().max(60).transform((value) => value || null),
 });
 
 function readProductForm(formData: FormData) {
@@ -84,6 +94,11 @@ function readProductForm(formData: FormData) {
     active: formData.get("active") === "on",
     lowPriority: formData.get("lowPriority") === "on",
     soldOut: formData.get("soldOut") === "on",
+    benefits: field("benefits"),
+    usage: field("usage"),
+    flavors: field("flavors"),
+    servings: field("servings"),
+    invima: field("invima"),
   });
 }
 
@@ -187,6 +202,11 @@ export async function createProductAction(_prev: ActionState, formData: FormData
         active: data.active,
         lowPriority: data.lowPriority,
         soldOut: data.soldOut,
+        benefits: data.benefits,
+        usage: data.usage,
+        flavors: data.flavors,
+        servings: data.servings,
+        invima: data.invima,
         image: imageUrl,
       },
     });
@@ -237,6 +257,11 @@ export async function updateProductDetailsAction(_prev: ActionState, formData: F
         active: data.active,
         lowPriority: data.lowPriority,
         soldOut: data.soldOut,
+        benefits: data.benefits,
+        usage: data.usage,
+        flavors: data.flavors,
+        servings: data.servings,
+        invima: data.invima,
         image: imageUrl,
       },
     });

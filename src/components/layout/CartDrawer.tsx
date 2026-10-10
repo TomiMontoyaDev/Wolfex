@@ -75,8 +75,8 @@ export function CartDrawer() {
                             <Media slot={l.product.images.primary} sizes="80px" />
                           </div>
                           <div className="flex min-w-0 flex-1 flex-col">
-                            <p className="type-label text-steel">{l.product.sku}</p>
-                            <p className="mt-1 type-title text-sm">WOLFEX {l.product.name}</p>
+                            <p className="type-label text-steel">{l.product.brand}</p>
+                            <p className="mt-1 type-title text-sm">{l.product.name}</p>
                             <p className="mt-1 text-xs text-steel">{l.color}</p>
                             <div className="mt-3 flex items-center justify-between gap-3">
                               <QuantityStepper value={l.quantity} label={l.product.name} onChange={(quantity) => setQuantity(l.key, quantity)} />
