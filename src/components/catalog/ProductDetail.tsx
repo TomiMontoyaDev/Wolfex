@@ -113,11 +113,17 @@ export function ProductDetail({ product, url }: { product: Product; /** URL abso
           <div className="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <span className={cn("font-mono text-3xl md:text-4xl", discount ? "text-arc" : "text-bone")}>{formatPrice(product.price)}</span>
             {discount && product.compareAtPrice && (
-              <s className="font-mono text-base text-steel" aria-label={`Precio público ${formatPrice(product.compareAtPrice)}`}>
-                {formatPrice(product.compareAtPrice)}
-              </s>
+              <span className="text-sm text-steel">
+                Precio público <s className="font-mono">{formatPrice(product.compareAtPrice)}</s>
+              </span>
             )}
           </div>
+          {/* Referencia: precio público sugerido por el distribuidor (lista de octubre 2026). */}
+          {discount && product.compareAtPrice && (
+            <p className="mt-2 inline-block bg-arc/15 px-2 py-1 text-sm text-arc">
+              Ahorras {formatPrice(product.compareAtPrice - product.price)} (−{discount}%) frente al precio público
+            </p>
+          )}
           {perServing && (
             <p className="mt-1 text-sm text-steel">
               <span className="font-mono text-bone">{formatPrice(perServing)}</span> por servicio · {product.servings} servicios

@@ -176,9 +176,10 @@ export function ProductCard({ product, index, layout = "rail" }: { product: Prod
         <p className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 font-mono">
           <span className={cn("text-sm sm:text-base", discount ? "text-arc" : undefined)}>{formatPrice(product.price)}</span>
           {discount && product.compareAtPrice && (
-            <s className="text-[0.7rem] text-steel sm:text-xs" aria-label={`Precio público ${formatPrice(product.compareAtPrice)}`}>
-              {formatPrice(product.compareAtPrice)}
-            </s>
+            <span className="text-[0.7rem] text-steel sm:text-xs">
+              {/* PVP = precio público del distribuidor (la referencia del tachado). */}
+              <abbr title="Precio público" className="no-underline">PVP</abbr> <s>{formatPrice(product.compareAtPrice)}</s>
+            </span>
           )}
         </p>
         <Link
