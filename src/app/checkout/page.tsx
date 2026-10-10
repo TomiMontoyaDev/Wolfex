@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ShippingNotice } from "@/components/cart/ShippingNotice";
-import { EMPTY_INVOICE, InvoiceFields, type InvoiceData } from "@/components/checkout/InvoiceFields";
 import { TrustBlock } from "@/components/checkout/TrustBlock";
 import { useLeadCapture } from "@/components/checkout/useLeadCapture";
 import { ProteinCapNote } from "@/components/combo/ComboSection";
@@ -44,8 +43,6 @@ export default function CheckoutPage() {
   const { lines, subtotal } = useCart();
   const [form, setForm] = useState({ name: "", email: "", phone: "", department: "", city: "", otherCity: "", address: "" });
   const [method, setMethod] = useState<CheckoutPaymentMethod>("MERCADOPAGO");
-  const [invoiceOn, setInvoiceOn] = useState(false);
-  const [invoice, setInvoice] = useState<InvoiceData>(EMPTY_INVOICE);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const cities = form.department ? COLOMBIA[form.department] ?? [] : [];
@@ -92,24 +89,9 @@ export default function CheckoutPage() {
       customer: { ...customer, address: pickup ? "" : customer.address, city: customer.city === OTHER_CITY ? otherCity : customer.city },
       lines: lines.map((line) => ({ productId: line.product.id, color: line.color, quantity: line.quantity })),
       paymentMethod,
-      ...(invoiceOn && { invoice: { ...invoice, dv: invoice.dv || undefined } }),
     });
-  }, [form, lines, invoiceOn, invoice, paymentMethod, pickup]);
+  }, [form, lines, paymentMethod, pickup]);
 
-  // Al pedir factura, se precargan los datos de entrega (el cliente puede cambiarlos).
-  function toggleInvoice(enabled: boolean) {
-    setInvoiceOn(enabled);
-    if (!enabled) return;
-    setInvoice((current) => ({
-      ...current,
-      legalName: current.legalName || form.name,
-      email: current.email || form.email,
-      phone: current.phone || form.phone.replace(/\D/g, "").replace(/^57(?=\d{10}$)/, ""),
-      address: current.address || form.address,
-      department: current.department || form.department,
-      city: current.city || deliveryCity,
-    }));
-  }
   // Misma clave mientras no cambien los datos: un doble clic o reintento no crea un pedido duplicado.
   const idempotencyKey = useMemo(() => (payload ? crypto.randomUUID() : ""), [payload]);
 
@@ -241,7 +223,6 @@ export default function CheckoutPage() {
               Guardamos tus datos de contacto para ayudarte a completar tu compra.{" "}
               <Link href="/privacidad" className="underline underline-offset-2 transition-colors hover:text-arc">Política de privacidad</Link>
             </p>
-            <InvoiceFields enabled={invoiceOn} onToggle={toggleInvoice} value={invoice} onChange={setInvoice} inputClass={inputClass} />
 
             {/* Método de pago */}
             <fieldset className="mt-8 border-t border-line pt-6">

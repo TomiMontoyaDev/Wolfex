@@ -5,7 +5,7 @@ import { SHIPPING_SUMMARY } from "@/config/shipping";
 
 export const metadata: Metadata = {
   title: "Preguntas frecuentes",
-  description: "Resolvemos tus dudas sobre pagos, envíos, productos originales, vencimientos, devoluciones y facturas en WOLFEX.",
+  description: "Resolvemos tus dudas sobre pagos, envíos, productos originales, vencimientos y devoluciones en WOLFEX.",
   alternates: { canonical: "/preguntas-frecuentes" },
 };
 
@@ -24,10 +24,6 @@ const FAQ: Array<[string, ReactNode]> = [
     </>,
   ],
   ["¿Cómo sé qué suplemento me sirve?", "En cada producto, “Ver más” explica para qué sirve. Si tienes dudas, escríbenos y te ayudamos a elegir. Si tienes alguna condición médica, consulta a tu médico antes de tomar suplementos."],
-  [
-    "¿Entregan factura?",
-    "Sí. Puedes pedir factura electrónica marcando la opción “Necesito factura electrónica” al hacer tu pedido, o escribiéndonos por WhatsApp con tu número de pedido. Necesitamos: nombre completo o razón social, tipo y número de documento (cédula o NIT), correo electrónico para recibir la factura, dirección, ciudad y teléfono.",
-  ],
 ];
 
 export default function FaqPage() {

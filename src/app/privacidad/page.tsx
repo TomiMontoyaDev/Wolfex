@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { InfoLink, InfoPage } from "@/components/info/InfoPage";
 import { CONTACT } from "@/lib/site-config";
 
+/** Responsable del tratamiento de datos (Ley 1581): persona natural mientras no haya razón social/NIT. */
+const RESPONSIBLE = { name: "Tomás Montoya", document: "C.C. 1089600231" } as const;
+
 export const metadata: Metadata = {
   title: "Política de privacidad",
   description: "Cómo WOLFEX recolecta, usa y protege tus datos personales, de acuerdo con la Ley 1581 de 2012.",
@@ -19,7 +22,7 @@ export default function PrivacyPage() {
         {
           title: "Responsable del tratamiento",
           body: [
-            `${CONTACT.owner}, ${CONTACT.location}.`,
+            `${RESPONSIBLE.name}, ${RESPONSIBLE.document}. ${CONTACT.location}.`,
             <>
               Correo: <InfoLink href={`mailto:${CONTACT.email}`}>{CONTACT.email}</InfoLink> · WhatsApp: <InfoLink href={CONTACT.whatsapp.url}>{CONTACT.whatsapp.display}</InfoLink>.
             </>,
@@ -33,7 +36,6 @@ export default function PrivacyPage() {
               "Los datos de contacto y entrega que escribes en el checkout, junto con los productos de tu carrito, se guardan aunque no termines el pago, para poder ayudarte a completar tu compra.",
               "Datos del pedido: productos, valores y estado del pago. Los datos de tu tarjeta los procesa Mercado Pago; nosotros no los vemos ni los guardamos.",
               "Datos de navegación anónimos y agregados (páginas visitadas, tipo de dispositivo), para mejorar la tienda.",
-              "Si solicitas factura electrónica: nombre o razón social, tipo y número de documento (cédula o NIT), correo de facturación, dirección y ciudad.",
             ],
           ],
         },
@@ -44,7 +46,6 @@ export default function PrivacyPage() {
               "Procesar, despachar y hacer seguimiento a tus pedidos.",
               "Contactarte sobre tu compra (confirmaciones, envío, cambios) o, si la dejaste a mitad de camino, para ayudarte a completarla.",
               "Cumplir obligaciones legales, contables y tributarias.",
-              "Expedir la factura electrónica cuando la solicites.",
               "Enviarte ofertas solo si lo autorizas; puedes darte de baja cuando quieras.",
             ],
           ],
@@ -57,7 +58,6 @@ export default function PrivacyPage() {
               "Mercado Pago, para procesar el pago.",
               "La transportadora y nuestro aliado mayorista, para entregar tu pedido.",
               "Proveedores de tecnología que alojan la tienda y la base de datos (Vercel, Neon).",
-              "El proveedor de facturación electrónica autorizado por la DIAN, cuando solicites factura.",
               "Meta (Facebook e Instagram), para medir y mejorar nuestros anuncios mediante el píxel de Meta y su API de Conversiones. Tu correo, teléfono, nombre y ciudad se envían convertidos en un código irreversible (hash SHA-256), nunca en texto plano.",
             ],
           ],
