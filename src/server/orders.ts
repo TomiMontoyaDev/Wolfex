@@ -1,9 +1,9 @@
 import "server-only";
 import { randomInt, randomUUID } from "node:crypto";
 import { PICKUP_CITY } from "@/config/payments";
-import { quoteShipping } from "@/config/shipping";
+import { LOOSE_ITEM_MESSAGE, hasAnchorItem, isLooseItem } from "@/config/cart";
+import { cartShippingProfile, quoteShipping } from "@/config/shipping";
 import { Prisma } from "@/generated/prisma/client";
-import { productWeightKg } from "@/lib/weight";
 import { computeCombo } from "./combo";
 import { db } from "./db";
 import { mpPreferences } from "./mercadopago";
@@ -83,6 +83,11 @@ export async function createOrder(input: CheckoutInput, idempotencyKey?: string,
     };
   });
 
+  // Sueltos (sobres, latas…): solo junto a un producto principal.
+  if (items.some((item) => isLooseItem(item.unitPrice)) && !hasAnchorItem(items.map((item) => item.unitPrice))) {
+    throw new CheckoutError(LOOSE_ITEM_MESSAGE);
+  }
+
   // Descuento por combo: lo calcula el servidor con los precios y costos de la base (tope de margen por producto).
   const combo = await computeCombo(items.map((item) => ({ productId: item.productId, quantity: item.quantity })));
   for (const item of items) Object.assign(item, { unitDiscount: combo.unitDiscounts.get(item.productId) ?? 0 });
@@ -92,12 +97,12 @@ export async function createOrder(input: CheckoutInput, idempotencyKey?: string,
   const tax = 0; // Precios con IVA incluido.
   const { customer, paymentMethod } = input;
 
-  // Envío: lo calcula y lo cobra el servidor (tarifa por zona + recargo por peso). Recoger en Pereira = sin envío.
+  // Envío: lo calcula y lo cobra el servidor (zona, si todo es de stock propio y si hay productos pesados). Recoger en Pereira = sin envío.
   if (paymentMethod === "PICKUP" && !(customer.city && normalizeCity(customer.city) === normalizeCity(PICKUP_CITY))) {
     throw new CheckoutError(`La opción de recoger solo está disponible en ${PICKUP_CITY}.`);
   }
-  const weightKg = items.reduce((sum, item) => sum + productWeightKg(byId.get(item.productId)!) * item.quantity, 0);
-  const shipping = quoteShipping({ subtotal: subtotal - discount, weightKg, city: customer.city, department: customer.department });
+  const profile = cartShippingProfile(items.map((item) => byId.get(item.productId)!).map((product) => ({ delivery: product.fulfillment, heavy: product.heavy })));
+  const shipping = quoteShipping({ subtotal: subtotal - discount, city: customer.city, department: customer.department, profile });
   if (paymentMethod !== "PICKUP" && shipping.cost === null) {
     throw new CheckoutError("El envío a tu departamento se cotiza por WhatsApp: escríbenos y te ayudamos a terminar la compra.");
   }
@@ -166,7 +171,7 @@ export async function createOrder(input: CheckoutInput, idempotencyKey?: string,
               invoiceRequest: { create: input.invoice },
             }),
             items: { create: items },
-            events: { create: { type: "ORDER_CREATED", actor: "checkout", metadata: { items: items.length, total, paymentMethod, shippingCost, weightKg: Math.round(weightKg * 100) / 100, ...(discount && { comboDiscount: discount, comboPercent: combo.percent }) } } },
+            events: { create: { type: "ORDER_CREATED", actor: "checkout", metadata: { items: items.length, total, paymentMethod, shippingCost, heavy: profile.heavy, allStock: profile.allStock, ...(discount && { comboDiscount: discount, comboPercent: combo.percent }) } } },
           },
         });
       });

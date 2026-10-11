@@ -6,11 +6,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/components/providers/CartProvider";
 import { NEON_SESSION_KEY } from "@/components/promo/NeonPromoModal";
-import { FREE_SHIPPING_NATIONAL_MIN, FREE_SHIPPING_PEREIRA_MIN, LOCAL_CITY } from "@/config/shipping";
+import { FREE_SHIPPING_LINE, LOCAL_CITY } from "@/config/shipping";
 import { MAX_COMBO_PERCENT } from "@/lib/combo";
 import { trackCustom } from "@/lib/meta-pixel";
 import { whatsappLink } from "@/lib/site-config";
-import { formatPrice } from "@/lib/utils";
 
 const SEEN_KEY = "wfx_goal_seen";
 const DELAY_MS = 9_000;
@@ -149,7 +148,7 @@ export function GoalFinder() {
             </div>
 
             <ul className="mt-5 grid gap-1.5 border-t border-line pt-4 text-xs text-steel">
-              <li>🚚 Envío GRATIS en {LOCAL_CITY} desde {formatPrice(FREE_SHIPPING_PEREIRA_MIN)} · nacional desde {formatPrice(FREE_SHIPPING_NATIONAL_MIN)}</li>
+              <li>🚚 {FREE_SHIPPING_LINE}</li>
               <li>⚡ Entrega HOY en {LOCAL_CITY} en productos seleccionados</li>
               <li>🔒 Pago seguro con Mercado Pago</li>
             </ul>

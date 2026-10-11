@@ -1,3 +1,5 @@
+import { WHATSAPP_PAGOS, formatWhatsapp } from "@/lib/site-config";
+
 /**
  * Pago por transferencia o llave (método alterno a Mercado Pago).
  * El titular va SOLO enmascarado: el nombre completo no debe aparecer en el código ni en la página.
@@ -10,12 +12,19 @@ export const TRANSFER_DETAILS = {
   holderMasked: "Tom*** Mon*** Bui***",
 } as const;
 
-/** Métodos de pago que ofrece el checkout. */
-export const PAYMENT_METHODS = {
+/**
+ * Métodos de pago que ofrece el checkout, en este orden. La transferencia va primero y destacada:
+ * no tiene comisión (Mercado Pago cobra 3,29% + $800 por venta).
+ */
+export const PAYMENT_METHODS: Record<"TRANSFER" | "MERCADOPAGO" | "PICKUP", { label: string; hint: string; badge?: string }> = {
+  TRANSFER: {
+    label: "Transferencia · Nequi · Bre-B",
+    hint: `Bancolombia, Nequi o llave Bre-B · confirmación inmediata por WhatsApp ${formatWhatsapp(WHATSAPP_PAGOS)}`,
+    badge: "Recomendado",
+  },
   MERCADOPAGO: { label: "Mercado Pago", hint: "Tarjeta, PSE, Nequi y más · confirmación inmediata" },
-  TRANSFER: { label: "Transferencia o llave", hint: "Bancolombia / Nequi / Bre-B · envías el comprobante por WhatsApp" },
   PICKUP: { label: "Recoger y pagar en Pereira", hint: "Coordinamos la hora y el lugar por WhatsApp" },
-} as const;
+};
 
 export type CheckoutPaymentMethod = keyof typeof PAYMENT_METHODS;
 

@@ -65,6 +65,7 @@ export default async function EditProductPage({ params, searchParams }: { params
             active: product.active,
             lowPriority: product.lowPriority,
             soldOut: product.soldOut,
+            heavy: product.heavy,
             benefits: product.benefits,
             usage: product.usage,
             flavors: product.flavors,

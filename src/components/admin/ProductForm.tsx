@@ -25,6 +25,7 @@ export interface ProductFormValues {
   active: boolean;
   lowPriority: boolean;
   soldOut: boolean;
+  heavy: boolean;
   benefits: string[];
   usage: string | null;
   flavors: string[];
@@ -203,6 +204,13 @@ export function ProductForm({ action, values, categories, submitLabel }: { actio
           <span className="text-sm text-bone">
             Agotado en el proveedor
             <span className="mt-0.5 block text-xs text-steel">Se sigue viendo en la tienda con &quot;Agotado&quot;, pero no se puede comprar ni sale en combos ni destacados.</span>
+          </span>
+        </label>
+        <label className="flex items-start gap-3">
+          <input type="checkbox" name="heavy" defaultChecked={values.heavy} className="mt-0.5 h-5 w-5 shrink-0 accent-[#0066ff]" />
+          <span className="text-sm text-bone">
+            Producto pesado
+            <span className="mt-0.5 block text-xs text-steel">5 libras o más, creatinas de 1 kg o de 200+ servicios. Con él, el envío nacional es gratis solo desde $250.000 (por debajo, recargo de $9.900).</span>
           </span>
         </label>
         <label className="flex items-start gap-3">

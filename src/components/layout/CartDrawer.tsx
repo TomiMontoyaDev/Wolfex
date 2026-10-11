@@ -8,6 +8,8 @@ import { useComboQuote } from "@/components/combo/useComboQuote";
 import { comboStatus } from "@/lib/combo";
 import { useRouter } from "next/navigation";
 import { ShippingNotice } from "@/components/cart/ShippingNotice";
+import { LOOSE_ITEM_MESSAGE } from "@/config/cart";
+import { cartShippingProfile } from "@/config/shipping";
 import { TrustBlock } from "@/components/checkout/TrustBlock";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -19,11 +21,11 @@ import { formatPrice } from "@/lib/utils";
 export function CartDrawer() {
   const router = useRouter();
   const { t } = useLanguage();
-  const { isOpen, close, lines, subtotal, remove, setQuantity, count } = useCart();
+  const { isOpen, close, lines, subtotal, remove, setQuantity, count, looseWithoutAnchor } = useCart();
   const quoteLines = useMemo(() => lines.map((line) => ({ productId: line.product.id, quantity: line.quantity })), [lines]);
   const { quote } = useComboQuote(quoteLines);
-  // Peso total del pedido (para el recargo por peso del envío).
-  const weightKg = lines.reduce((sum, line) => sum + (line.product.weightKg ?? 1) * line.quantity, 0);
+  // Lo que del carrito cambia el envío: todo entrega HOY y productos pesados.
+  const shippingProfile = cartShippingProfile(lines.map((line) => line.product));
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
@@ -95,7 +97,8 @@ export function CartDrawer() {
               {lines.length > 0 && (
                 <div className="mb-5 space-y-4">
                   <ComboProgress {...comboStatus(lines.map((line) => ({ productId: line.product.id, price: line.product.price })))} />
-                  <ShippingNotice subtotal={subtotal - quote.discount} weightKg={weightKg} />
+                  <ShippingNotice subtotal={subtotal - quote.discount} profile={shippingProfile} />
+                  {looseWithoutAnchor && <p className="border border-amber-400/40 bg-amber-400/10 px-3 py-2.5 text-xs text-amber-100">{LOOSE_ITEM_MESSAGE}</p>}
                 </div>
               )}
               <div className="flex justify-between text-sm text-steel">

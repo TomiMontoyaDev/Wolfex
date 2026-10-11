@@ -14,7 +14,8 @@ import { useComboQuote } from "@/components/combo/useComboQuote";
 import { useCart } from "@/components/providers/CartProvider";
 import { Media } from "@/components/ui/Media";
 import { PAYMENT_METHODS, PICKUP_CITY, type CheckoutPaymentMethod } from "@/config/payments";
-import { quoteShipping } from "@/config/shipping";
+import { LOOSE_ITEM_MESSAGE } from "@/config/cart";
+import { cartShippingProfile, quoteShipping } from "@/config/shipping";
 import { COLOMBIA, DEPARTMENTS, OTHER_CITY } from "@/data/colombia";
 import { track } from "@/lib/meta-pixel";
 import { whatsappLink } from "@/lib/site-config";
@@ -40,9 +41,9 @@ const SUBMIT_LABEL: Record<CheckoutPaymentMethod, string> = {
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { lines, subtotal } = useCart();
+  const { lines, subtotal, looseWithoutAnchor } = useCart();
   const [form, setForm] = useState({ name: "", email: "", phone: "", department: "", city: "", otherCity: "", address: "" });
-  const [method, setMethod] = useState<CheckoutPaymentMethod>("MERCADOPAGO");
+  const [method, setMethod] = useState<CheckoutPaymentMethod>("TRANSFER");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const cities = form.department ? COLOMBIA[form.department] ?? [] : [];
@@ -58,9 +59,9 @@ export default function CheckoutPage() {
   const quoteLines = useMemo(() => lines.map((line) => ({ productId: line.product.id, quantity: line.quantity })), [lines]);
   const { quote } = useComboQuote(quoteLines, { suggest: true });
   const productsTotal = subtotal - quote.discount;
-  const weightKg = lines.reduce((sum, line) => sum + (line.product.weightKg ?? 1) * line.quantity, 0);
+  const shippingProfile = cartShippingProfile(lines.map((line) => line.product));
   // Envío: misma regla que el servidor (que es quien cobra).
-  const shipping = form.department ? quoteShipping({ subtotal: productsTotal, weightKg, city: deliveryCity || null, department: form.department }) : null;
+  const shipping = form.department ? quoteShipping({ subtotal: productsTotal, city: deliveryCity || null, department: form.department, profile: shippingProfile }) : null;
   const quoteOnly = shipping?.zone === "quote";
   const shippingCost = pickup ? 0 : (shipping?.cost ?? 0);
   const total = productsTotal + shippingCost;
@@ -253,7 +254,10 @@ export default function CheckoutPage() {
                     >
                       <input type="radio" name="paymentMethod" value={key} checked={paymentMethod === key} onChange={() => setMethod(key)} className="mt-1 h-5 w-5 shrink-0 accent-[#0066ff]" />
                       <span>
-                        <span className="block type-title text-sm text-bone">{PAYMENT_METHODS[key].label}</span>
+                        <span className="flex flex-wrap items-center gap-2 type-title text-sm text-bone">
+                          {PAYMENT_METHODS[key].label}
+                          {PAYMENT_METHODS[key].badge && <span className="bg-arc px-1.5 py-0.5 type-label text-[0.58rem] text-void">{PAYMENT_METHODS[key].badge}</span>}
+                        </span>
                         <span className="mt-0.5 block text-xs text-steel">{PAYMENT_METHODS[key].hint}</span>
                       </span>
                     </label>
@@ -262,6 +266,7 @@ export default function CheckoutPage() {
               )}
             </fieldset>
 
+            {looseWithoutAnchor && <p className="mt-5 border border-amber-400/40 bg-amber-400/10 px-3 py-2.5 text-xs text-amber-100">{LOOSE_ITEM_MESSAGE}</p>}
             {error && <p role="alert" className="mt-5 text-sm text-red-400">{error}</p>}
             {!quoteOnly && (
               <button disabled={loading} className="group relative mt-8 flex h-16 w-full items-center justify-between overflow-hidden bg-volt px-5 type-title text-sm text-bone transition-shadow hover:shadow-[0_0_35px_rgba(0,102,255,0.38)] disabled:opacity-50">
@@ -301,13 +306,19 @@ export default function CheckoutPage() {
               )}
               {quote.capped && <ProteinCapNote />}
               <div className="flex justify-between gap-4 text-steel">
-                <span>Envío{shipping && shipping.surcharge > 0 && !pickup ? " (incluye recargo por peso)" : ""}</span>
+                <span>Envío</span>
                 <span className="text-right font-mono">
-                  {pickup ? `Recoges en ${PICKUP_CITY}` : !shipping ? "Elige tu ciudad" : quoteOnly ? "A cotizar" : shippingCost === 0 ? <span className="type-label text-arc">GRATIS</span> : formatPrice(shippingCost)}
+                  {pickup ? `Recoges en ${PICKUP_CITY}` : !shipping ? "Elige tu ciudad" : quoteOnly ? "A cotizar" : shipping.base === 0 ? <span className="type-label text-arc">GRATIS</span> : formatPrice(shipping.base)}
                 </span>
               </div>
+              {!pickup && shipping && shipping.surcharge > 0 && (
+                <div className="flex justify-between gap-4 text-steel">
+                  <span>Recargo por peso <span className="block text-[0.68rem] text-steel/80">Producto pesado: envío nacional gratis desde $250.000</span></span>
+                  <span className="font-mono">{formatPrice(shipping.surcharge)}</span>
+                </div>
+              )}
               <div className="flex justify-between border-t border-line pt-4 type-title text-lg"><span>Total</span><span className="font-mono text-arc">{quoteOnly ? `${formatPrice(productsTotal)} + envío` : formatPrice(total)}</span></div>
-              {!pickup && <div className="pt-2"><ShippingNotice subtotal={productsTotal} weightKg={weightKg} city={deliveryCity || undefined} department={form.department || undefined} /></div>}
+              {!pickup && <div className="pt-2"><ShippingNotice subtotal={productsTotal} profile={shippingProfile} city={deliveryCity || undefined} department={form.department || undefined} /></div>}
             </div>
             <ComboUpsell quote={quote} />
           </motion.aside>

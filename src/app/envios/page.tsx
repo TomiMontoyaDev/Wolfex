@@ -1,20 +1,11 @@
 import type { Metadata } from "next";
 import { InfoLink, InfoPage } from "@/components/info/InfoPage";
-import {
-  FREE_SHIPPING_NATIONAL_MIN,
-  FREE_SHIPPING_PEREIRA_MIN,
-  LOCAL_ZONE_LABEL,
-  QUOTE_ONLY_DEPARTMENTS,
-  SHIPPING_RATE_LOCAL,
-  SHIPPING_RATE_NATIONAL,
-  WEIGHT_SURCHARGE,
-} from "@/config/shipping";
+import { FREE_SHIPPING_LINE, QUOTE_ONLY_DEPARTMENTS, SHIPPING_RULES } from "@/config/shipping";
 import { CONTACT } from "@/lib/site-config";
-import { formatPrice } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Envíos",
-  description: `Envío gratis en Pereira y Dosquebradas desde ${formatPrice(FREE_SHIPPING_PEREIRA_MIN)} y al resto de Colombia desde ${formatPrice(FREE_SHIPPING_NATIONAL_MIN)}. Entrega el mismo día en Pereira.`,
+  description: `${FREE_SHIPPING_LINE}. Entrega el mismo día en Pereira.`,
   alternates: { canonical: "/envios" },
 };
 
@@ -33,9 +24,8 @@ export default function ShippingPage() {
           body: [
             "El envío se paga junto con tu pedido y lo ves en el carrito y en el checkout antes de pagar.",
             [
-              `${LOCAL_ZONE_LABEL}: ${formatPrice(SHIPPING_RATE_LOCAL)}. Gratis en compras desde ${formatPrice(FREE_SHIPPING_PEREIRA_MIN)}.`,
-              `Resto de Colombia: ${formatPrice(SHIPPING_RATE_NATIONAL)}. Gratis en compras desde ${formatPrice(FREE_SHIPPING_NATIONAL_MIN)}.`,
-              `Pedidos de más de ${WEIGHT_SURCHARGE.includedKg} kg: ${formatPrice(WEIGHT_SURCHARGE.perKg)} por cada kg adicional (también con envío gratis).`,
+              ...SHIPPING_RULES,
+              "El mínimo para el envío gratis se cuenta con el descuento de combo ya aplicado.",
               <>{QUOTE_ONLY_DEPARTMENTS.join(", ")}: el envío se cotiza según la dirección; escríbenos por {whatsapp} y te ayudamos con la compra.</>,
             ],
           ],

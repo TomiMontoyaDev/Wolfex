@@ -5,9 +5,8 @@ import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { COMBO_TIERS } from "@/config/combos";
 import { NEON_PROMO } from "@/config/promo";
-import { FREE_SHIPPING_NATIONAL_MIN, FREE_SHIPPING_PEREIRA_MIN, LOCAL_CITY } from "@/config/shipping";
+import { FREE_SHIPPING_LINE } from "@/config/shipping";
 import { trackCustom } from "@/lib/meta-pixel";
-import { formatPrice } from "@/lib/utils";
 import { NeonScene, WantedStars } from "./NeonScene";
 
 /** Título con efecto glitch neón (dos copias desfasadas en rosa y cian). */
@@ -99,7 +98,7 @@ export function NeonPromo({ variant = "section" }: { variant?: "section" | "page
             ))}
           </div>
           <p className="mt-3 max-w-xl bg-black/45 px-3 py-1.5 text-xs text-white/85 backdrop-blur-sm">
-            🚚 Envío GRATIS en {LOCAL_CITY} desde {formatPrice(FREE_SHIPPING_PEREIRA_MIN)} y a toda Colombia desde {formatPrice(FREE_SHIPPING_NATIONAL_MIN)}. El descuento se aplica solo en el carrito.
+            🚚 {FREE_SHIPPING_LINE}. El descuento de combo se aplica solo en el carrito.
           </p>
           <div className="mt-6 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row">
             <motion.a

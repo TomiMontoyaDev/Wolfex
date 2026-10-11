@@ -50,6 +50,7 @@ function toStorefront(product: DbProduct): Product {
     ...(!available && { badge: "AGOTADO" as const }),
     ...(product.compareAtPrice && product.compareAtPrice > product.price && { compareAtPrice: product.compareAtPrice }),
     ...(product.fulfillment && { delivery: product.fulfillment }),
+    ...(product.heavy && { heavy: true }),
     spec: product.category ?? "",
     images: { primary: slot(`${product.name}, vista principal`), secondary: slot(`${product.name}, detalle`) },
   };
@@ -70,7 +71,7 @@ const loadCatalogData = unstable_cache(
     return { products: storefront, lowPriorityIds: products.filter((p) => p.lowPriority).map((p) => p.id) };
   },
   // Subir la versión de la clave invalida la caché al desplegar (útil tras cambios masivos hechos directo en la base).
-  ["storefront-catalog", "v14"],
+  ["storefront-catalog", "v15"],
   { tags: [PRODUCTS_TAG], revalidate: 3600 },
 );
 

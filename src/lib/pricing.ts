@@ -18,8 +18,8 @@ export const ADDON_MAX_PRICE = 50_000;
 export const MIN_NET_MARGIN = 0.15;
 /** Margen neto objetivo cuando no hay precio de competencia. */
 const TARGET_NET_MARGIN = 0.22;
-/** Descuento mínimo frente al precio público para mostrar el tachado. */
-export const MIN_VISIBLE_DISCOUNT = 0.05;
+/** Descuento mínimo frente al precio público (PVP) para mostrar el badge −X% (el PVP tachado se ve siempre que sea mayor). */
+export const MIN_VISIBLE_DISCOUNT = 0.01;
 
 export interface CostProfile {
   /** Precio mayorista. */
@@ -117,8 +117,7 @@ export function suggestPrice(product: CostProfile, competitorPrice?: number): nu
 }
 
 /**
- * Descuento a mostrar frente al precio público del proveedor (precio tachado).
- * Menos de 5% no se muestra: un tachado casi igual al precio se ve pobre.
+ * Descuento (%) a mostrar frente al precio público del proveedor (PVP tachado). Bajo 1% no hay badge.
  */
 export function visibleDiscount(price: number, compareAtPrice?: number | null): number | null {
   if (!compareAtPrice || compareAtPrice <= price) return null;

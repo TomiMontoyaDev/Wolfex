@@ -4,11 +4,14 @@
  * (ver src/server/combo.ts): por eso en la tienda se anuncia "hasta X%".
  */
 
-/** Niveles por cantidad de productos DISTINTOS que cuentan para el combo. */
+/**
+ * Niveles por cantidad de productos DISTINTOS que cuentan para el combo. Tope de la tienda: −5%
+ * (los precios ya están 2.000–5.000 bajo el PVP). Se calcula sobre el precio vigente de cada producto.
+ */
 export const COMBO_TIERS = [
-  { minItems: 2, percent: 5 },
-  { minItems: 3, percent: 8 },
-  { minItems: 4, percent: 10 },
+  { minItems: 2, percent: 3 },
+  { minItems: 3, percent: 4 },
+  { minItems: 4, percent: 5 },
 ] as const;
 
 /**
@@ -22,7 +25,7 @@ export const COMBO_MIN_ITEM_PRICE = 40_000;
 
 /**
  * Proteínas grandes (categoría PROTEINAS desde 2 libras, incluye ganadores de masa): cuentan para subir de nivel,
- * pero su descuento tiene este tope aunque el combo esté en −8% o −10%.
+ * pero su descuento tiene este tope (hoy igual al máximo de la tienda).
  */
 export const COMBO_LARGE_PROTEIN = { category: "PROTEINAS", minPounds: 2, maxPercent: 5 } as const;
 

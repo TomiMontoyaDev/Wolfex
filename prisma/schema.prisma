@@ -175,6 +175,8 @@ model Product {
   soldOut        Boolean      @default(false)
   /// Peso de envío en kg (con empaque). Vacío = se estima por el nombre (1 kg si no se puede).
   weightKg       Float?
+  /// Producto pesado (5 lb o más, creatinas de 1 kg o ≥200 servicios): cambia el envío nacional (ver src/config/shipping.ts).
+  heavy          Boolean      @default(false)
   /// Ficha del producto (todo opcional: la página muestra solo lo que exista).
   /// Hasta 3 beneficios cortos.
   benefits       String[]     @default([])

@@ -2,7 +2,7 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 import { COMBO_MIN_ITEM_PRICE, COMBO_MIN_NET_MARGIN, RECOMMENDED_COMBOS } from "@/config/combos";
 import type { Product } from "@/data/products";
-import { comboItemCount, comboTier, linePercent, nextComboTier } from "@/lib/combo";
+import { MAX_COMBO_PERCENT, comboItemCount, comboTier, linePercent, nextComboTier } from "@/lib/combo";
 import { getCatalogProducts, PRODUCTS_TAG } from "@/lib/commerce";
 import { breakEvenPrice, MIN_NET_MARGIN, type CostProfile } from "@/lib/pricing";
 import { db } from "./db";
@@ -92,10 +92,10 @@ export const getComboSuggestionPool = unstable_cache(
       where: { active: true, lowPriority: false, price: { gte: COMBO_MIN_ITEM_PRICE }, costPrice: { not: null }, OR: [{ stock: null }, { stock: { gt: 0 } }] },
       select: { id: true, price: true, costPrice: true, fulfillment: true, name: true, category: true },
     });
-    // Aguanta el 10% completo sin bajar del margen mínimo real.
-    return withRoom.filter((product) => product.price * 0.9 >= floorPrice(profileOf(product)!)).map((product) => product.id);
+    // Aguanta el descuento máximo del combo sin bajar del margen mínimo real.
+    return withRoom.filter((product) => product.price * (1 - MAX_COMBO_PERCENT / 100) >= floorPrice(profileOf(product)!)).map((product) => product.id);
   },
-  ["combo-suggestion-pool", "v5"],
+  ["combo-suggestion-pool", "v6"],
   { tags: [PRODUCTS_TAG], revalidate: 3600 },
 );
 
@@ -150,7 +150,7 @@ export const getRecommendedCombos = unstable_cache(
     }
     return views;
   },
-  ["recommended-combos", "v8"],
+  ["recommended-combos", "v9"],
   { tags: [PRODUCTS_TAG], revalidate: 3600 },
 );
 

@@ -3,31 +3,30 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Truck } from "lucide-react";
 import {
-  FREE_SHIPPING_NATIONAL_MIN,
-  FREE_SHIPPING_PEREIRA_MIN,
+  FREE_SHIPPING_HEAVY_MIN,
+  HEAVY_SURCHARGE,
   LOCAL_ZONE_LABEL,
-  SHIPPING_RATE_LOCAL,
-  SHIPPING_RATE_NATIONAL,
-  WEIGHT_SURCHARGE,
+  type CartShippingProfile,
   quoteShipping,
-  weightSurcharge,
 } from "@/config/shipping";
 import { formatPrice } from "@/lib/utils";
 
 /**
  * Envío visible antes de pagar. Con `city` (checkout): el costo exacto de esa ciudad.
- * Sin ciudad (carrito): la tarifa de las dos zonas con su barra "Te faltan $X para envío GRATIS".
- * `subtotal` = productos menos descuento de combo.
+ * Sin ciudad (carrito): las dos zonas con su barra "Te faltan $X para envío GRATIS".
+ * `subtotal` = productos menos descuento de combo. `profile` = si todo es entrega HOY y si hay productos pesados.
  */
-export function ShippingNotice({ subtotal, weightKg = 0, city, department }: { subtotal: number; weightKg?: number; city?: string; department?: string }) {
-  const surcharge = weightSurcharge(weightKg);
-  const quote = city ? quoteShipping({ subtotal, weightKg, city, department }) : null;
-  const allFree = quote ? quote.free : subtotal >= FREE_SHIPPING_NATIONAL_MIN;
+export function ShippingNotice({ subtotal, profile, city, department }: { subtotal: number; profile: CartShippingProfile; city?: string; department?: string }) {
+  const local = quoteShipping({ subtotal, city: "Pereira", profile });
+  const national = quoteShipping({ subtotal, city: "Bogotá", profile });
+  const quote = city ? quoteShipping({ subtotal, city, department, profile }) : null;
+  const allFree = quote ? quote.free : local.free && national.free;
 
   if (quote?.zone === "quote") {
     return <p className="border border-amber-400/40 bg-amber-400/10 px-3 py-2.5 text-xs text-amber-100">Envío a cotizar: tu departamento no tiene pago en línea. Escríbenos por WhatsApp y te ayudamos a terminar la compra.</p>;
   }
 
+  const localLabel = `en ${LOCAL_ZONE_LABEL}`;
   return (
     <div className="space-y-2.5">
       <AnimatePresence mode="wait" initial={false}>
@@ -42,24 +41,27 @@ export function ShippingNotice({ subtotal, weightKg = 0, city, department }: { s
             role="status"
           >
             <Truck className="h-4 w-4 text-arc" strokeWidth={1.75} aria-hidden="true" />
-            <span className="type-title text-sm text-arc">¡ENVÍO GRATIS!</span>
+            <span className="type-title text-sm text-arc">¡Tienes envío GRATIS!</span>
           </motion.div>
         ) : (
           <motion.div key="paid" className="space-y-2.5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
             {quote ? (
-              <Progress subtotal={subtotal} min={quote.zone === "local" ? FREE_SHIPPING_PEREIRA_MIN : FREE_SHIPPING_NATIONAL_MIN} fee={quote.base} label={quote.zone === "local" ? `en ${LOCAL_ZONE_LABEL}` : "nacional"} />
+              <Progress subtotal={subtotal} min={quote.freeMin!} fee={quote.cost ?? 0} label={quote.zone === "local" ? localLabel : "a tu ciudad"} />
             ) : (
               <>
-                <Progress subtotal={subtotal} min={FREE_SHIPPING_PEREIRA_MIN} fee={SHIPPING_RATE_LOCAL} label={`en ${LOCAL_ZONE_LABEL}`} />
-                <Progress subtotal={subtotal} min={FREE_SHIPPING_NATIONAL_MIN} fee={SHIPPING_RATE_NATIONAL} label="al resto del país" />
+                <Progress subtotal={subtotal} min={local.freeMin!} fee={local.cost ?? 0} label={localLabel} />
+                <Progress subtotal={subtotal} min={national.freeMin!} fee={national.cost ?? 0} label="al resto del país" />
               </>
             )}
           </motion.div>
         )}
       </AnimatePresence>
-      {surcharge > 0 && (
+      {!profile.allStock && (!quote || quote.zone === "local") && (
+        <p className="text-[0.68rem] leading-snug text-steel">En {LOCAL_ZONE_LABEL}: gratis desde {formatPrice(local.freeMin!)} porque tu pedido incluye productos bajo pedido (solo entrega HOY: desde $50.000).</p>
+      )}
+      {profile.heavy && (!quote || quote.zone === "national") && (
         <p className="text-[0.68rem] leading-snug text-steel">
-          + {formatPrice(surcharge)} por peso (pedido de {weightKg.toFixed(1).replace(".", ",")} kg; incluye {WEIGHT_SURCHARGE.includedKg} kg).
+          Llevas un producto pesado: envío nacional gratis desde {formatPrice(FREE_SHIPPING_HEAVY_MIN)}; por debajo se suma un recargo por peso de {formatPrice(HEAVY_SURCHARGE)}.
         </p>
       )}
     </div>
@@ -73,7 +75,7 @@ function Progress({ subtotal, min, fee, label }: { subtotal: number; min: number
       <div className="flex items-start justify-between gap-3 text-[0.72rem] text-steel">
         {reached ? (
           <span className="flex items-center gap-1 text-arc">
-            <Check className="h-3 w-3" strokeWidth={2} aria-hidden="true" /> Envío GRATIS {label}
+            <Check className="h-3 w-3" strokeWidth={2} aria-hidden="true" /> ¡Tienes envío GRATIS {label}!
           </span>
         ) : (
           <span>

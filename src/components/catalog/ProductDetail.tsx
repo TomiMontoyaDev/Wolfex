@@ -8,7 +8,7 @@ import { QuantityStepper } from "@/components/cart/QuantityStepper";
 import { PaymentIcons } from "@/components/checkout/TrustBlock";
 import { useCart } from "@/components/providers/CartProvider";
 import { Media } from "@/components/ui/Media";
-import { FREE_SHIPPING_NATIONAL_MIN, FREE_SHIPPING_PEREIRA_MIN, LOCAL_ZONE_LABEL, SHIPPING_SUMMARY, deliveryLabel } from "@/config/shipping";
+import { FREE_SHIPPING_LINE, SHIPPING_SUMMARY, deliveryLabel } from "@/config/shipping";
 import type { Product } from "@/data/products";
 import { CATEGORY_SLUGS } from "@/data/site";
 import { MAX_COMBO_PERCENT } from "@/lib/combo";
@@ -19,6 +19,13 @@ import { cn, formatPrice } from "@/lib/utils";
 
 /** Consulta pública de registros sanitarios del INVIMA. */
 export const INVIMA_LOOKUP_URL = "https://consultaregistro.invima.gov.co/";
+
+/**
+ * Sello de cada ficha. La factura electrónica solo se promete con RUT y facturación activa:
+ * cuando la tengas, pon INVOICE_AVAILABLE en true y el sello dirá "Original · con factura electrónica".
+ */
+export const INVOICE_AVAILABLE = false;
+const ORIGINAL_BADGE = INVOICE_AVAILABLE ? "Original · con factura electrónica" : "Original · sellado";
 
 const EASE =[0.16, 1, 0.3, 1] as const;
 const CATEGORY_LABELS: Record<string, string> = {
@@ -62,7 +69,7 @@ export function ProductDetail({ product, url }: { product: Product; /** URL abso
   }, [product.sku, product.price]);
 
   function onAdd() {
-    add(product, undefined, { quantity });
+    if (!add(product, undefined, { quantity })) return;
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   }
@@ -110,18 +117,26 @@ export function ProductDetail({ product, url }: { product: Product; /** URL abso
           <p className="type-label text-arc">Marca: {product.brand}</p>
           <h1 className="mt-3 type-title text-[clamp(1.6rem,3.4vw,2.6rem)] leading-tight text-bone">{product.name}</h1>
 
-          <div className="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span className={cn("font-mono text-3xl md:text-4xl", discount ? "text-arc" : "text-bone")}>{formatPrice(product.price)}</span>
-            {discount && product.compareAtPrice && (
+          <ul className="mt-4 flex flex-wrap gap-2 type-label text-[0.62rem]">
+            <li className="flex items-center gap-1.5 border border-arc/50 px-2.5 py-1.5 text-arc">
+              <PackageCheck className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" /> {ORIGINAL_BADGE}
+            </li>
+            {product.compareAtPrice && <li className="bg-arc px-2.5 py-1.5 text-void">Precio bajo PVP</li>}
+          </ul>
+
+          <div className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <span className={cn("font-mono text-3xl md:text-4xl", product.compareAtPrice ? "text-arc" : "text-bone")}>{formatPrice(product.price)}</span>
+            {product.compareAtPrice && (
               <span className="text-sm text-steel">
                 Precio público <s className="font-mono">{formatPrice(product.compareAtPrice)}</s>
               </span>
             )}
           </div>
           {/* Referencia: precio público sugerido por el distribuidor (lista de octubre 2026). */}
-          {discount && product.compareAtPrice && (
+          {product.compareAtPrice && (
             <p className="mt-2 inline-block bg-arc/15 px-2 py-1 text-sm text-arc">
-              Ahorras {formatPrice(product.compareAtPrice - product.price)} (−{discount}%) frente al precio público
+              Ahorras {formatPrice(product.compareAtPrice - product.price)}
+              {discount ? ` (−${discount}%)` : ""} frente al precio público
             </p>
           )}
           {perServing && (
@@ -209,7 +224,7 @@ export function ProductDetail({ product, url }: { product: Product; /** URL abso
           <ul className="mt-6 grid gap-2.5 border-y border-line py-5 text-sm text-bone/85">
             <li className="flex items-start gap-3">
               <Truck className="mt-0.5 h-4 w-4 shrink-0 text-arc" strokeWidth={1.5} />
-              Envío GRATIS en {LOCAL_ZONE_LABEL} desde {formatPrice(FREE_SHIPPING_PEREIRA_MIN)} y a toda Colombia desde {formatPrice(FREE_SHIPPING_NATIONAL_MIN)}
+              {FREE_SHIPPING_LINE}
             </li>
             <li className="flex items-start gap-3">
               <Package className="mt-0.5 h-4 w-4 shrink-0 text-arc" strokeWidth={1.5} />

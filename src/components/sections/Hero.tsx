@@ -3,8 +3,7 @@
 import { ShieldCheck, Truck, Zap } from "lucide-react";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { WolfMark, Wordmark } from "@/components/visuals/WolfMark";
-import { FREE_SHIPPING_PEREIRA_MIN, LOCAL_CITY } from "@/config/shipping";
-import { formatPrice } from "@/lib/utils";
+import { FREE_SHIPPING_LINE, LOCAL_CITY } from "@/config/shipping";
 
 /**
  * Hero orientado a vender: marca + oferta concreta + "Comprar ahora". Se pinta completo desde el primer
@@ -13,7 +12,7 @@ import { formatPrice } from "@/lib/utils";
 export function Hero() {
   const perks = [
     { icon: Zap, text: `Entrega HOY en ${LOCAL_CITY}` },
-    { icon: Truck, text: `Envío gratis desde ${formatPrice(FREE_SHIPPING_PEREIRA_MIN)}` },
+    { icon: Truck, text: FREE_SHIPPING_LINE },
     { icon: ShieldCheck, text: "Pago seguro" },
   ];
 

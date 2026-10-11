@@ -43,7 +43,7 @@ export function PromoCatalog({ deals, discounted, combos }: { deals: Product[]; 
         {[
           { icon: Flame, title: `Ofertas WOLFEX VI`, text: "Precios rebajados en productos seleccionados" },
           { icon: Package, title: `Combos hasta −${MAX_COMBO_PERCENT}%`, text: "Entre más productos distintos, más ahorras" },
-          { icon: Truck, title: "Envío GRATIS", text: `${LOCAL_CITY} desde ${formatPrice(FREE_SHIPPING_PEREIRA_MIN)} · Colombia desde ${formatPrice(FREE_SHIPPING_NATIONAL_MIN)}` },
+          { icon: Truck, title: "Envío GRATIS", text: `${LOCAL_CITY} desde ${formatPrice(FREE_SHIPPING_PEREIRA_MIN)} (entrega hoy) · Colombia desde ${formatPrice(FREE_SHIPPING_NATIONAL_MIN)}` },
         ].map((item) => (
           <div key={item.title} className="flex items-start gap-3 border border-[#ff2e88]/35 bg-white/[0.03] p-4">
             <item.icon className="mt-0.5 h-5 w-5 shrink-0 text-[#ff2e88]" strokeWidth={1.75} />

@@ -11,6 +11,8 @@ export interface Product { id: string; sku: string; brand: string; handle: strin
   compareAtPrice?: number;
   /** STOCK = entrega inmediata en Pereira · DROP = envío nacional. */
   delivery?: "STOCK" | "DROP";
+  /** Producto pesado: cambia el envío nacional gratis (ver src/config/shipping.ts). */
+  heavy?: boolean;
 }
 
 export const PRODUCTS: Product[] = [

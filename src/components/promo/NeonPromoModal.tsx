@@ -92,7 +92,7 @@ export function NeonPromoModal() {
                   <WantedStars lit={3} />
                 </div>
                 <p className="mt-4 max-w-[19rem] bg-black/55 px-3 py-2 text-sm text-white backdrop-blur-sm">
-                  Arma tu combo y ahorra <b className="text-[#ffd84a]">hasta −{MAX_COMBO_PERCENT}%</b> + envío GRATIS desde {formatPrice(FREE_SHIPPING_NATIONAL_MIN)}
+                  Arma tu combo y ahorra <b className="text-[#ffd84a]">hasta −{MAX_COMBO_PERCENT}%</b> + envío GRATIS a toda Colombia desde {formatPrice(FREE_SHIPPING_NATIONAL_MIN)}
                 </p>
                 <a
                   ref={cta}
