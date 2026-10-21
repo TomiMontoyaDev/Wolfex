@@ -1,0 +1,52 @@
+[
+ {
+  "id": "124-mega-gainer-2-libras-vainilla",
+  "sku": "PN-124",
+  "name": "MEGA GAINER 2 LIBRAS VAINILLA",
+  "brand": "GMN",
+  "price": 70900,
+  "compareAtPrice": 74270,
+  "costPrice": 55703,
+  "active": true
+ },
+ {
+  "id": "128-super-mega-gainer-2-libras-vainilla",
+  "sku": "PN-128",
+  "name": "SUPER MEGA GAINER 2 LIBRAS VAINILLA",
+  "brand": "GMN",
+  "price": 63900,
+  "compareAtPrice": 67518,
+  "costPrice": 50639,
+  "active": true
+ },
+ {
+  "id": "129-super-mega-gainer-5-libras-vainilla",
+  "sku": "PN-129",
+  "name": "SUPER MEGA GAINER 5 LIBRAS VAINILLA",
+  "brand": "GMN",
+  "price": 144900,
+  "compareAtPrice": 148709,
+  "costPrice": 111532,
+  "active": true
+ },
+ {
+  "id": "131-nitro-mass-2-libras-vainilla",
+  "sku": "PN-131",
+  "name": "NITRO MASS 2 LIBRAS VAINILLA",
+  "brand": "GMN",
+  "price": 109900,
+  "compareAtPrice": 113561,
+  "costPrice": 85171,
+  "active": true
+ },
+ {
+  "id": "125-mega-gainer-5-libras-vainilla",
+  "sku": "PN-125",
+  "name": "MEGA GAINER 5 LIBRAS VAINILLA",
+  "brand": "GMN",
+  "price": 160900,
+  "compareAtPrice": 163580,
+  "costPrice": 122685,
+  "active": true
+ }
+]
