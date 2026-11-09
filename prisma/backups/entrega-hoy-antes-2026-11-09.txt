@@ -1,0 +1,10 @@
+┌─────────┬──────────┬───────────────────────────────────────────────────┬─────────────┬────────┬───────────┐
+│ (index) │ sku      │ name                                              │ fulfillment │ price  │ costPrice │
+├─────────┼──────────┼───────────────────────────────────────────────────┼─────────────┼────────┼───────────┤
+│ 0       │ 'PN-014' │ 'BIPRO CLASSIC 1 LIBRA VAINILLA'                  │ 'STOCK'     │ 115900 │ 89250     │
+│ 1       │ 'PN-037' │ 'SOBRE BIPRO CLASSIC 26 GRAMOS VAINILLA'          │ 'STOCK'     │ 7000   │ 5250      │
+│ 2       │ 'PN-166' │ 'NITROX 20 SERVICIOS SANDIA'                      │ 'STOCK'     │ 49900  │ 39375     │
+│ 3       │ 'PN-191' │ 'ATOMIC 60 SERVICIOS'                             │ 'STOCK'     │ 61900  │ 48750     │
+│ 4       │ 'PN-198' │ 'SOBRE ELECTRON 20 GRAMOS ELECTRY BLUE ICE BERRY' │ 'STOCK'     │ 5000   │ 3500      │
+│ 5       │ 'PN-632' │ 'CREATINA RAW 72 SERVICIOS 360 GRAMOS'            │ 'STOCK'     │ 75900  │ 45000     │
+└─────────┴──────────┴───────────────────────────────────────────────────┴─────────────┴────────┴───────────┘
